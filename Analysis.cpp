@@ -51,7 +51,12 @@ Analysis::Analysis(const TString sample, const Bool_t isMC, const TString outTyp
   fColorMap["zmumu"] = kCyan;
 }
 
-Analysis::~Analysis(){}
+Analysis::~Analysis(){
+  delete fInTree;
+  delete fInFile;
+  Analysis::DeleteHists();
+  delete fOutFile;
+}
 
 void Analysis::DoAnalysis(){
   // set up output plots to be produced
@@ -63,30 +68,53 @@ void Analysis::DoAnalysis(){
 
     float weight = 0;
     if (fIsMC) {
-      weight = xsec * 0.005618 * wgt / weightsum;  // current data int lumi = 56pb^-1
+      //      weight = xsec * 0.005618 * wgt / weightsum;  // current data int lumi = 56pb^-1 // can we get wgtsum in data as well?
     }
     else {
       weight = 1.0; // data is currently to 1.0
     }
     
-    if ((hltdoublemu > 0 || hltsinglemu > 0) && mu1pt > 20 && mu1id == 1) { // plot valid zmass
+    if ((hltdoublemu > 0 || hltsinglemu > 0) && mu1pt > 20 && mu1id == 1) { // plot valid zmass for dimuons
+      // double plots
+      
       fTH1DMap["zmass"].first->Fill(zmass,weight);
+      fTH1DMap["zpt"].first->Fill(zpt,weight);
+      fTH1DMap["mht"].first->Fill(mht,weight);
+
+      fTH1DMap["signaljetpt"].first->Fill(signaljetpt,weight);
+      fTH1DMap["signaljeteta"].first->Fill(signaljeteta,weight);
+      fTH1DMap["signaljetCHfrac"].first->Fill(signaljetCHfrac,weight);
+      fTH1DMap["signaljetNHfrac"].first->Fill(signaljetNHfrac,weight);
+      fTH1DMap["signaljetEMfrac"].first->Fill(signaljetEMfrac,weight);
+      fTH1DMap["signaljetCEMfrac"].first->Fill(signaljetCEMfrac,weight);
+
+      // int plots
+      fTH1IMap["njets"].first->Fill(njets,weight);
+      fTH1IMap["nvtx"].first->Fill(nvtx,weight);
     }
+    
   } // end loop over entries
 
   // save the histos once loop is over
   Analysis::SaveHists();
 
   // would like to put in destructor ... but can't delete objects until the end of the macro running!  --> can think of something clever later
-  delete fInTree;
-  delete fInFile;
-  Analysis::DeleteHists();
-  delete fOutFile;
 }
 
 void Analysis::SetUpPlots(){
-  fTH1DMap["zmass"] = Analysis::MakeTH1DPlot("zmass","",60,60.,120.,"Dimuon Mass [GeV]","Events / GeV",false); // can come up with way to set labels accordingly later
-  fTH1IMap["nvtx"]  = Analysis::MakeTH1IPlot("nvtx","",50,0,50,"Number of Events","Events",false);
+  fTH1DMap["zmass"] = Analysis::MakeTH1DPlot("zmass","",60,60.,120.,"Dimuon Mass [GeV/c^{2}]","Events / GeV/c^{2}",false);
+  fTH1DMap["zpt"]   = Analysis::MakeTH1DPlot("zpt","",20,0.,500.,"Dimuon p_{T} [GeV/c]","Events / 25 GeV/c",true); 
+  fTH1DMap["mht"]   = Analysis::MakeTH1DPlot("mht","",50,0.,200.,"E_{T}^{Miss} [GeV]","Events / 4 GeV",true); 
+
+  fTH1DMap["signaljetpt"] = Analysis::MakeTH1DPlot("signaljetpt","",40,0.,400.,"Leading Jet p_{T} [GeV/c]","Events / 10 GeV/c",true); 
+  fTH1DMap["signaljeteta"] = Analysis::MakeTH1DPlot("signaljetpt","",50,-5.,5.,"Leading Jet #eta","Events",false); 
+  fTH1DMap["signaljetCHfrac"] = Analysis::MakeTH1DPlot("signaljetCHfrac","",50,0.,1.,"Leading Jet CH Fraction","Events",false); 
+  fTH1DMap["signaljetNHfrac"] = Analysis::MakeTH1DPlot("signaljetNHfrac","",50,0.,1.,"Leading Jet NH Fraction","Events",false); 
+  fTH1DMap["signaljetEMfrac"] = Analysis::MakeTH1DPlot("signaljetEMfrac","",50,0.,1.,"Leading Jet Neutral EM Fraction","Events",false); 
+  fTH1DMap["signaljetCEMfrac"] = Analysis::MakeTH1DPlot("signaljetCEMfrac","",50,0.,1.,"Leading Jet Charged EM Fraction","Events",false); 
+
+  fTH1IMap["nvtx"]  = Analysis::MakeTH1IPlot("nvtx","",50,0,50,"Number of Primary Vertices","Events",false);
+  fTH1IMap["njets"] = Analysis::MakeTH1IPlot("njets","",50,0,50,"Jet Multiplicity","Events",true);
 }
 
 void Analysis::SetBranchAddresses(){
@@ -95,6 +123,7 @@ void Analysis::SetBranchAddresses(){
    fInTree->SetBranchAddress("lumi", &lumi, &b_lumi);
    fInTree->SetBranchAddress("wgt", &wgt, &b_wgt);
    fInTree->SetBranchAddress("puwgt", &puwgt, &b_puwgt);
+   fInTree->SetBranchAddress("xsec", &xsec, &xsec);
    //   fInTree->SetBranchAddress("weight", &weight, &b_weight);
    fInTree->SetBranchAddress("puobs", &puobs, &b_puobs);
    fInTree->SetBranchAddress("putrue", &putrue, &b_putrue);

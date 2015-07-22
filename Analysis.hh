@@ -1,5 +1,5 @@
 #include "TFile.h"
-#include "TH1F.h"
+#include "TH1D.h"
 #include "TH1I.h"
 #include "TString.h"
 #include "TTree.h"
@@ -69,6 +69,7 @@ private:
   UInt_t          lumi;
   Double_t        wgt;
   Double_t        puwgt;
+  Double_t        xsec;  
   //  Double_t        weight;
   Int_t           puobs;
   Int_t           putrue;
@@ -221,6 +222,7 @@ private:
   TBranch        *b_lumi;   //!
   TBranch        *b_wgt;   //!
   TBranch        *b_puwgt;   //!
+  TBranch        *xsec;
   //  TBranch        *b_weight;   //!
   TBranch        *b_puobs;   //!
   TBranch        *b_putrue;   //!
