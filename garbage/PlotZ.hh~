@@ -1,0 +1,76 @@
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH1I.h"
+#include "TString.h"
+#include "TTree.h"
+#include "TCanvas.h"
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TStyle.h"
+
+#include <vector>
+#include <map>
+#include <iostream>
+
+typedef std::vector<TTree*> TreeVec;
+typedef std::vector<TFile*> FileVec;
+typedef std::vector<TString> TStrVec;
+typedef std::vector<Int_t>   IntVec;
+typedef std::vector<Float_t> FltVec;
+ 
+typedef std::map<TString,Float_t> TStrFltMap;
+typedef std::vector<TStrFltMap>   TStrFltMapVec;
+ 
+typedef std::map<TString,Int_t> TStrIntMap;
+typedef std::vector<TStrIntMap> TStrIntMapVec;
+
+typedef std::vector<TH1F*> TH1FVec;
+typedef std::vector<TH1FVec> TH1FVecVec;
+
+class PlotZ
+{
+public:
+
+  PlotZ(TString outDir, TString outType);
+  ~PlotZ();
+  
+  void SetUpBranchStringVecs();
+  void SetBranchAddresses();
+  void MakePlots();
+
+private:
+  // initialized in constructor
+  TStrVec dataTStrFileVec;
+  TStrVec mcTStrFileVec;
+  
+  UInt_t nData;
+  UInt_t nMC;
+
+  FileVec dataFileVec;
+  FileVec mcFileVec;
+
+  TreeVec dataTreeVec;
+  TreeVec mcTreeVec;
+
+  TStrVec dataTStrVec;
+  TStrVec mcTStrVec;
+  
+  TH1FVecVec dataPlotVecVec;
+  TH1FVecVec mcPlotVecVec;
+
+  TString sOutDir;
+  TString sOutType;
+
+  // branch address stuff
+  TStrVec sIntBrVec;
+  TStrVec sFltBrVec;
+
+  UInt_t nFltBr;
+  UInt_t nIntBr;
+
+  TStrFltMapVec dataFltBMV;
+  TStrFltMapVec mcFltBMV;
+
+  TStrIntMapVec dataIntBMV;
+  TStrIntMapVec mcIntBMV;
+};
