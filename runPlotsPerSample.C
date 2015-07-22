@@ -10,13 +10,15 @@ void runPlotsPerSample(){
   // Third is output name of directory/rootfile/file plots
   // Fourth is output type of plots if SaveAs
   
-  Analysis zmumuData("zmumu",false,"png");
-  zmumuData.DoAnalysis();
+  Analysis * zmumuData = new Analysis("zmumu",false,"png");
+  zmumuData->DoAnalysis();
+  delete zmumuData;
 
   std::cout << "on to the next one" << std::endl;
 
-  Analysis zmumuMC("zmumu",true,"png");
-  zmumuMC.DoAnalysis();
+  Analysis * zmumuMC = new Analysis("zmumu",true,"png");
+  zmumuMC->DoAnalysis();
+  delete zmumuMC;
 }
 
 void setupcpp11(){ // customize ACLiC's behavior ...
