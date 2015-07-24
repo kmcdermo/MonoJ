@@ -10,9 +10,9 @@ void runPlotsPerSample(){
   // Third is output name of directory/rootfile/file plots
   // Fourth is output type of plots if SaveAs
   
-  Analysis * zmumuData = new Analysis("zmumu",false,"png");
-  zmumuData->DoAnalysis();
-  delete zmumuData;
+  Analysis * doublemuData = new Analysis("doublemu",false,"png");
+  doublemuData->DoAnalysis();
+  delete doublemuData;
 
   std::cout << "on to the next one" << std::endl;
 

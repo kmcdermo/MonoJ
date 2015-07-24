@@ -1,7 +1,6 @@
 #include <vector>
-#include <utility>
 
-typedef std::vector<std::pair<TString,Bool_t> > SampleVec;
+typedef std::vector<TString> TStrVec;
 
 void setupcpp11();
 
@@ -10,17 +9,22 @@ void runStack(){
   gROOT->LoadMacro("StackPlots.cpp++g");
 
   // define inputs in pairs
-  
-  SampleVec samples;
-  // second in pair isMC --> set to true if MC, data false
-  samples.push_back(std::make_pair("zmumu",false));
-  samples.push_back(std::make_pair("zmumu",true));
-  
-  StackPlots * stacker = new StackPlots(samples,"stack","png");
-  stacker->DoStacking();
+
+  TStrVec data;
+  data.push_back("doublemu");
+  TStrVec mc;
+  mc.push_back("zmumu");
+  TStrVec dplots;
+  dplots.push_back("zmass");
+  TStrVec iplots;      
+
+
+  //  StackPlots stacker(data,mc,dplots,iplots,"stack","png");
+  //  stacker.DoStacks();
+  StackPlots * stacker = new StackPlots(data,mc,dplots,iplots,"stack","png");
+  stacker->DoStacks();
   delete stacker;
 }
-
 
 void setupcpp11(){ // customize ACLiC's behavior ...
   TString o;

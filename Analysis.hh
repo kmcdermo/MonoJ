@@ -70,16 +70,16 @@ private:
   Double_t        wgt;
   Double_t        puwgt;
   Double_t        xsec;  
-  //  Double_t        weight;
+  Double_t        wgtsum;
   Int_t           puobs;
   Int_t           putrue;
   UInt_t          nvtx;
-  UInt_t          hltmet120;
+  UChar_t          hltmet120;
   //  UInt_t          hltmet95jet80;
   //  UInt_t          hltmet105jet80;
-  UInt_t          hltdoublemu;
-  UInt_t          hltsinglemu;
-  UInt_t          hltdoubleel;
+  UChar_t          hltdoublemu;
+  UChar_t          hltsinglemu;
+  UChar_t          hltdoubleel;
   //  UInt_t          hltphoton135;
   //  UInt_t          hltphoton150;
   UInt_t          nmuons;
@@ -222,8 +222,8 @@ private:
   TBranch        *b_lumi;   //!
   TBranch        *b_wgt;   //!
   TBranch        *b_puwgt;   //!
-  TBranch        *xsec;
-  //  TBranch        *b_weight;   //!
+  TBranch        *b_xsec;
+  TBranch        *b_wgtsum;   //!
   TBranch        *b_puobs;   //!
   TBranch        *b_putrue;   //!
   TBranch        *b_nvtx;   //!
