@@ -96,14 +96,15 @@ void Analysis::DoAnalysis(){
 	fTH1DMap["zmass"]->Fill(zmass,weight);
 	fTH1DMap["zpt"]->Fill(zpt,weight);
 	fTH1DMap["pfmet"]->Fill(pfmet,weight);
-	
-	fTH1DMap["signaljetpt"]->Fill(signaljetpt,weight);
-	fTH1DMap["signaljeteta"]->Fill(signaljeteta,weight);
-	fTH1DMap["signaljetCHfrac"]->Fill(signaljetCHfrac,weight);
-	fTH1DMap["signaljetNHfrac"]->Fill(signaljetNHfrac,weight);
-	fTH1DMap["signaljetEMfrac"]->Fill(signaljetEMfrac,weight);
-	fTH1DMap["signaljetCEMfrac"]->Fill(signaljetCEMfrac,weight);
-	
+
+	if (njets>=1){ // plots stuff with jets >= 1
+	  fTH1DMap["signaljetpt"]->Fill(signaljetpt,weight);
+	  fTH1DMap["signaljeteta"]->Fill(signaljeteta,weight);
+	  fTH1DMap["signaljetCHfrac"]->Fill(signaljetCHfrac,weight);
+	  fTH1DMap["signaljetNHfrac"]->Fill(signaljetNHfrac,weight);
+	  fTH1DMap["signaljetEMfrac"]->Fill(signaljetEMfrac,weight);
+	  fTH1DMap["signaljetCEMfrac"]->Fill(signaljetCEMfrac,weight);
+	}
 	// int plots
 	fTH1IMap["njets"]->Fill(njets,weight);
 	fTH1IMap["nvtx"]->Fill(nvtx,weight);
