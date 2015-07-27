@@ -19,7 +19,9 @@ void runStack(){
   Samples.push_back(SamplePair("zmumu",true));
   Samples.push_back(SamplePair("ttbar",true));
 
-  StackPlots * stacker = new StackPlots(Samples,"stack","png");
+  Double_t lumi = 0.03650;  // current data set
+
+  StackPlots * stacker = new StackPlots(Samples,lumi,"stack","png");
   stacker->DoStacks();
   delete stacker;
 }

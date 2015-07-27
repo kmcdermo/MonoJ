@@ -11,10 +11,12 @@
 #include "TString.h"
 #include "TStyle.h"
 #include "TColor.h"
+#include "TLatex.h"
 
 #include "TPad.h"
 #include "THStack.h"
 #include "TLegend.h"
+#include "TLine.h"
 
 #include <utility>
 #include <map>
@@ -44,7 +46,7 @@ typedef std::map<TString,Color_t> ColorMap;
 class StackPlots
 {
 public:
-  StackPlots(const SamplePairVec Samples, const TString outname, const TString outtype);
+  StackPlots(const SamplePairVec Samples, const Double_t lumi, const TString outname, const TString outtype);
   ~StackPlots();
   
   void OpenInputFiles();
@@ -59,12 +61,15 @@ public:
   void MakeStackPlots();
   void MakeRatioPlots();
   void MakeOutputCanvas();
+  void CMS_Lumi(TCanvas *& pad, const Int_t iPosX);
 
 private:
   TStrVec fDataNames;
   TStrVec fMCNames;
   TStrVec fDHistNames;
   TStrVec fIHistNames;
+
+  Double_t fLumi;
   
   UInt_t fNData;
   UInt_t fNMC;
