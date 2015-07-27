@@ -32,7 +32,7 @@ void CheckValidTree(TTree*& tree, const TString tname, const TString fname){
     exit(1);
   }
   else {
-    std::cout << "Successfully opened tree: " << tname.Data() << " in input file: " << fname.Data() << std::endl;
+    //    std::cout << "Successfully opened tree: " << tname.Data() << " in input file: " << fname.Data() << std::endl;
   }
 }
 
@@ -42,7 +42,7 @@ void CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname){
     exit(1);
   }
   else {
-    std::cout << "Successfully initialized plot: " << pname.Data() << " in input file: " << fname.Data() << std::endl;
+    //    std::cout << "Successfully initialized plot: " << pname.Data() << " in input file: " << fname.Data() << std::endl;
   }
 }
 
@@ -52,7 +52,7 @@ void CheckValidTH1I(TH1I*& plot, const TString pname, const TString fname){
     exit(1);
   }
   else {
-    std::cout << "Successfully initialized plot: " << pname.Data() << " in input file: " << fname.Data() << std::endl;
+    //    std::cout << "Successfully initialized plot: " << pname.Data() << " in input file: " << fname.Data() << std::endl;
   }
 }
 

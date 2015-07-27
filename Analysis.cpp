@@ -106,8 +106,8 @@ void Analysis::DoAnalysis(){
 	  fTH1DMap["signaljetCEMfrac"]->Fill(signaljetCEMfrac,weight);
 	}
 	// int plots
-	fTH1IMap["njets"]->Fill(njets,weight);
-	fTH1IMap["nvtx"]->Fill(nvtx,weight);
+	fTH1DMap["njets"]->Fill(njets,weight);
+	fTH1DMap["nvtx"]->Fill(nvtx,weight);
 	
 	passed += weight; // tiny counter to print yields
       } // extra selection over hbe noise filters
@@ -132,20 +132,12 @@ void Analysis::SetUpPlots(){
   fTH1DMap["signaljetEMfrac"]  = Analysis::MakeTH1DPlot("signaljetEMfrac","",50,0.,1.,"Leading Jet Neutral EM Fraction","Events"); 
   fTH1DMap["signaljetCEMfrac"] = Analysis::MakeTH1DPlot("signaljetCEMfrac","",50,0.,1.,"Leading Jet Charged EM Fraction","Events"); 
 
-  fTH1IMap["nvtx"]  = Analysis::MakeTH1IPlot("nvtx","",50,0,50,"Number of Primary Vertices","Events");
-  fTH1IMap["njets"] = Analysis::MakeTH1IPlot("njets","",50,0,50,"Jet Multiplicity","Events");
+  fTH1DMap["nvtx"]  = Analysis::MakeTH1DPlot("nvtx","",50,0,50,"Number of Primary Vertices","Events");
+  fTH1DMap["njets"] = Analysis::MakeTH1DPlot("njets","",50,0,50,"Jet Multiplicity","Events");
 }
 
 TH1D * Analysis::MakeTH1DPlot(const TString hname, const TString htitle, const Int_t nbins, const Double_t xlow, const Double_t xhigh, const TString xtitle, const TString ytitle){
   TH1D * hist = new TH1D(hname.Data(),htitle.Data(),nbins,xlow,xhigh);
-  hist->GetXaxis()->SetTitle(xtitle.Data());
-  hist->GetYaxis()->SetTitle(ytitle.Data());
-  hist->Sumw2();
-  return hist;
-}
-
-TH1I * Analysis::MakeTH1IPlot(const TString hname, const TString htitle, const Int_t nbins, const Int_t xlow, const Int_t xhigh, const TString xtitle, const TString ytitle){
-  TH1I * hist = new TH1I(hname.Data(),htitle.Data(),nbins,xlow,xhigh);
   hist->GetXaxis()->SetTitle(xtitle.Data());
   hist->GetYaxis()->SetTitle(ytitle.Data());
   hist->Sumw2();
@@ -157,6 +149,11 @@ void Analysis::SaveHists() {
 
   TCanvas * canv = new TCanvas();
   for (TH1DMapIter mapiter = fTH1DMap.begin(); mapiter != fTH1DMap.end(); mapiter++) { // first do double hists ... could template this...
+    for (Int_t ibin = 1; ibin <= (*mapiter).second->GetNbinsX(); ibin++){
+      if ((*mapiter).second->GetBinContent(ibin) < 0) { // check to make sure negative weights are not messing things up
+	(*mapiter).second->SetBinContent(ibin,0);
+      }
+    }
     (*mapiter).second->Write(); // map is map["hist name",TH1*]
 
     canv->cd();
@@ -176,31 +173,8 @@ void Analysis::SaveHists() {
     canv->SetLogy(0);
     canv->SaveAs(Form("%s/%s_lin.%s",fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
   }
-  
-  for (TH1IMapIter mapiter = fTH1IMap.begin(); mapiter != fTH1IMap.end(); mapiter++) {
-    (*mapiter).second->Write(); // map is map["hist name",TH1*]
 
-    canv->cd();
-
-    if (fIsMC){
-      (*mapiter).second->SetLineColor(fColorMap[fSample]);
-      (*mapiter).second->SetFillColor(fColorMap[fSample]);
-      (*mapiter).second->Draw("HIST");
-    }
-    else {
-      (*mapiter).second->Draw("PE");
-    }
-
-    // first save as log, then linear
-    canv->SetLogy(1);
-    canv->SaveAs(Form("%s/%s_log.%s",fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
-   
-    canv->SetLogy(0);
-    canv->SaveAs(Form("%s/%s_lin.%s",fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
-  }
   delete canv;
-
-  fOutFile->Write();
 }
 
 void Analysis::DeleteHists() {
@@ -208,9 +182,4 @@ void Analysis::DeleteHists() {
     delete ((*mapiter).second);
   }
   fTH1DMap.clear();
-
-  for (TH1IMapIter mapiter = fTH1IMap.begin(); mapiter != fTH1IMap.end(); mapiter++) {
-    delete ((*mapiter).second);
-  }
-  fTH1IMap.clear();
 }

@@ -5,7 +5,6 @@
 #include "TTree.h"
 #include "TCanvas.h"
 #include "TH1D.h"
-#include "TH1I.h"
 
 #include "TString.h"
 #include "TStyle.h"
@@ -23,8 +22,6 @@ typedef std::vector<Double_t> DblVec;
 
 typedef std::map<TString,TH1D*> TH1DMap;
 typedef TH1DMap::iterator TH1DMapIter;
-typedef std::map<TString,TH1I*> TH1IMap;
-typedef TH1IMap::iterator TH1IMapIter;
 
 typedef std::map<TString,Color_t> ColorMap;
 
@@ -38,7 +35,6 @@ public:
   void DoAnalysis();
   void SetUpPlots();
   TH1D * MakeTH1DPlot(const TString hname, const TString htitle, const Int_t nbins, const Double_t xlow, const Double_t xhigh, const TString xtitle, const TString ytitle);
-  TH1I * MakeTH1IPlot(const TString hname, const TString htitle, const Int_t nbins, const Int_t xlow, const Int_t xhigh, const TString xtitle, const TString ytitle);
   void SaveHists();
     
   ~Analysis();
@@ -58,7 +54,6 @@ private:
 
   TString fOutType;
 
-  TH1IMap fTH1IMap;
   TH1DMap fTH1DMap;
 
   ColorMap fColorMap;
