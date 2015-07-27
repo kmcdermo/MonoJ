@@ -16,11 +16,16 @@
 #include "THStack.h"
 #include "TLegend.h"
 
+#include <utility>
 #include <map>
 #include <vector>
 #include <iostream>
 
 typedef std::vector<TString>  TStrVec;
+
+typedef std::pair<TString,Bool_t> SamplePair;
+typedef std::vector<SamplePair> SamplePairVec;
+typedef SamplePairVec::iterator SamplePairVecIter;
 
 typedef std::vector<TFile*> TFileVec;
 typedef std::vector<TH1D*> TH1DVec;
@@ -32,13 +37,12 @@ typedef std::vector<TLegend*> TLegVec;
 typedef std::vector<TCanvas*> TCanvVec;
 typedef std::vector<TPad*> TPadVec;
 
-typedef std::map<TString,Color_t> ColorMap;
 typedef std::map<TString,TString> TStrMap;
 
 class StackPlots
 {
 public:
-  StackPlots(const TStrVec data, const TStrVec mc, const TStrVec dhistNames, const TStrVec ihistNames, const TString outname, const TString outtype);
+  StackPlots(const SamplePairVec Samples, const TString outname, const TString outtype);
   ~StackPlots();
   
   void OpenInputFiles();
@@ -47,6 +51,10 @@ public:
   void InitOutputLegends();
   void InitRatioPlots();
   void InitOutputCanvPads();
+
+  void CheckValidFile(TFile*& file, const TString fname);
+  void CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname);
+  void CheckValidTH1I(TH1I*& plot, const TString pname, const TString fname);
 
   void DoStacks();
 
@@ -97,6 +105,5 @@ private:
   TFile * fOutFile;
   TString fOutType;
 
-  ColorMap fColorMap;
   TStrMap  fSampleTitleMap;
 };

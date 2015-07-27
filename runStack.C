@@ -1,8 +1,12 @@
 #include "MacroCommon.hh"
 #include "TString.h"
-#include <vector>
 
-typedef std::vector<TString> TStrVec;
+#include <vector>
+#include <utility>
+
+typedef std::pair<TString,Bool_t> SamplePair;
+typedef std::vector<SamplePair> SamplePairVec;
+typedef SamplePairVec::iterator SamplePairVecIter;
 
 void runStack(){
   setupcpp11();
@@ -10,15 +14,12 @@ void runStack(){
 
   // define inputs in pairs
 
-  TStrVec data;
-  data.push_back("doublemu");
-  TStrVec mc;
-  mc.push_back("zmumu");
-  TStrVec dplots;
-  dplots.push_back("zmass");
-  TStrVec iplots;      
+  SamplePairVec Samples;
+  Samples.push_back(SamplePair("doublemu",false));
+  Samples.push_back(SamplePair("zmumu",true));
+  Samples.push_back(SamplePair("ttbar",true));
 
-  StackPlots * stacker = new StackPlots(data,mc,dplots,iplots,"stack","png");
+  StackPlots * stacker = new StackPlots(Samples,"stack","png");
   stacker->DoStacks();
   delete stacker;
 }

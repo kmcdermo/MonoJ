@@ -17,10 +17,9 @@ void runPlotsPerSample(){
   // Third is output name of directory/rootfile/file plots
   // Fourth is output type of plots if SaveAs
   
-  //  Analysis * doublemuData = new Analysis("doublemu",false,"png");
   SamplePairVec Samples;
-  //  Samples.push_back(SamplePair("doublemu",false));
-  //  Samples.push_back(SamplePair("zmumu",true));
+  Samples.push_back(SamplePair("doublemu",false));
+  Samples.push_back(SamplePair("zmumu",true));
   Samples.push_back(SamplePair("ttbar",true));
 
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {

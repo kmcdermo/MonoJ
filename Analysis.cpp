@@ -7,21 +7,23 @@ Analysis::Analysis(const TString sample, const Bool_t isMC, const TString outTyp
   fIsMC   = isMC;
   
   //Get File
-  TString fileName;
+  TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
   if (fIsMC){ // MC
+    fileName.Append("Spring15MC_50ns/")
     if (fSample.Contains("zmumu",TString::kExact)){ // z -> mm
-      fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/zll/treewithwgt.root";
+      fileName.Append("zll/treewithwgt.root");
     }
     else if (fSample.Contains("ttbar",TString::kExact)){ // z -> mm
-      fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/ttbar/treewithwgt.root";
+      fileName.Append("ttbar/treewithwgt.root");
     }
     else {
       std::cout << "Not a known sample: " << fSample << " isMC: " << fIsMC << " ...exiting..." << std::endl;
     }
   }
   else{ // Data
+    fileName.Append("Data/");
     if (fSample.Contains("doublemu",TString::kExact)){ // z-> mm
-      fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/doublemu/treewithwgt.root";
+      fileName.Append("doublemu/treewithwgt.root");
     }
     else {
       std::cout << "Not a known sample: " << fSample << " isMC: " << fIsMC << " ...exiting..." << std::endl;
