@@ -1,4 +1,11 @@
-void setupcpp11();
+#include "MacroCommon.hh"
+
+#include <vector>
+#include <utility>
+
+typedef std::pair<TString,Bool_t> SamplePair;
+typedef std::vector<SamplePair> SamplePairVec;
+typedef SamplePairVec::iterator SamplePairVecIter;
 
 void runPlotsPerSample(){
   setupcpp11();
@@ -10,25 +17,16 @@ void runPlotsPerSample(){
   // Third is output name of directory/rootfile/file plots
   // Fourth is output type of plots if SaveAs
   
-  Analysis * doublemuData = new Analysis("doublemu",false,"png");
-  doublemuData->DoAnalysis();
-  delete doublemuData;
+  //  Analysis * doublemuData = new Analysis("doublemu",false,"png");
+  SamplePairVec Samples;
+  //  Samples.push_back(SamplePair("doublemu",false));
+  //  Samples.push_back(SamplePair("zmumu",true));
+  Samples.push_back(SamplePair("ttbar",true));
 
-  std::cout << "on to the next one" << std::endl;
+  for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
+    std::cout << "Processing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+    Analysis sample((*iter).first,(*iter).second,"png");
+    sample.DoAnalysis();
+  }
 
-  Analysis * zmumuMC = new Analysis("zmumu",true,"png");
-  zmumuMC->DoAnalysis();
-  delete zmumuMC;
 }
-
-void setupcpp11(){ // customize ACLiC's behavior ...
-  TString o;
-  // customize MakeSharedLib
-  o = TString(gSystem->GetMakeSharedLib());
-  o = o.ReplaceAll(" -c ", " -std=c++0x -c ");
-  gSystem->SetMakeSharedLib(o.Data());
-  // customize MakeExe
-  o = TString(gSystem->GetMakeExe());
-  o = o.ReplaceAll(" -c ", " -std=c++0x -c ");
-  gSystem->SetMakeExe(o.Data());
-} 
