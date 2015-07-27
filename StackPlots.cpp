@@ -14,12 +14,6 @@ StackPlots::StackPlots(const TStrVec dtsamples, const TStrVec mcsamples, const T
   fNDHists = fDHistNames.size();
   fNIHists = fIHistNames.size();
 
-  // define color map here --> will move this plus type defs to a dedicated file
-  fColorMap["zmumu"] = kCyan;
-  
-  // define title map here --> will move
-  fSampleTitleMap["zmumu"] = "Z #rightarrow #mu^{+} #mu^{-}";
-
   StackPlots::OpenInputFiles();
   StackPlots::InitInputPlots();
   StackPlots::InitOutputPlots();
@@ -32,9 +26,10 @@ StackPlots::StackPlots(const TStrVec dtsamples, const TStrVec mcsamples, const T
   MakeOutDirectory(fOutName); // make output directory --> same name as outname
   fOutFile = new TFile(Form("%s/%s_canvs.root",fOutName.Data(),fOutName.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
   fOutType = outtype; // allow user to pick png, pdf, gif, etc for stacked plots
-  
 
-  StackPlots::DoStacks();
+  // define color map + title map
+  fColorMap["zmumu"] = kCyan;
+  fSampleTitleMap["zmumu"] = "Z #rightarrow #mu^{+} #mu^{-}";
 }
 
 StackPlots::~StackPlots(){
@@ -42,13 +37,13 @@ StackPlots::~StackPlots(){
 
 void StackPlots::OpenInputFiles() {
   // open input files into TFileVec --> data 
-  fDataFiles.reserve(fNData);
+  fDataFiles.resize(fNData);
   for (UInt_t dt = 0; dt < fNData; dt++) {
     fDataFiles[dt] = TFile::Open(Form("%s_data/%s_data_plots.root",fDataNames[dt].Data(),fDataNames[dt].Data()));
   }
 
   // open input files into TFileVec --> mc 
-  fMCFiles.reserve(fNMC);
+  fMCFiles.resize(fNMC);
   for (UInt_t mc = 0; mc < fNMC; mc++) {
     fMCFiles[mc] = TFile::Open(Form("%s_MC/%s_MC_plots.root",fMCNames[mc].Data(),fMCNames[mc].Data()));
   }
@@ -56,38 +51,38 @@ void StackPlots::OpenInputFiles() {
 
 void StackPlots::InitInputPlots() {
   // init input double hists
-  fInDataDHists.reserve(fNDHists);
-  fInMCDHists.reserve(fNDHists);
+  fInDataDHists.resize(fNDHists);
+  fInMCDHists.resize(fNDHists);
   for (UInt_t dh = 0; dh < fNDHists; dh++){ // loop over double hists
     
     // data first
-    fInDataDHists[dh].reserve(fNData); 
+    fInDataDHists[dh].resize(fNData); 
     for (UInt_t dt = 0; dt < fNData; dt++) { // init data double hists
       fInDataDHists[dh][dt] = (TH1D*)fDataFiles[dt]->Get(Form("%s",fDHistNames[dh].Data()));
     }
 
     // mc second
-    fInMCDHists[dh].reserve(fNMC); 
+    fInMCDHists[dh].resize(fNMC); 
     for (UInt_t mc = 0; mc < fNMC; mc++) { // init mc double hists
       fInMCDHists[dh][mc] = (TH1D*)fMCFiles[mc]->Get(Form("%s",fDHistNames[dh].Data()));
       fInMCDHists[dh][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
       fInMCDHists[dh][mc]->SetLineColor(fColorMap[fMCNames[mc]]);
-      std::cout << dh << " " << mc << " " << fInMCDHists[dh][mc]->GetName() << std::endl;
+      fInMCDHists[dh][mc]->Scale(6.);
     }
   }
 
   // init input int hists
-  fInDataIHists.reserve(fNIHists);
-  fInMCIHists.reserve(fNIHists);
+  fInDataIHists.resize(fNIHists);
+  fInMCIHists.resize(fNIHists);
   for (UInt_t ih = 0; ih < fNIHists; ih++){ // loop over int hists
     // data first
-    fInDataIHists[ih].reserve(fNData); 
+    fInDataIHists[ih].resize(fNData); 
     for (UInt_t dt = 0; dt < fNData; dt++) { // init data int hists
       fInDataIHists[ih][dt] = (TH1I*)fDataFiles[dt]->Get(Form("%s",fIHistNames[ih].Data()));
     }
 
     // mc second
-    fInMCIHists[ih].reserve(fNMC); 
+    fInMCIHists[ih].resize(fNMC); 
     for (UInt_t mc = 0; mc < fNMC; mc++) { // init mc int hists
       fInMCIHists[ih][mc] = (TH1I*)fMCFiles[mc]->Get(Form("%s",fIHistNames[ih].Data()));
       fInMCIHists[ih][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
@@ -100,17 +95,17 @@ void StackPlots::InitOutputPlots() {
   // init output hists and sumw2 for Data + MC -- init output stacks for MC
 
   // double hists
-  fOutDataDHists.reserve(fNDHists); // make enough space for data double hists
-  fOutMCDHists.reserve(fNDHists); // make enough space for MC double hists
-  fOutMCDStacks.reserve(fNDHists); // same with stack 
+  fOutDataDHists.resize(fNDHists); // make enough space for data double hists
+  fOutMCDHists.resize(fNDHists); // make enough space for MC double hists
+  fOutMCDStacks.resize(fNDHists); // same with stack 
   for (UInt_t dh = 0; dh < fNDHists; dh++){
     fOutMCDStacks[dh] = new THStack("","");
   }
   
   // int hists
-  fOutDataIHists.reserve(fNIHists); // make enough space for data int hists
-  fOutMCIHists.reserve(fNIHists); // make enough space for MC int hists
-  fOutMCIStacks.reserve(fNIHists); // same with stack 
+  fOutDataIHists.resize(fNIHists); // make enough space for data int hists
+  fOutMCIHists.resize(fNIHists); // make enough space for MC int hists
+  fOutMCIStacks.resize(fNIHists); // same with stack 
   for (UInt_t ih = 0; ih < fNIHists; ih++){
     fOutMCIStacks[ih] = new THStack("","");
   }
@@ -120,13 +115,13 @@ void StackPlots::InitOutputLegends() {
   // init legends
 
   // double
-  fDLegend.reserve(fNDHists);
+  fDLegend.resize(fNDHists);
   for (UInt_t dh = 0; dh < fNDHists; dh++){
     fDLegend[dh] = new TLegend();
   }
 
   // int
-  fILegend.reserve(fNIHists);
+  fILegend.resize(fNIHists);
   for (UInt_t ih = 0; ih < fNIHists; ih++){
     fILegend[ih] = new TLegend();
   }
@@ -136,19 +131,19 @@ void StackPlots::InitRatioPlots() {
   // init ratios 
 
   // double
-  fOutRatioDHists.reserve(fNDHists);
+  fOutRatioDHists.resize(fNDHists);
 
   // int
-  fOutRatioIHists.reserve(fNIHists);
+  fOutRatioIHists.resize(fNIHists);
 }
 
 void StackPlots::InitOutputCanvPads() {
   // init canvases + pads
 
   // double
-  fOutDCanvas.reserve(fNDHists);
-  fOutDStackPad.reserve(fNDHists);
-  fOutDRatioPad.reserve(fNDHists);
+  fOutDCanvas.resize(fNDHists);
+  fOutDStackPad.resize(fNDHists);
+  fOutDRatioPad.resize(fNDHists);
   for (UInt_t dh = 0; dh < fNDHists; dh++){
     fOutDCanvas[dh] = new TCanvas();
     
@@ -161,16 +156,16 @@ void StackPlots::InitOutputCanvPads() {
   }
 
   // int
-  fOutICanvas.reserve(fNIHists);
-  fOutIStackPad.reserve(fNIHists);
-  fOutIRatioPad.reserve(fNIHists);
+  fOutICanvas.resize(fNIHists);
+  fOutIStackPad.resize(fNIHists);
+  fOutIRatioPad.resize(fNIHists);
   for (UInt_t ih = 0; ih < fNIHists; ih++){
     fOutICanvas[ih] = new TCanvas();
 
     fOutIStackPad[ih] = new TPad("", "", 0, 0.3, 1, 1.0);
     fOutIStackPad[ih]->SetBottomMargin(0); // Upper and lower plot are joined
 
-    fOutIRatioPad[ih] = new TPad("", "", 0, 0.3, 1, 1.0);
+    fOutIRatioPad[ih] = new TPad("", "", 0, 0.05, 1, 0.3);
     fOutIRatioPad[ih]->SetTopMargin(0);
     fOutIRatioPad[ih]->SetBottomMargin(0.2);
   }
@@ -189,7 +184,6 @@ void StackPlots::MakeStackPlots(){
     for (UInt_t dt = 0; dt < fNData; dt++) {
       if (dt == 0){
 	fOutDataDHists[dh] = (TH1D*)fInDataDHists[dh][dt]->Clone();
-	//	fOutDataDHists[dh]->Sumw2();
       }
       else{
 	fOutDataDHists[dh]->Add(fInDataDHists[dh][dt]);
@@ -200,10 +194,7 @@ void StackPlots::MakeStackPlots(){
     // mc, copy + add to hists, add to tstack
     for (UInt_t mc = 0; mc < fNMC; mc++) {
       if (mc == 0){ // add first for ratio
-
-	std::cout << dh << " " << mc << " " << fInMCDHists[dh][mc]->GetName() << std::endl;
 	fOutMCDHists[dh] = (TH1D*)fInMCDHists[dh][mc]->Clone();
-	//	fOutMCDHists[dh]->Sumw2();
       }
       else{ // add first for ratio
 	fOutMCDHists[dh]->Add(fInMCDHists[dh][mc]);
@@ -220,7 +211,7 @@ void StackPlots::MakeStackPlots(){
     for (UInt_t dt = 0; dt < fNData; dt++) {
       if (dt == 0){
 	fOutDataIHists[ih] = (TH1I*)fInDataIHists[ih][dt]->Clone();
-	fOutDataIHists[ih]->Sumw2();
+	//	fOutDataIHists[ih]->Sumw2();
       }
       else{
 	fOutDataIHists[ih]->Add(fInDataIHists[ih][dt]);
@@ -232,7 +223,6 @@ void StackPlots::MakeStackPlots(){
     for (UInt_t mc = 0; mc < fNMC; mc++) {
       if (mc == 0){ // add first for ratio
 	fOutMCIHists[ih] = (TH1I*)fInMCIHists[ih][mc]->Clone();
-	fOutMCIHists[ih]->Sumw2();
       }
       else{ // add first for ratio
 	fOutMCIHists[ih]->Add(fInMCIHists[ih][mc]);
@@ -250,7 +240,7 @@ void StackPlots::MakeRatioPlots() {
   // double
   for (UInt_t dh = 0; dh < fNDHists; dh++){ // double hists
     fOutRatioDHists[dh] = (TH1D*)fOutDataDHists[dh]->Clone();
-    fOutRatioDHists[dh]->Sumw2();
+    //    fOutRatioDHists[dh]->Sumw2();
     fOutRatioDHists[dh]->Divide(fOutMCDHists[dh]);  
     fOutRatioDHists[dh]->SetLineColor(kBlack);
     fOutRatioDHists[dh]->SetMinimum(0.0);  // Define Y ..
@@ -261,7 +251,7 @@ void StackPlots::MakeRatioPlots() {
   // int
   for (UInt_t ih = 0; ih < fNIHists; ih++){ // int hists
     fOutRatioIHists[ih] = (TH1I*)fOutDataIHists[ih]->Clone();
-    fOutRatioIHists[ih]->Sumw2();
+    //    fOutRatioIHists[ih]->Sumw2();
     fOutRatioIHists[ih]->Divide(fOutMCIHists[ih]);  
     fOutRatioIHists[ih]->SetLineColor(kBlack);
     fOutRatioIHists[ih]->SetMinimum(0.0);  // Define Y ..
@@ -280,8 +270,8 @@ void StackPlots::MakeOutputCanvas() {
     fOutDStackPad[dh]->Draw(); // draw upper pad
     fOutDStackPad[dh]->cd(); // upper pad is current pad
     fOutDataDHists[dh]->SetStats(0); // No statistics on upper plot
-    fOutDataDHists[dh]->Draw("PE");
-    fOutMCDStacks[dh]->Draw("HIST SAME");
+    fOutMCDStacks[dh]->Draw("HIST");
+    fOutDataDHists[dh]->Draw("PE SAME");
     fDLegend[dh]->Draw("SAME");
    
     // lower pad is ratio
