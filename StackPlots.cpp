@@ -49,6 +49,9 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString outname, const TStri
   // define color map + title map
   fSampleTitleMap["zmumu"] = "Z #rightarrow #mu^{+} #mu^{-}";
   fSampleTitleMap["ttbar"] = "t#bar{t}";
+
+  fColorMap["zmumu"] = kCyan;
+  fColorMap["ttbar"] = kRed+2;
 }
 
 StackPlots::~StackPlots(){
@@ -60,7 +63,7 @@ void StackPlots::OpenInputFiles() {
   for (UInt_t dt = 0; dt < fNData; dt++) {
     TString datafile = Form("%s_data/%s_data_plots.root",fDataNames[dt].Data(),fDataNames[dt].Data());
     fDataFiles[dt] = TFile::Open(datafile.Data());
-    StackPlots::CheckValidFile(fDataFiles[dt],datafile);
+    CheckValidFile(fDataFiles[dt],datafile);
   }
 
   // open input files into TFileVec --> mc 
@@ -68,17 +71,7 @@ void StackPlots::OpenInputFiles() {
   for (UInt_t mc = 0; mc < fNMC; mc++) {
     TString mcfile = Form("%s_MC/%s_MC_plots.root",fMCNames[mc].Data(),fMCNames[mc].Data());
     fMCFiles[mc] = TFile::Open(mcfile.Data());
-    StackPlots::CheckValidFile(fMCFiles[mc],mcfile);
-  }
-}
-
-void StackPlots::CheckValidFile(TFile *& file, const TString fname){
-  if (file == (TFile*) NULL) { // check if valid file
-    std::cout << "Input file is bad pointer: " << fname.Data() << " ...exiting..." << std::endl;
-    exit(1);
-  }
-  else {
-    std::cout << "Successfully opened file: " << fname.Data() << std::endl;
+    CheckValidFile(fMCFiles[mc],mcfile);
   }
 }
 
@@ -91,14 +84,16 @@ void StackPlots::InitInputPlots() {
     fInDataDHists[dh].resize(fNData); 
     for (UInt_t dt = 0; dt < fNData; dt++) { // init data double hists
       fInDataDHists[dh][dt] = (TH1D*)fDataFiles[dt]->Get(Form("%s",fDHistNames[dh].Data()));
-      StackPlots::CheckValidTH1D(fInDataDHists[dh][dt],fDHistNames[dh],fDataFiles[dt]->GetName());
+      CheckValidTH1D(fInDataDHists[dh][dt],fDHistNames[dh],fDataFiles[dt]->GetName());
     }
 
     // mc second
     fInMCDHists[dh].resize(fNMC); 
     for (UInt_t mc = 0; mc < fNMC; mc++) { // init mc double hists
       fInMCDHists[dh][mc] = (TH1D*)fMCFiles[mc]->Get(Form("%s",fDHistNames[dh].Data()));
-      StackPlots::CheckValidTH1D(fInMCDHists[dh][mc],fDHistNames[dh],fMCFiles[mc]->GetName());
+      CheckValidTH1D(fInMCDHists[dh][mc],fDHistNames[dh],fMCFiles[mc]->GetName());
+      fInMCDHists[dh][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
+      fInMCDHists[dh][mc]->SetLineColor(fColorMap[fMCNames[mc]]);
     }
   }
 
@@ -110,35 +105,17 @@ void StackPlots::InitInputPlots() {
     fInDataIHists[ih].resize(fNData); 
     for (UInt_t dt = 0; dt < fNData; dt++) { // init data int hists
       fInDataIHists[ih][dt] = (TH1I*)fDataFiles[dt]->Get(Form("%s",fIHistNames[ih].Data()));
-      StackPlots::CheckValidTH1I(fInDataIHists[ih][dt],fDHistNames[ih],fDataFiles[dt]->GetName());
+      CheckValidTH1I(fInDataIHists[ih][dt],fDHistNames[ih],fDataFiles[dt]->GetName());
     }
 
     // mc second
     fInMCIHists[ih].resize(fNMC); 
     for (UInt_t mc = 0; mc < fNMC; mc++) { // init mc int hists
       fInMCIHists[ih][mc] = (TH1I*)fMCFiles[mc]->Get(Form("%s",fIHistNames[ih].Data()));
-      StackPlots::CheckValidTH1I(fInMCIHists[ih][mc],fIHistNames[ih],fMCFiles[mc]->GetName());
+      CheckValidTH1I(fInMCIHists[ih][mc],fIHistNames[ih],fMCFiles[mc]->GetName());
+      fInMCIHists[ih][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
+      fInMCIHists[ih][mc]->SetLineColor(fColorMap[fMCNames[mc]]);
     }
-  }
-}
-
-void StackPlots::CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname){
-  if (plot == (TH1D*) NULL) { // check if valid plot
-    std::cout << "Input TH1D is bad pointer: " << pname.Data() << " in input file: " << fname.Data() << " ...exiting..." << std::endl;
-    exit(1);
-  }
-  else {
-    std::cout << "Successfully initialized plot: " << pname.Data() << " in input file: " << fname.Data() << std::endl;
-  }
-}
-
-void StackPlots::CheckValidTH1I(TH1I*& plot, const TString pname, const TString fname){
-  if (plot == (TH1I*) NULL) { // check if valid plot
-    std::cout << "Input TH1I is bad pointer: " << pname.Data() << " in input file: " << fname.Data() << " ...exiting..." << std::endl;
-    exit(1);
-  }
-  else {
-    std::cout << "Successfully initialized plot: " << pname.Data() << " in input file: " << fname.Data() << std::endl;
   }
 }
 
@@ -168,13 +145,13 @@ void StackPlots::InitOutputLegends() {
   // double
   fDLegend.resize(fNDHists);
   for (UInt_t dh = 0; dh < fNDHists; dh++){
-    fDLegend[dh] = new TLegend(0.75,0.75,0.89,0.89);
+    fDLegend[dh] = new TLegend(0.67,0.67,0.8,0.8);
   }
 
   // int
   fILegend.resize(fNIHists);
   for (UInt_t ih = 0; ih < fNIHists; ih++){
-    fILegend[ih] = new TLegend(0.8,0.8,0.97,0.97);
+    fILegend[ih] = new TLegend(0.67,0.67,0.8,0.8);
   }
 }
 
@@ -196,7 +173,7 @@ void StackPlots::InitOutputCanvPads() {
   fOutDStackPad.resize(fNDHists);
   fOutDRatioPad.resize(fNDHists);
   for (UInt_t dh = 0; dh < fNDHists; dh++){
-    fOutDCanvas[dh] = new TCanvas();
+    fOutDCanvas[dh] = new TCanvas(fDHistNames[dh].Data(),"");
     fOutDCanvas[dh]->cd();
     
     fOutDStackPad[dh] = new TPad("", "", 0, 0.3, 1.0, 1.0);
@@ -212,7 +189,7 @@ void StackPlots::InitOutputCanvPads() {
   fOutIStackPad.resize(fNIHists);
   fOutIRatioPad.resize(fNIHists);
   for (UInt_t ih = 0; ih < fNIHists; ih++){
-    fOutICanvas[ih] = new TCanvas();
+    fOutICanvas[ih] = new TCanvas(fIHistNames[ih].Data(),"");
     fOutICanvas[ih]->cd();
 
     fOutIStackPad[ih] = new TPad("", "", 0, 0.3, 1, 1.0);
@@ -269,7 +246,7 @@ void StackPlots::MakeStackPlots(){
 	fOutDataIHists[ih]->Add(fInDataIHists[ih][dt]);
       }
     } // end loop over data samples
-    fILegend[ih]->AddEntry(fOutDataIHists[ih],"Data","l"); // add data entry to legend
+    fILegend[ih]->AddEntry(fOutDataIHists[ih],"Data","pl"); // add data entry to legend
 
     // mc, copy + add to hists, add to tstack
     for (UInt_t mc = 0; mc < fNMC; mc++) {

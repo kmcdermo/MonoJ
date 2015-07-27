@@ -39,6 +39,8 @@ typedef std::vector<TPad*> TPadVec;
 
 typedef std::map<TString,TString> TStrMap;
 
+typedef std::map<TString,Color_t> ColorMap;
+
 class StackPlots
 {
 public:
@@ -51,10 +53,6 @@ public:
   void InitOutputLegends();
   void InitRatioPlots();
   void InitOutputCanvPads();
-
-  void CheckValidFile(TFile*& file, const TString fname);
-  void CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname);
-  void CheckValidTH1I(TH1I*& plot, const TString pname, const TString fname);
 
   void DoStacks();
 
@@ -75,6 +73,8 @@ private:
 
   TFileVec fDataFiles;
   TFileVec fMCFiles;
+
+  ColorMap fColorMap;
 
   TH1DVecVec fInDataDHists;
   TH1DVecVec fInMCDHists;

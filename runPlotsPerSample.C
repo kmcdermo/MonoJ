@@ -22,9 +22,11 @@ void runPlotsPerSample(){
   Samples.push_back(SamplePair("zmumu",true));
   Samples.push_back(SamplePair("ttbar",true));
 
+  Double_t lumi = 0.03650; // int lumi 36.50 pb^-1
+
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Processing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter).first,(*iter).second,"png");
+    Analysis sample((*iter).first,(*iter).second,lumi,"png");
     sample.DoAnalysis();
   }
 
