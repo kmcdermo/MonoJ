@@ -35,7 +35,7 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMa
   fNTH1D = fTH1DNames.size();
 
   // output data members
-  fOutDir = outdir; // where to put output plots 
+  fOutDir = Form("%s/stackedplots",outdir.Data()); // where to put output plots 
   MakeOutDirectory(fOutDir); // make output directory 
   fOutFile = new TFile(Form("%s/stackplots_canvases.root",fOutDir.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
   fOutType = outtype; // allow user to pick png, pdf, gif, etc for stacked plots
