@@ -50,6 +50,11 @@ public:
   void MakeStackPlots();
   void MakeRatioPlots();
   void MakeOutputCanvas();
+
+  void DrawUpperPad(const UInt_t th1d, const Bool_t isLogY);
+  Double_t GetMaximum(const UInt_t th1d);
+  void DrawLowerPad(const UInt_t th1d);
+  void SaveCanvas(const UInt_t th1d, const Bool_t isLogY);
   void CMSLumi(TCanvas *& pad, const Int_t iPosX);
 
   ~StackPlots();

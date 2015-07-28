@@ -58,43 +58,35 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMa
 
 StackPlots::~StackPlots(){
   // delete all pointers
-  for (UInt_t data = 0; data < fNData; data++) {
-    delete fDataFiles[data];
-  }
-  std::cout << "here" << std::endl;
-
-  for (UInt_t mc = 0; mc < fNMC; mc++) {
-    delete fMCFiles[mc];
-  }
-  std::cout << "here" << std::endl;
-
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    delete fOutRatioTH1DHists[th1d];
+    delete fOutDataTH1DHists[th1d];
+    delete fOutMCTH1DHists[th1d];
+    delete fOutMCTH1DStacks[th1d];
+    delete fTH1DLegends[th1d];
+    delete fOutTH1DStackPads[th1d];
+    delete fOutTH1DRatioPads[th1d];
+    delete fOutTH1DCanvases[th1d];
+
     for (UInt_t data = 0; data < fNData; data++) {
+      CheckValidTH1D(fInDataTH1DHists[th1d][data],fTH1DNames[th1d],fDataFiles[data]->GetName());
       delete fInDataTH1DHists[th1d][data];
     }
-    std::cout << "here: " << th1d << std::endl;
   
     for (UInt_t mc = 0; mc < fNMC; mc++) {
       delete fInMCTH1DHists[th1d][mc];
     }
-
-    std::cout << "here: " << th1d << std::endl;
-    delete fOutDataTH1DHists[th1d];
-    delete fOutMCTH1DHists[th1d];
-    delete fOutMCTH1DStacks[th1d];
-    std::cout << "here: " << th1d << std::endl;
-    delete fTH1DLegends[th1d];
-    delete fOutRatioTH1DHists[th1d];
-    delete fOutTH1DCanvases[th1d];
-    delete fOutTH1DStackPads[th1d];
-    delete fOutTH1DRatioPads[th1d];
-    std::cout << "here: " << th1d << std::endl;
   }
-  std::cout << "here" << std::endl;
+
+  for (UInt_t data = 0; data < fNData; data++) {
+    delete fDataFiles[data];
+  }
+
+  for (UInt_t mc = 0; mc < fNMC; mc++) {
+    delete fMCFiles[mc];
+  }
 
   delete fOutFile;
-  std::cout << "here" << std::endl;
-
 }
 
 void StackPlots::DoStacks() {
@@ -153,136 +145,89 @@ void StackPlots::MakeOutputCanvas() {
   
   // th1d
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ // double hists
-    //upper plot is stack
-    fOutTH1DCanvases[th1d]->cd();
-    fOutTH1DStackPads[th1d]->Draw(); // draw upper pad   
-    fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
-    fOutDataTH1DHists[th1d]->SetStats(0); // No statistics on upper plot
-    fOutMCTH1DStacks[th1d]->Draw("HIST");
-    fOutDataTH1DHists[th1d]->Draw("PE SAME");
-    fTH1DLegends[th1d]->Draw("SAME");
-
-    // lower pad is ratio
-    fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before defining pad2
-    fOutTH1DRatioPads[th1d]->Draw(); // draw lower pad
-    fOutTH1DRatioPads[th1d]->cd(); // lower pad is current pad
-    fOutRatioTH1DHists[th1d]->GetXaxis()->SetNdivisions(505);
-    fOutRatioTH1DHists[th1d]->GetYaxis()->SetNdivisions(505);
-    fOutTH1DRatioPads[th1d]->Update();
-    fOutRatioTH1DHists[th1d]->Draw("EP"); // lower pad is current pad
-    TLine ratioline(fOutTH1DRatioPads[th1d]->GetUxmin(),1.0,fOutTH1DRatioPads[th1d]->GetUxmax(),1.0);
-    ratioline.SetLineColor(kRed);
-    ratioline.SetLineWidth(2);
-    ratioline.Draw("SAME");
-
-    // save the overplot+ratio with log scale
-    fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
-    fOutTH1DStackPads[th1d]->SetLogy(1); //  set logy on this pad
-    fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
-    StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
-    fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s/%s_log.%s",fOutDir.Data(),fOutName.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
-    fOutFile->cd();
-    fOutTH1DCanvases[th1d]->Write(Form("%s_log",fTH1DNames[th1d].Data()));
-
-    // save the overplot+ratio without log scale
-    fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
-    fOutTH1DStackPads[th1d]->SetLogy(0); //  set no logy on this pad
-    fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
-    StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
-    fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s/%s_lin.%s",fOutDir.Data(),fOutName.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
-    fOutFile->cd();
-    fOutTH1DCanvases[th1d]->Write(Form("%s_lin",fTH1DNames[th1d].Data()));
-  }
-}
-
-void StackPlots::OpenInputFiles() {
-  // open input files into TFileVec --> data 
-  fDataFiles.resize(fNData);
-  for (UInt_t data = 0; data < fNData; data++) {
-    TString datafile = Form("%s/%s_data/plots.root",fOutDir.Data(),fDataNames[data].Data());
-    fDataFiles[data] = TFile::Open(datafile.Data());
-    CheckValidFile(fDataFiles[data],datafile);
-  }
-
-  // open input files into TFileVec --> mc 
-  fMCFiles.resize(fNMC);
-  for (UInt_t mc = 0; mc < fNMC; mc++) {
-    TString mcfile = Form("%s/%s_MC/plots.root",fOutDir.Data(),fMCNames[mc].Data());
-    fMCFiles[mc] = TFile::Open(mcfile.Data());
-    CheckValidFile(fMCFiles[mc],mcfile);
-  }
-}
-
-void StackPlots::InitInputPlots() {
-  // init input th1d hists
-  fInDataTH1DHists.resize(fNTH1D);
-  fInMCTH1DHists.resize(fNTH1D);
-  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ // loop over double hists
-    // data first
-    fInDataTH1DHists[th1d].resize(fNData); 
-    for (UInt_t data = 0; data < fNData; data++) { // init data double hists
-      fInDataTH1DHists[th1d][data] = (TH1D*)fDataFiles[data]->Get(Form("%s",fTH1DNames[th1d].Data()));
-      CheckValidTH1D(fInDataTH1DHists[th1d][data],fTH1DNames[th1d],fDataFiles[data]->GetName());
-    }
-
-    // mc second
-    fInMCTH1DHists[th1d].resize(fNMC); 
-    for (UInt_t mc = 0; mc < fNMC; mc++) { // init mc double hists
-      fInMCTH1DHists[th1d][mc] = (TH1D*)fMCFiles[mc]->Get(Form("%s",fTH1DNames[th1d].Data()));
-      CheckValidTH1D(fInMCTH1DHists[th1d][mc],fTH1DNames[th1d],fMCFiles[mc]->GetName());
-      fInMCTH1DHists[th1d][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
-      fInMCTH1DHists[th1d][mc]->SetLineColor(fColorMap[fMCNames[mc]]);
-    }
-  }
-}
-
-void StackPlots::InitOutputPlots() {
-  // init output hists and sumw2 for Data + MC -- init output stacks for MC
-
-  // th1D hists
-  fOutDataTH1DHists.resize(fNTH1D); // make enough space for data double hists
-  fOutMCTH1DHists.resize(fNTH1D); // make enough space for MC double hists
-  fOutMCTH1DStacks.resize(fNTH1D); // same with stack 
-  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
-    fOutMCTH1DStacks[th1d] = new THStack("","");
-  }
-}
-
-void StackPlots::InitOutputLegends() {
-  // init legends
-
-  // th1D hists
-  fTH1DLegends.resize(fNTH1D);
-  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
-    fTH1DLegends[th1d] = new TLegend(0.75,0.8,0.85,0.93);
-  }
-}
-
-void StackPlots::InitRatioPlots() {
-  // init ratios 
-
-  // th1d hists
-  fOutRatioTH1DHists.resize(fNTH1D);
-}
-
-void StackPlots::InitOutputCanvPads() {
-  // init canvases + pads
-
-  // th1d
-  fOutTH1DCanvases.resize(fNTH1D);
-  fOutTH1DStackPads.resize(fNTH1D);
-  fOutTH1DRatioPads.resize(fNTH1D);
-  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
-    fOutTH1DCanvases[th1d] = new TCanvas(fTH1DNames[th1d].Data(),"");
-    fOutTH1DCanvases[th1d]->cd();
     
-    fOutTH1DStackPads[th1d] = new TPad("", "", 0, 0.3, 1.0, 0.99);
-    fOutTH1DStackPads[th1d]->SetBottomMargin(0); // Upper and lower plot are joined
-    
-    fOutTH1DRatioPads[th1d] = new TPad("", "", 0, 0.05, 1.0, 0.3);
-    fOutTH1DRatioPads[th1d]->SetTopMargin(0);
-    fOutTH1DRatioPads[th1d]->SetBottomMargin(0.2);
+    // draw first with  log scale
+    Bool_t isLogY = true;
+    StackPlots::DrawUpperPad(th1d,isLogY); // upper pad is stack
+    StackPlots::DrawLowerPad(th1d); // lower pad is ratio
+    StackPlots::SaveCanvas(th1d,isLogY);  // now save the canvas, w/ logy
+
+    // draw second with lin scale
+    isLogY = false;
+    StackPlots::DrawUpperPad(th1d,isLogY); // upper pad is stack
+    StackPlots::DrawLowerPad(th1d); // lower pad is ratio
+    StackPlots::SaveCanvas(th1d,isLogY); // now save the canvas, w/o logy
   }
+}
+
+void StackPlots::DrawUpperPad(const UInt_t th1d, const Bool_t isLogY) {    
+  fOutTH1DCanvases[th1d]->cd();
+  fOutTH1DStackPads[th1d]->Draw(); // draw upper pad   
+  fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
+  fOutDataTH1DHists[th1d]->SetStats(0); // No statistics on upper plot
+  
+  // set maximum by comparing added mc vs added data
+  Double_t max = StackPlots::GetMaximum(th1d);
+
+  if (isLogY) {
+    fOutDataTH1DHists[th1d]->SetMaximum(max*2.0);
+  }
+  else {
+    fOutDataTH1DHists[th1d]->SetMaximum(max*1.05);
+  }
+
+  // now draw the plots for upper pad in absurd order because ROOT is dumb
+  fOutDataTH1DHists[th1d]->Draw("PE"); // draw first so labels appear
+  fOutMCTH1DStacks[th1d]->Draw("HIST SAME"); 
+  fOutTH1DStackPads[th1d]->RedrawAxis("SAME"); // stack kills axis
+  fOutDataTH1DHists[th1d]->Draw("PE SAME"); // redraw data
+  fTH1DLegends[th1d]->Draw("SAME");
+}
+
+Double_t StackPlots::GetMaximum(const UInt_t th1d) {
+  Double_t max = -100;
+  if (fOutDataTH1DHists[th1d]->GetBinContent(fOutDataTH1DHists[th1d]->GetMaximumBin()) > fOutMCTH1DHists[th1d]->GetBinContent(fOutMCTH1DHists[th1d]->GetMaximumBin())) {
+    max = fOutDataTH1DHists[th1d]->GetBinContent(fOutDataTH1DHists[th1d]->GetMaximumBin());
+  }
+  else {
+    max = fOutMCTH1DHists[th1d]->GetBinContent(fOutMCTH1DHists[th1d]->GetMaximumBin());
+  }
+  return max;
+}
+
+void StackPlots::DrawLowerPad(const UInt_t th1d) {    
+  fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before defining pad2
+  fOutTH1DRatioPads[th1d]->Draw(); // draw lower pad
+  fOutTH1DRatioPads[th1d]->cd(); // lower pad is current pad
+  fOutRatioTH1DHists[th1d]->GetYaxis()->SetNdivisions(505);
+  fOutRatioTH1DHists[th1d]->Draw("EP"); // draw first so line can appear
+
+  // make red line at ratio of 1.0
+  TLine ratioline(fOutRatioTH1DHists[th1d]->GetXaxis()->GetXmin(),1.0,fOutRatioTH1DHists[th1d]->GetXaxis()->GetXmax(),1.0);
+  ratioline.SetLineColor(kRed);
+  ratioline.SetLineWidth(2);
+  ratioline.Draw("SAME");
+  fOutRatioTH1DHists[th1d]->Draw("EP SAME"); // redraw to go over line
+}
+
+void StackPlots::SaveCanvas(const UInt_t th1d, const Bool_t isLogY){
+  TString suffix;
+
+  if (isLogY) {
+    suffix = "log";
+  }
+  else {
+    suffix = "lin";
+  }
+
+  // cd to upper pad to make it log or not
+  fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
+  fOutTH1DStackPads[th1d]->SetLogy(isLogY); //  set no logy on this pad
+  fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
+  StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
+  fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s/%s_%s.%s",fOutDir.Data(),fOutName.Data(),fTH1DNames[th1d].Data(),suffix.Data(),fOutType.Data()));
+  fOutFile->cd();
+  fOutTH1DCanvases[th1d]->Write(Form("%s_%s",fTH1DNames[th1d].Data(),suffix.Data()));
 }
 
 void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from margaret
@@ -386,6 +331,96 @@ void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from 
     latex.SetTextSize(extraTextSize*t);
     latex.SetTextAlign(align_);
     latex.DrawLatex(posX_, posY_, extraText);      
+  }
+}
+
+void StackPlots::OpenInputFiles() {
+  // open input files into TFileVec --> data 
+  fDataFiles.resize(fNData);
+  for (UInt_t data = 0; data < fNData; data++) {
+    TString datafile = Form("%s/%s_data/plots.root",fOutDir.Data(),fDataNames[data].Data());
+    fDataFiles[data] = TFile::Open(datafile.Data());
+    CheckValidFile(fDataFiles[data],datafile);
+  }
+
+  // open input files into TFileVec --> mc 
+  fMCFiles.resize(fNMC);
+  for (UInt_t mc = 0; mc < fNMC; mc++) {
+    TString mcfile = Form("%s/%s_MC/plots.root",fOutDir.Data(),fMCNames[mc].Data());
+    fMCFiles[mc] = TFile::Open(mcfile.Data());
+    CheckValidFile(fMCFiles[mc],mcfile);
+  }
+}
+
+void StackPlots::InitInputPlots() {
+  // init input th1d hists
+  fInDataTH1DHists.resize(fNTH1D);
+  fInMCTH1DHists.resize(fNTH1D);
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ // loop over double hists
+    // data first
+    fInDataTH1DHists[th1d].resize(fNData); 
+    for (UInt_t data = 0; data < fNData; data++) { // init data double hists
+      fInDataTH1DHists[th1d][data] = (TH1D*)fDataFiles[data]->Get(Form("%s",fTH1DNames[th1d].Data()));
+      CheckValidTH1D(fInDataTH1DHists[th1d][data],fTH1DNames[th1d],fDataFiles[data]->GetName());
+    }
+
+    // mc second
+    fInMCTH1DHists[th1d].resize(fNMC); 
+    for (UInt_t mc = 0; mc < fNMC; mc++) { // init mc double hists
+      fInMCTH1DHists[th1d][mc] = (TH1D*)fMCFiles[mc]->Get(Form("%s",fTH1DNames[th1d].Data()));
+      CheckValidTH1D(fInMCTH1DHists[th1d][mc],fTH1DNames[th1d],fMCFiles[mc]->GetName());
+      fInMCTH1DHists[th1d][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
+      fInMCTH1DHists[th1d][mc]->SetLineColor(fColorMap[fMCNames[mc]]);
+    }
+  }
+}
+
+void StackPlots::InitOutputPlots() {
+  // init output hists and sumw2 for Data + MC -- init output stacks for MC
+
+  // th1D hists
+  fOutDataTH1DHists.resize(fNTH1D); // make enough space for data double hists
+  fOutMCTH1DHists.resize(fNTH1D); // make enough space for MC double hists
+  fOutMCTH1DStacks.resize(fNTH1D); // same with stack 
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    fOutMCTH1DStacks[th1d] = new THStack("","");
+  }
+}
+
+void StackPlots::InitOutputLegends() {
+  // init legends
+
+  // th1D hists
+  fTH1DLegends.resize(fNTH1D);
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    fTH1DLegends[th1d] = new TLegend(0.75,0.8,0.85,0.93);
+  }
+}
+
+void StackPlots::InitRatioPlots() {
+  // init ratios 
+
+  // th1d hists
+  fOutRatioTH1DHists.resize(fNTH1D);
+}
+
+void StackPlots::InitOutputCanvPads() {
+  // init canvases + pads
+
+  // th1d
+  fOutTH1DCanvases.resize(fNTH1D);
+  fOutTH1DStackPads.resize(fNTH1D);
+  fOutTH1DRatioPads.resize(fNTH1D);
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    fOutTH1DCanvases[th1d] = new TCanvas(fTH1DNames[th1d].Data(),"");
+    fOutTH1DCanvases[th1d]->cd();
+    
+    fOutTH1DStackPads[th1d] = new TPad("", "", 0, 0.3, 1.0, 0.99);
+    fOutTH1DStackPads[th1d]->SetBottomMargin(0); // Upper and lower plot are joined
+    
+    fOutTH1DRatioPads[th1d] = new TPad("", "", 0, 0.05, 1.0, 0.3);
+    fOutTH1DRatioPads[th1d]->SetTopMargin(0);
+    fOutTH1DRatioPads[th1d]->SetBottomMargin(0.2);
   }
 }
 
