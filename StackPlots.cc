@@ -1,7 +1,6 @@
 #include "StackPlots.hh"
-#include "Common.hh"
 
-StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const TString outname, const TString outtype){
+StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype){
   // input data members
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     if ((*iter).second) { // isMC == true
@@ -44,10 +43,8 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const TString
   // define color map + title map
   fSampleTitleMap["zmumu"] = "Z #rightarrow #mu^{+} #mu^{-}";
   fSampleTitleMap["ttbar"] = "t#bar{t}";
+  fColorMap = colorMap;
 
-  fColorMap["zmumu"] = kCyan;
-  fColorMap["ttbar"] = kRed+2;
- 
   // with all that defined, initialize everything in constructor
 
   StackPlots::OpenInputFiles();
@@ -59,6 +56,36 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const TString
 }
 
 StackPlots::~StackPlots(){
+  // delete all pointers
+  for (UInt_t data = 0; data < fNData; data++) {
+    delete fDataFiles[data];
+  }
+
+  for (UInt_t mc = 0; mc < fNMC; mc++) {
+    delete fMCFiles[mc];
+  }
+
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    delete fOutDataTH1DHists[th1d];
+    delete fOutMCTH1DHists[th1d];
+    delete fOutMCTH1DStacks[th1d];
+
+    delete fTH1DLegends[th1d];
+    delete fOutRatioTH1DHists[th1d];
+    delete fOutTH1DCanvases[th1d];
+    delete fOutTH1DStackPads[th1d];
+    delete fOutTH1DRatioPads[th1d];
+    
+    for (UInt_t data = 0; data < fNData; data++) {
+      delete fInDataTH1DHists[th1d][data];
+    }
+
+    for (UInt_t mc = 0; mc < fNMC; mc++) {
+      delete fInMCTH1DHists[th1d][mc];
+    }
+  }
+
+  delete fOutFile;
 }
 
 void StackPlots::OpenInputFiles() {
@@ -233,7 +260,7 @@ void StackPlots::MakeOutputCanvas() {
     fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
     fOutTH1DStackPads[th1d]->SetLogy(1); //  set logy on this pad
     fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
-    StackPlots::CMS_Lumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
+    StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
     fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s_log.%s",fOutName.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
     fOutFile->cd();
     fOutTH1DCanvases[th1d]->Write(Form("%s_log",fTH1DNames[th1d].Data()));
@@ -242,14 +269,14 @@ void StackPlots::MakeOutputCanvas() {
     fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
     fOutTH1DStackPads[th1d]->SetLogy(0); //  set no logy on this pad
     fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
-    StackPlots::CMS_Lumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
+    StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
     fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s_lin.%s",fOutName.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
     fOutFile->cd();
     fOutTH1DCanvases[th1d]->Write(Form("%s_lin",fTH1DNames[th1d].Data()));
   }
 }
 
-void StackPlots::CMS_Lumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from margaret
+void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from margaret
   TString cmsText      = "CMS";
   Double_t cmsTextFont = 61;  // default is helvetic-bold
   

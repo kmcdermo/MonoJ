@@ -1,53 +1,42 @@
-#include "TROOT.h"
-#include "TStyle.h"
-#include "TSystem.h"
+#ifndef _stackplots_
+#define _stackplots_
 
+#include "Typedef.hh"
+
+#include "TROOT.h"
+#include "TSystem.h"
+#include "TStyle.h"
 #include "TFile.h"
 #include "TTree.h"
+#include "TPad.h"
 #include "TCanvas.h"
 #include "TH1D.h"
-#include "TH1I.h"
-
-#include "TString.h"
-#include "TStyle.h"
-#include "TColor.h"
-#include "TLatex.h"
-
-#include "TPad.h"
 #include "THStack.h"
 #include "TLegend.h"
+#include "TColor.h"
 #include "TLine.h"
+#include "TLatex.h"
+#include "TString.h"
 
 #include <utility>
-#include <map>
 #include <vector>
+#include <map>
 #include <iostream>
 
-typedef std::vector<TString>  TStrVec;
-
-typedef std::pair<TString,Bool_t> SamplePair;
-typedef std::vector<SamplePair> SamplePairVec;
-typedef SamplePairVec::iterator SamplePairVecIter;
-
-typedef std::vector<TFile*> TFileVec;
-typedef std::vector<TH1D*> TH1DVec;
-typedef std::vector<TH1DVec> TH1DVecVec;
-typedef std::vector<TH1I*> TH1IVec;
-typedef std::vector<TH1IVec> TH1IVecVec;
+typedef std::vector<TFile*>   TFileVec;
+typedef std::vector<TH1D*>    TH1DVec;
+typedef std::vector<TH1DVec>  TH1DVecVec;
 typedef std::vector<THStack*> THStackVec;
 typedef std::vector<TLegend*> TLegVec;
 typedef std::vector<TCanvas*> TCanvVec;
-typedef std::vector<TPad*> TPadVec;
-
-typedef std::map<TString,Color_t> ColorMap;
+typedef std::vector<TPad*>    TPadVec;
 
 typedef std::map<TString,TString> TStrMap;
 
 class StackPlots
 {
 public:
-  StackPlots(const SamplePairVec Samples, const Double_t lumi, const TString outname, const TString outtype);
-  ~StackPlots();
+  StackPlots(const SamplePairVec Samples, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype);
   
   void OpenInputFiles();
   void InitInputPlots();
@@ -61,7 +50,9 @@ public:
   void MakeStackPlots();
   void MakeRatioPlots();
   void MakeOutputCanvas();
-  void CMS_Lumi(TCanvas *& pad, const Int_t iPosX);
+  void CMSLumi(TCanvas *& pad, const Int_t iPosX);
+
+  ~StackPlots();
 
 private:
   TStrVec fDataNames;
@@ -97,6 +88,7 @@ private:
   TString fOutType;
 
   TStrMap  fSampleTitleMap;
-
   ColorMap fColorMap;
 };
+
+#endif
