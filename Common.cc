@@ -1,4 +1,4 @@
-#include "Typedef.hh"
+#include "Common.hh"
 
 void MakeOutDirectory(TString outdir){
   FileStat_t dummyFileStat;

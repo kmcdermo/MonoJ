@@ -1,7 +1,7 @@
 #ifndef _analysis_
 #define _analysis_
 
-#include "Typedef.hh"
+#include "Common.hh"
 
 #include "TROOT.h"
 #include "TStyle.h"

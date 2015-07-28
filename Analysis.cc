@@ -5,7 +5,7 @@ Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const Color
   fSample = samplePair.first;
   fIsMC   = samplePair.second;
   fLumi   = lumi;
-  
+
   //Get File
   TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
   if (fIsMC){ // MC

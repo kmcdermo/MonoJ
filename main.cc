@@ -1,9 +1,13 @@
 #include <iostream>
 #include "Analysis.hh"
 #include "StackPlots.hh"
-#include "Typedef.hh"
+#include "Common.hh"
+#include "TROOT.h"
 
 int main(){
+  // set TDR Style
+  gROOT->ProcessLine(".x ~/.rootlogon.C"); // hack way to set root logon macro ... could put this into Typedef.hh 
+  
   // Variables needed in all functions for plotting and the like so it is universal
   
   // Color for MC Stacks
@@ -24,7 +28,7 @@ int main(){
   TString outtype = "png";
 
   // Allow user to set output directory for whole project --> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "stack";
+  TString outdir = "firststudies";
 
   // First make total output directory ... sub directories made inside objects
   MakeOutDirectory(outdir);
@@ -34,7 +38,7 @@ int main(){
     Analysis sample((*iter),lumi,colorMap,outdir,outtype);
     sample.DoAnalysis();
   }
-
+  
   std::cout << "Done with Analysis ... now make stack plots" << std::endl;
 
   StackPlots * stacker = new StackPlots(Samples,lumi,colorMap,outdir,outtype);

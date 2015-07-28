@@ -1,7 +1,7 @@
 #ifndef _stackplots_
 #define _stackplots_
 
-#include "Typedef.hh"
+#include "Common.hh"
 
 #include "TROOT.h"
 #include "TSystem.h"
@@ -84,6 +84,7 @@ private:
   TPadVec  fOutTH1DRatioPads;
 
   TString fOutDir;
+  TString fOutName;
   TFile * fOutFile;
   TString fOutType;
 
