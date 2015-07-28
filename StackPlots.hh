@@ -39,9 +39,9 @@ typedef std::vector<TLegend*> TLegVec;
 typedef std::vector<TCanvas*> TCanvVec;
 typedef std::vector<TPad*> TPadVec;
 
-typedef std::map<TString,TString> TStrMap;
-
 typedef std::map<TString,Color_t> ColorMap;
+
+typedef std::map<TString,TString> TStrMap;
 
 class StackPlots
 {
@@ -66,49 +66,37 @@ public:
 private:
   TStrVec fDataNames;
   TStrVec fMCNames;
-  TStrVec fDHistNames;
-  TStrVec fIHistNames;
+  TStrVec fTH1DNames;
 
   Double_t fLumi;
   
   UInt_t fNData;
   UInt_t fNMC;
-  UInt_t fNDHists;
-  UInt_t fNIHists;
+  UInt_t fNTH1D;
 
   TFileVec fDataFiles;
   TFileVec fMCFiles;
 
-  ColorMap fColorMap;
+  TH1DVecVec fInDataTH1DHists;
+  TH1DVecVec fInMCTH1DHists;
 
-  TH1DVecVec fInDataDHists;
-  TH1DVecVec fInMCDHists;
-  TH1IVecVec fInDataIHists;
-  TH1IVecVec fInMCIHists;
+  TH1DVec    fOutDataTH1DHists;
+  TH1DVec    fOutMCTH1DHists;
+  THStackVec fOutMCTH1DStacks;
 
-  TH1DVec fOutDataDHists;
-  TH1DVec fOutMCDHists;
-  THStackVec fOutMCDStacks;
-  TH1IVec fOutDataIHists;
-  TH1IVec fOutMCIHists;
-  THStackVec fOutMCIStacks;
+  TLegVec fTH1DLegends;
 
-  TLegVec fDLegend;
-  TLegVec fILegend;
+  TH1DVec fOutRatioTH1DHists;  
 
-  TH1DVec fOutRatioDHists;  
-  TH1IVec fOutRatioIHists;
-
-  TCanvVec fOutDCanvas;
-  TPadVec  fOutDStackPad;
-  TPadVec  fOutDRatioPad;
-  TCanvVec fOutICanvas;
-  TPadVec  fOutIStackPad;
-  TPadVec  fOutIRatioPad;
+  TCanvVec fOutTH1DCanvases;
+  TPadVec  fOutTH1DStackPads;
+  TPadVec  fOutTH1DRatioPads;
 
   TString fOutName;
   TFile * fOutFile;
   TString fOutType;
 
   TStrMap  fSampleTitleMap;
+
+  ColorMap fColorMap;
 };

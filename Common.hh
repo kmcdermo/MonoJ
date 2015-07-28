@@ -7,6 +7,9 @@
 
 #include <iostream>
 
+// global variables
+// global functions
+
 void MakeOutDirectory(TString outdir){
   FileStat_t dummyFileStat;
   if (gSystem->GetPathInfo(outdir.Data(), dummyFileStat) == 1){

@@ -1,6 +1,5 @@
 #include "StackPlots.hh"
 #include "Common.hh"
-#include "TGaxis.h"
 
 StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const TString outname, const TString outtype){
   // input data members
@@ -48,7 +47,7 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const TString
 
   fColorMap["zmumu"] = kCyan;
   fColorMap["ttbar"] = kRed+2;
-
+ 
   // with all that defined, initialize everything in constructor
 
   StackPlots::OpenInputFiles();
@@ -65,10 +64,10 @@ StackPlots::~StackPlots(){
 void StackPlots::OpenInputFiles() {
   // open input files into TFileVec --> data 
   fDataFiles.resize(fNData);
-  for (UInt_t dt = 0; dt < fNData; dt++) {
-    TString datafile = Form("%s_data/%s_data_plots.root",fDataNames[dt].Data(),fDataNames[dt].Data());
-    fDataFiles[dt] = TFile::Open(datafile.Data());
-    CheckValidFile(fDataFiles[dt],datafile);
+  for (UInt_t data = 0; data < fNData; data++) {
+    TString datafile = Form("%s_data/%s_data_plots.root",fDataNames[data].Data(),fDataNames[data].Data());
+    fDataFiles[data] = TFile::Open(datafile.Data());
+    CheckValidFile(fDataFiles[data],datafile);
   }
 
   // open input files into TFileVec --> mc 
@@ -82,23 +81,23 @@ void StackPlots::OpenInputFiles() {
 
 void StackPlots::InitInputPlots() {
   // init input th1d hists
-  fInDataTH1Ds.resize(fNTH1D);
-  fInMCTH1Ds.resize(fNTH1D);
-  for (UInt_t ith1d = 0; ith1d < fNTH1D; ith1d++){ // loop over double hists
+  fInDataTH1DHists.resize(fNTH1D);
+  fInMCTH1DHists.resize(fNTH1D);
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ // loop over double hists
     // data first
-    fInDataTH1D[ith1d].resize(fNData); 
-    for (UInt_t dt = 0; dt < fNData; dt++) { // init data double hists
-      fInDataTH1Ds[ith1d][dt] = (TH1D*)fDataFiles[dt]->Get(Form("%s",fTH1DNames[ith1d].Data()));
-      CheckValidTH1D(fInDataTH1Ds[ith1d][dt],fTH1DNames[ith1d],fDataFiles[dt]->GetName());
+    fInDataTH1DHists[th1d].resize(fNData); 
+    for (UInt_t data = 0; data < fNData; data++) { // init data double hists
+      fInDataTH1DHists[th1d][data] = (TH1D*)fDataFiles[data]->Get(Form("%s",fTH1DNames[th1d].Data()));
+      CheckValidTH1D(fInDataTH1DHists[th1d][data],fTH1DNames[th1d],fDataFiles[data]->GetName());
     }
 
     // mc second
-    fInMCTH1Ds[ith1d].resize(fNMC); 
+    fInMCTH1DHists[th1d].resize(fNMC); 
     for (UInt_t mc = 0; mc < fNMC; mc++) { // init mc double hists
-      fInMCTH1Ds[ith1d][mc] = (TH1D*)fMCFiles[mc]->Get(Form("%s",fTH1DNames[ith1d].Data()));
-      CheckValidTH1D(fInMCTH1Ds[ith1d][mc],fTH1DNames[ith1d],fMCFiles[mc]->GetName());
-      fInMCTH1Ds[ith1d][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
-      fInMCTH1Ds[ith1d][mc]->SetLineColor(fColorMap[fMCNames[mc]]);
+      fInMCTH1DHists[th1d][mc] = (TH1D*)fMCFiles[mc]->Get(Form("%s",fTH1DNames[th1d].Data()));
+      CheckValidTH1D(fInMCTH1DHists[th1d][mc],fTH1DNames[th1d],fMCFiles[mc]->GetName());
+      fInMCTH1DHists[th1d][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
+      fInMCTH1DHists[th1d][mc]->SetLineColor(fColorMap[fMCNames[mc]]);
     }
   }
 }
@@ -107,11 +106,11 @@ void StackPlots::InitOutputPlots() {
   // init output hists and sumw2 for Data + MC -- init output stacks for MC
 
   // th1D hists
-  fOutDataTH1Ds.resize(fNTH1D); // make enough space for data double hists
-  fOutMCDHists.resize(fNTH1D); // make enough space for MC double hists
-  fOutMCDStacks.resize(fNTH1D); // same with stack 
-  for (UInt_t ith1d = 0; ith1d < fNTH1D; ith1d++){
-    fOutMCDStacks[ith1d] = new THStack("","");
+  fOutDataTH1DHists.resize(fNTH1D); // make enough space for data double hists
+  fOutMCTH1DHists.resize(fNTH1D); // make enough space for MC double hists
+  fOutMCTH1DStacks.resize(fNTH1D); // same with stack 
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    fOutMCTH1DStacks[th1d] = new THStack("","");
   }
 }
 
@@ -119,9 +118,9 @@ void StackPlots::InitOutputLegends() {
   // init legends
 
   // th1D hists
-  fDLegend.resize(fNTH1D);
-  for (UInt_t ith1d = 0; ith1d < fNTH1D; ith1d++){
-    fDLegend[ith1d] = new TLegend(0.75,0.8,0.85,0.93);
+  fTH1DLegends.resize(fNTH1D);
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    fTH1DLegends[th1d] = new TLegend(0.75,0.8,0.85,0.93);
   }
 }
 
@@ -129,26 +128,26 @@ void StackPlots::InitRatioPlots() {
   // init ratios 
 
   // th1d hists
-  fOutRatioDHists.resize(fNTH1D);
+  fOutRatioTH1DHists.resize(fNTH1D);
 }
 
 void StackPlots::InitOutputCanvPads() {
   // init canvases + pads
 
   // th1d
-  fOutDCanvas.resize(fNTH1D);
-  fOutDStackPad.resize(fNTH1D);
-  fOutDRatioPad.resize(fNTH1D);
-  for (UInt_t ith1d = 0; ith1d < fNTH1D; ith1d++){
-    fOutDCanvas[ith1d] = new TCanvas(fTH1DNames[ith1d].Data(),"");
-    fOutDCanvas[ith1d]->cd();
+  fOutTH1DCanvases.resize(fNTH1D);
+  fOutTH1DStackPads.resize(fNTH1D);
+  fOutTH1DRatioPads.resize(fNTH1D);
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    fOutTH1DCanvases[th1d] = new TCanvas(fTH1DNames[th1d].Data(),"");
+    fOutTH1DCanvases[th1d]->cd();
     
-    fOutDStackPad[ith1d] = new TPad("", "", 0, 0.3, 1.0, 0.99);
-    fOutDStackPad[ith1d]->SetBottomMargin(0); // Upper and lower plot are joined
+    fOutTH1DStackPads[th1d] = new TPad("", "", 0, 0.3, 1.0, 0.99);
+    fOutTH1DStackPads[th1d]->SetBottomMargin(0); // Upper and lower plot are joined
     
-    fOutDRatioPad[ith1d] = new TPad("", "", 0, 0.05, 1.0, 0.3);
-    fOutDRatioPad[ith1d]->SetTopMargin(0);
-    fOutDRatioPad[ith1d]->SetBottomMargin(0.2);
+    fOutTH1DRatioPads[th1d] = new TPad("", "", 0, 0.05, 1.0, 0.3);
+    fOutTH1DRatioPads[th1d]->SetTopMargin(0);
+    fOutTH1DRatioPads[th1d]->SetBottomMargin(0.2);
   }
 }
 
@@ -160,30 +159,30 @@ void StackPlots::DoStacks() {
 
 void StackPlots::MakeStackPlots(){
   // copy th1d plots into output hists/stacks
-  for (UInt_t ith1d = 0; ith1d < fNTH1D; ith1d++){ //th1d hists
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ //th1d hists
     // data, copy + add only
-    for (UInt_t dt = 0; dt < fNData; dt++) {
-      if (dt == 0){
-	fOutDataTH1Ds[ith1d] = (TH1D*)fInDataTH1Ds[ith1d][dt]->Clone();
+    for (UInt_t data = 0; data < fNData; data++) {
+      if (data == 0){
+	fOutDataTH1DHists[th1d] = (TH1D*)fInDataTH1DHists[th1d][data]->Clone();
       }
       else{
-	fOutDataTH1Ds[ith1d]->Add(fInDataTH1Ds[ith1d][dt]);
+	fOutDataTH1DHists[th1d]->Add(fInDataTH1DHists[th1d][data]);
       }
     } // end loop over data samples
-    fDLegend[ith1d]->AddEntry(fOutDataTH1Ds[ith1d],"Data","pl"); // add data entry to legend
+    fTH1DLegends[th1d]->AddEntry(fOutDataTH1DHists[th1d],"Data","pl"); // add data entry to legend
 
     // mc, copy + add to hists, add to tstack
     for (UInt_t mc = 0; mc < fNMC; mc++) {
       if (mc == 0){ // add first for ratio
-	fOutMCDHists[ith1d] = (TH1D*)fInMCTH1Ds[ith1d][mc]->Clone();
+	fOutMCTH1DHists[th1d] = (TH1D*)fInMCTH1DHists[th1d][mc]->Clone();
       }
       else{ // add first for ratio
-	fOutMCDHists[ith1d]->Add(fInMCTH1Ds[ith1d][mc]);
+	fOutMCTH1DHists[th1d]->Add(fInMCTH1DHists[th1d][mc]);
       }
       //  just add input to stacks
-      fOutMCDStacks[ith1d]->Add(fInMCTH1Ds[ith1d][mc]);
-      fDLegend[ith1d]->AddEntry(fInMCTH1Ds[ith1d][mc],fSampleTitleMap[fMCNames[mc]],"lf");
-      //      std::cout << "supposed title: " << fInMCTH1Ds[ith1d][mc]->GetYaxis()->GetTitle() << std::endl;
+      fOutMCTH1DStacks[th1d]->Add(fInMCTH1DHists[th1d][mc]);
+      fTH1DLegends[th1d]->AddEntry(fInMCTH1DHists[th1d][mc],fSampleTitleMap[fMCNames[mc]],"lf");
+      //      std::cout << "supposed title: " << fInMCTH1DHists[th1d][mc]->GetYaxis()->GetTitle() << std::endl;
     } // end loop over mc samples
   } // end loop over th1d plots
 }
@@ -192,14 +191,14 @@ void StackPlots::MakeRatioPlots() {
   // Define the ratio plot
   
   // th1d
-  for (UInt_t ith1d = 0; ith1d < fNTH1D; ith1d++){ // double hists
-    fOutRatioDHists[ith1d] = (TH1D*)fOutDataTH1Ds[ith1d]->Clone();
-    fOutRatioDHists[ith1d]->Divide(fOutMCDHists[ith1d]);  
-    fOutRatioDHists[ith1d]->SetLineColor(kBlack);
-    fOutRatioDHists[ith1d]->SetMinimum(0.0);  // Define Y ..
-    fOutRatioDHists[ith1d]->SetMaximum(2.0); // .. range
-    fOutRatioDHists[ith1d]->SetStats(0);      // No statistics on lower plot
-    fOutRatioDHists[ith1d]->GetYaxis()->SetTitle("Data/MC");
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ // double hists
+    fOutRatioTH1DHists[th1d] = (TH1D*)fOutDataTH1DHists[th1d]->Clone();
+    fOutRatioTH1DHists[th1d]->Divide(fOutMCTH1DHists[th1d]);  
+    fOutRatioTH1DHists[th1d]->SetLineColor(kBlack);
+    fOutRatioTH1DHists[th1d]->SetMinimum(0.0);  // Define Y ..
+    fOutRatioTH1DHists[th1d]->SetMaximum(2.0); // .. range
+    fOutRatioTH1DHists[th1d]->SetStats(0);      // No statistics on lower plot
+    fOutRatioTH1DHists[th1d]->GetYaxis()->SetTitle("Data/MC");
   }
 }
 
@@ -207,46 +206,46 @@ void StackPlots::MakeOutputCanvas() {
   // make output canvases
   
   // th1d
-  for (UInt_t ith1d = 0; ith1d < fNTH1D; ith1d++){ // double hists
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ // double hists
     //upper plot is stack
-    fOutDCanvas[ith1d]->cd();
-    fOutDStackPad[ith1d]->Draw(); // draw upper pad   
-    fOutDStackPad[ith1d]->cd(); // upper pad is current pad
-    fOutDataTH1Ds[ith1d]->SetStats(0); // No statistics on upper plot
-    fOutMCDStacks[ith1d]->Draw("HIST");
-    fOutDataTH1Ds[ith1d]->Draw("PE SAME");
-    fDLegend[ith1d]->Draw("SAME");
+    fOutTH1DCanvases[th1d]->cd();
+    fOutTH1DStackPads[th1d]->Draw(); // draw upper pad   
+    fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
+    fOutDataTH1DHists[th1d]->SetStats(0); // No statistics on upper plot
+    fOutMCTH1DStacks[th1d]->Draw("HIST");
+    fOutDataTH1DHists[th1d]->Draw("PE SAME");
+    fTH1DLegends[th1d]->Draw("SAME");
 
     // lower pad is ratio
-    fOutDCanvas[ith1d]->cd();          // Go back to the main canvas before defining pad2
-    fOutDRatioPad[ith1d]->Draw(); // draw lower pad
-    fOutDRatioPad[ith1d]->cd(); // lower pad is current pad
-    fOutRatioDHists[ith1d]->GetXaxis()->SetNdivisions(505);
-    fOutRatioDHists[ith1d]->GetYaxis()->SetNdivisions(505);
-    fOutDRatioPad[ith1d]->Update();
-    fOutRatioDHists[ith1d]->Draw("EP"); // lower pad is current pad
-    TLine ratioline(fOutDRatioPad[ith1d]->GetUxmin(),1.0,fOutDRatioPad[ith1d]->GetUxmax(),1.0);
+    fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before defining pad2
+    fOutTH1DRatioPads[th1d]->Draw(); // draw lower pad
+    fOutTH1DRatioPads[th1d]->cd(); // lower pad is current pad
+    fOutRatioTH1DHists[th1d]->GetXaxis()->SetNdivisions(505);
+    fOutRatioTH1DHists[th1d]->GetYaxis()->SetNdivisions(505);
+    fOutTH1DRatioPads[th1d]->Update();
+    fOutRatioTH1DHists[th1d]->Draw("EP"); // lower pad is current pad
+    TLine ratioline(fOutTH1DRatioPads[th1d]->GetUxmin(),1.0,fOutTH1DRatioPads[th1d]->GetUxmax(),1.0);
     ratioline.SetLineColor(kRed);
     ratioline.SetLineWidth(2);
     ratioline.Draw("SAME");
 
     // save the overplot+ratio with log scale
-    fOutDStackPad[ith1d]->cd(); // upper pad is current pad
-    fOutDStackPad[ith1d]->SetLogy(1); //  set logy on this pad
-    fOutDCanvas[ith1d]->cd();          // Go back to the main canvas before saving
-    StackPlots::CMS_Lumi(fOutDCanvas[ith1d],10); // write out Lumi info
-    fOutDCanvas[ith1d]->SaveAs(Form("%s/%s_log.%s",fOutName.Data(),fTH1DNames[ith1d].Data(),fOutType.Data()));
+    fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
+    fOutTH1DStackPads[th1d]->SetLogy(1); //  set logy on this pad
+    fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
+    StackPlots::CMS_Lumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
+    fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s_log.%s",fOutName.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
     fOutFile->cd();
-    fOutDCanvas[ith1d]->Write(Form("%s_log",fTH1DNames[ith1d].Data()));
+    fOutTH1DCanvases[th1d]->Write(Form("%s_log",fTH1DNames[th1d].Data()));
 
     // save the overplot+ratio without log scale
-    fOutDStackPad[ith1d]->cd(); // upper pad is current pad
-    fOutDStackPad[ith1d]->SetLogy(0); //  set no logy on this pad
-    fOutDCanvas[ith1d]->cd();          // Go back to the main canvas before saving
-    StackPlots::CMS_Lumi(fOutDCanvas[ith1d],10); // write out Lumi info
-    fOutDCanvas[ith1d]->SaveAs(Form("%s/%s_lin.%s",fOutName.Data(),fTH1DNames[ith1d].Data(),fOutType.Data()));
+    fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
+    fOutTH1DStackPads[th1d]->SetLogy(0); //  set no logy on this pad
+    fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
+    StackPlots::CMS_Lumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
+    fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s_lin.%s",fOutName.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
     fOutFile->cd();
-    fOutDCanvas[ith1d]->Write(Form("%s_lin",fTH1DNames[ith1d].Data()));
+    fOutTH1DCanvases[th1d]->Write(Form("%s_lin",fTH1DNames[th1d].Data()));
   }
 }
 
@@ -355,11 +354,11 @@ void StackPlots::CMS_Lumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from
 }
 
 /*  need y axis labels!!!!!!!!!!!
-    fOutDataTH1Ds[ith1d]->GetYaxis()->SetTitle("akdfadf");
-    fOutDStackPad[ith1d]->Modified();
+    fOutDataTH1DHists[th1d]->GetYaxis()->SetTitle("akdfadf");
+    fOutTH1DStackPads[th1d]->Modified();
 */
 
     /* // need a way to not cut off labels
-    TGaxis tgaxis(fOutDStackPad[ith1d]->GetUxmin(),fOutDStackPad[ith1d]->GetUymin(),fOutDStackPad[ith1d]->GetUxmin(),fOutDStackPad[ith1d]->GetUymax(),fOutDStackPad[ith1d]->GetUymin(),fOutDStackPad[ith1d]->GetUymax(),505);
+    TGaxis tgaxis(fOutTH1DStackPads[th1d]->GetUxmin(),fOutTH1DStackPads[th1d]->GetUymin(),fOutTH1DStackPads[th1d]->GetUxmin(),fOutTH1DStackPads[th1d]->GetUymax(),fOutTH1DStackPads[th1d]->GetUymin(),fOutTH1DStackPads[th1d]->GetUymax(),505);
     tgaxis.Draw("SAME");
     */
