@@ -23,12 +23,15 @@ int main(){
   // Allow user to set outtype for plots
   TString outtype = "png";
 
-  // Allow user to set final output for stacks
+  // Allow user to set output directory for whole project --> if running only stacking... will need to specify inputs in .cc file
   TString outdir = "stack";
+
+  // First make total output directory ... sub directories made inside objects
+  MakeOutDirectory(outdir);
 
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),lumi,colorMap,outtype);
+    Analysis sample((*iter),lumi,colorMap,outdir,outtype);
     sample.DoAnalysis();
   }
 

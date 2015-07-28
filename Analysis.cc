@@ -1,6 +1,6 @@
 #include "Analysis.hh"
 
-Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const ColorMap colorMap, const TString outType){
+Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType){
   // store in data members
   fSample = samplePair.first;
   fIsMC   = samplePair.second;
@@ -40,6 +40,8 @@ Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const Color
   Analysis::SetBranchAddresses();
   
   // set output variables and make the output directory if need be
+  fOutDir = outdir;
+
   if (fIsMC) {
     fOutName = Form("%s_MC",fSample.Data());
   }
@@ -48,10 +50,10 @@ Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const Color
   }
 
   // make output directory
-  MakeOutDirectory(fOutName);
+  MakeOutDirectory(Form("%s/%s",fOutDir.Data(),fOutName.Data()));
 
   // make output root file
-  fOutFile = new TFile(Form("%s/%s_plots.root",fOutName.Data(),fOutName.Data()),"RECREATE");
+  fOutFile = new TFile(Form("%s/%s/plots.root",fOutDir.Data(),fOutName.Data()),"RECREATE");
 
   // set color map
   fColorMap = colorMap;
@@ -152,7 +154,7 @@ void Analysis::SaveHists() {
 	(*mapiter).second->SetBinContent(ibin,0);
       }
     }
-    (*mapiter).second->Write(); // map is map["hist name",TH1*]
+    (*mapiter).second->Write(); // map is map["hist name",TH1D*]
 
     canv->cd();
     if (fIsMC){
@@ -166,10 +168,10 @@ void Analysis::SaveHists() {
 
     // first save as log, then linear
     canv->SetLogy(1);
-    canv->SaveAs(Form("%s/%s_log.%s",fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
+    canv->SaveAs(Form("%s/%s/%s_log.%s",fOutDir.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
 
     canv->SetLogy(0);
-    canv->SaveAs(Form("%s/%s_lin.%s",fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
+    canv->SaveAs(Form("%s/%s/%s_lin.%s",fOutDir.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
   }
 
   delete canv;
@@ -181,7 +183,6 @@ void Analysis::DeleteHists() {
   }
   fTH1DMap.clear();
 }
-
 
 void Analysis::SetBranchAddresses() {
   fInTree->SetBranchAddress("event", &event, &b_event);

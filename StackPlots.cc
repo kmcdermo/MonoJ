@@ -1,6 +1,6 @@
 #include "StackPlots.hh"
 
-StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype){
+StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
   // input data members
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     if ((*iter).second) { // isMC == true
@@ -35,9 +35,9 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMa
   fNTH1D = fTH1DNames.size();
 
   // output data members
-  fOutName = outname; // where to put output plots 
-  MakeOutDirectory(fOutName); // make output directory --> same name as outname
-  fOutFile = new TFile(Form("%s/%s_canvs.root",fOutName.Data(),fOutName.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
+  fOutDir = outdir; // where to put output plots 
+  MakeOutDirectory(fOutDir); // make output directory 
+  fOutFile = new TFile(Form("%s/stackplots_canvases.root",fOutDir.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
   fOutType = outtype; // allow user to pick png, pdf, gif, etc for stacked plots
 
   // define color map + title map
@@ -261,7 +261,7 @@ void StackPlots::MakeOutputCanvas() {
     fOutTH1DStackPads[th1d]->SetLogy(1); //  set logy on this pad
     fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
     StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
-    fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s_log.%s",fOutName.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
+    fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s_log.%s",fOutDir.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
     fOutFile->cd();
     fOutTH1DCanvases[th1d]->Write(Form("%s_log",fTH1DNames[th1d].Data()));
 
@@ -270,7 +270,7 @@ void StackPlots::MakeOutputCanvas() {
     fOutTH1DStackPads[th1d]->SetLogy(0); //  set no logy on this pad
     fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
     StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
-    fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s_lin.%s",fOutName.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
+    fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s_lin.%s",fOutDir.Data(),fTH1DNames[th1d].Data(),fOutType.Data()));
     fOutFile->cd();
     fOutTH1DCanvases[th1d]->Write(Form("%s_lin",fTH1DNames[th1d].Data()));
   }

@@ -83,7 +83,7 @@ private:
   TPadVec  fOutTH1DStackPads;
   TPadVec  fOutTH1DRatioPads;
 
-  TString fOutName;
+  TString fOutDir;
   TFile * fOutFile;
   TString fOutType;
 

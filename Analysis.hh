@@ -28,7 +28,7 @@ class Analysis
 {
 public:
 
-  Analysis(const SamplePair SamplePair, const Double_t lumi, const ColorMap colorMap, const TString outType);
+  Analysis(const SamplePair SamplePair, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType);
   
   void SetBranchAddresses();
   void DoAnalysis();
@@ -48,9 +48,9 @@ private:
   TFile * fInFile;
   TTree * fInTree;
 
+  TString fOutDir;
   TString fOutName;
   TFile * fOutFile;
-
   TString fOutType;
 
   TH1DMap fTH1DMap;
