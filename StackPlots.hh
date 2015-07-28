@@ -14,6 +14,7 @@
 #include "THStack.h"
 #include "TLegend.h"
 #include "TColor.h"
+#include "TGaxis.h"
 #include "TLine.h"
 #include "TLatex.h"
 #include "TString.h"
@@ -27,9 +28,11 @@ typedef std::vector<TFile*>   TFileVec;
 typedef std::vector<TH1D*>    TH1DVec;
 typedef std::vector<TH1DVec>  TH1DVecVec;
 typedef std::vector<THStack*> THStackVec;
+typedef std::vector<TLine*>   TLineVec;
 typedef std::vector<TLegend*> TLegVec;
 typedef std::vector<TCanvas*> TCanvVec;
 typedef std::vector<TPad*>    TPadVec;
+typedef std::vector<TGaxis*>  TGaxisVec;
 
 typedef std::map<TString,TString> TStrMap;
 
@@ -43,7 +46,9 @@ public:
   void InitOutputPlots();
   void InitOutputLegends();
   void InitRatioPlots();
+  void InitRatioLines();
   void InitOutputCanvPads();
+  void InitUpperAxes();
 
   void DoStacks();
 
@@ -53,7 +58,9 @@ public:
 
   void DrawUpperPad(const UInt_t th1d, const Bool_t isLogY);
   Double_t GetMaximum(const UInt_t th1d);
+  void SetUpperAxes(const UInt_t th1d);
   void DrawLowerPad(const UInt_t th1d);
+  void SetLines(const UInt_t th1d);
   void SaveCanvas(const UInt_t th1d, const Bool_t isLogY);
   void CMSLumi(TCanvas *& pad, const Int_t iPosX);
 
@@ -79,14 +86,15 @@ private:
   TH1DVec    fOutDataTH1DHists;
   TH1DVec    fOutMCTH1DHists;
   THStackVec fOutMCTH1DStacks;
+  TH1DVec    fOutRatioTH1DHists;  
+  TLegVec    fTH1DLegends;
+  TLineVec   fOutTH1DRatioLines;
 
-  TLegVec fTH1DLegends;
+  TGaxisVec  fOutTH1DTGaxes;
 
-  TH1DVec fOutRatioTH1DHists;  
-
-  TCanvVec fOutTH1DCanvases;
-  TPadVec  fOutTH1DStackPads;
-  TPadVec  fOutTH1DRatioPads;
+  TCanvVec   fOutTH1DCanvases;
+  TPadVec    fOutTH1DStackPads;
+  TPadVec    fOutTH1DRatioPads;
 
   TString fOutDir;
   TString fOutName;

@@ -53,7 +53,9 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMa
   StackPlots::InitOutputPlots();
   StackPlots::InitOutputLegends();
   StackPlots::InitRatioPlots();
+  StackPlots::InitRatioLines();
   StackPlots::InitOutputCanvPads();
+  StackPlots::InitUpperAxes();
 }
 
 StackPlots::~StackPlots(){
@@ -64,10 +66,12 @@ StackPlots::~StackPlots(){
     delete fOutMCTH1DHists[th1d];
     delete fOutMCTH1DStacks[th1d];
     delete fTH1DLegends[th1d];
+    delete fOutTH1DTGaxes[th1d];
+    delete fOutTH1DRatioLines[th1d];
     delete fOutTH1DStackPads[th1d];
     delete fOutTH1DRatioPads[th1d];
     delete fOutTH1DCanvases[th1d];
-
+    
     for (UInt_t data = 0; data < fNData; data++) {
       CheckValidTH1D(fInDataTH1DHists[th1d][data],fTH1DNames[th1d],fDataFiles[data]->GetName());
       delete fInDataTH1DHists[th1d][data];
@@ -133,8 +137,8 @@ void StackPlots::MakeRatioPlots() {
     fOutRatioTH1DHists[th1d] = (TH1D*)fOutDataTH1DHists[th1d]->Clone();
     fOutRatioTH1DHists[th1d]->Divide(fOutMCTH1DHists[th1d]);  
     fOutRatioTH1DHists[th1d]->SetLineColor(kBlack);
-    fOutRatioTH1DHists[th1d]->SetMinimum(0.0);  // Define Y ..
-    fOutRatioTH1DHists[th1d]->SetMaximum(2.0); // .. range
+    fOutRatioTH1DHists[th1d]->SetMinimum(-0.1);  // Define Y ..
+    fOutRatioTH1DHists[th1d]->SetMaximum(2.1); // .. range
     fOutRatioTH1DHists[th1d]->SetStats(0);      // No statistics on lower plot
     fOutRatioTH1DHists[th1d]->GetYaxis()->SetTitle("Data/MC");
   }
@@ -161,10 +165,10 @@ void StackPlots::MakeOutputCanvas() {
 }
 
 void StackPlots::DrawUpperPad(const UInt_t th1d, const Bool_t isLogY) {    
+  // pad gymnastics
   fOutTH1DCanvases[th1d]->cd();
   fOutTH1DStackPads[th1d]->Draw(); // draw upper pad   
   fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
-  fOutDataTH1DHists[th1d]->SetStats(0); // No statistics on upper plot
   
   // set maximum by comparing added mc vs added data
   Double_t max = StackPlots::GetMaximum(th1d);
@@ -180,8 +184,34 @@ void StackPlots::DrawUpperPad(const UInt_t th1d, const Bool_t isLogY) {
   fOutDataTH1DHists[th1d]->Draw("PE"); // draw first so labels appear
   fOutMCTH1DStacks[th1d]->Draw("HIST SAME"); 
   fOutTH1DStackPads[th1d]->RedrawAxis("SAME"); // stack kills axis
+
+  // maybe someday redraw axis to get proper labels
+  // StackPlots::SetUpperAxes(th1d);
+  // fOutMCTH1DStacks[th1d]->GetYaxis()->SetLabelSize(0.);
+  // fOutDataTH1DHists[th1d]->GetYaxis()->SetLabelSize(0.);
+  // fOutTH1DTGaxes[th1d]->Draw("SAME");
+
   fOutDataTH1DHists[th1d]->Draw("PE SAME"); // redraw data
   fTH1DLegends[th1d]->Draw("SAME");
+}
+
+void StackPlots::SetUpperAxes(const UInt_t th1d) { // to maybe never be used... cannot seem to work.
+  // make new upper y-axis
+
+  const Double_t x  = fOutDataTH1DHists[th1d]->GetXaxis()->GetXmin();
+  const Double_t y1 = fOutDataTH1DHists[th1d]->GetYaxis()->GetXmin();
+  const Double_t y2 = fOutDataTH1DHists[th1d]->GetYaxis()->GetXmax();
+
+  fOutTH1DTGaxes[th1d]->SetX1( x );
+  fOutTH1DTGaxes[th1d]->SetX2( x );
+
+  fOutTH1DTGaxes[th1d]->SetY1( y1 * 0.05 );
+  fOutTH1DTGaxes[th1d]->SetWmin( y1 * 0.05 );
+
+  fOutTH1DTGaxes[th1d]->SetY2( y2 * 0.95 );
+  fOutTH1DTGaxes[th1d]->SetWmax( y2 * 0.95 );
+
+  fOutTH1DTGaxes[th1d]->SetLabelSize(0.11);
 }
 
 Double_t StackPlots::GetMaximum(const UInt_t th1d) {
@@ -196,18 +226,43 @@ Double_t StackPlots::GetMaximum(const UInt_t th1d) {
 }
 
 void StackPlots::DrawLowerPad(const UInt_t th1d) {    
-  fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before defining pad2
+  // pad gymnastics
+  fOutTH1DCanvases[th1d]->cd();   // Go back to the main canvas before defining pad2
   fOutTH1DRatioPads[th1d]->Draw(); // draw lower pad
   fOutTH1DRatioPads[th1d]->cd(); // lower pad is current pad
-  fOutRatioTH1DHists[th1d]->GetYaxis()->SetNdivisions(505);
-  fOutRatioTH1DHists[th1d]->Draw("EP"); // draw first so line can appear
 
   // make red line at ratio of 1.0
-  TLine ratioline(fOutRatioTH1DHists[th1d]->GetXaxis()->GetXmin(),1.0,fOutRatioTH1DHists[th1d]->GetXaxis()->GetXmax(),1.0);
-  ratioline.SetLineColor(kRed);
-  ratioline.SetLineWidth(2);
-  ratioline.Draw("SAME");
-  fOutRatioTH1DHists[th1d]->Draw("EP SAME"); // redraw to go over line
+  StackPlots::SetLines(th1d);
+
+  // draw th1 first so line can appear, then draw over it (and set Y axis divisions)
+  fOutRatioTH1DHists[th1d]->Draw("EP"); // draw first so line can appear
+  fOutTH1DRatioLines[th1d]->Draw("SAME");
+
+  // some style since apparently TDR Style is crapping out --> would really not like this here
+  fOutRatioTH1DHists[th1d]->GetYaxis()->SetNdivisions(505);
+
+  fOutRatioTH1DHists[th1d]->GetXaxis()->SetLabelSize(0.11);
+  fOutRatioTH1DHists[th1d]->GetXaxis()->SetTitleSize(0.15);
+  fOutRatioTH1DHists[th1d]->GetXaxis()->SetTickSize(0.11);
+
+  fOutRatioTH1DHists[th1d]->GetYaxis()->SetLabelSize(0.11);
+  fOutRatioTH1DHists[th1d]->GetYaxis()->SetTitleSize(0.15);
+  fOutRatioTH1DHists[th1d]->GetYaxis()->SetTitleOffset(0.5);
+
+  // redraw to go over line
+  fOutRatioTH1DHists[th1d]->Draw("EP SAME"); 
+}
+
+void StackPlots::SetLines(const UInt_t th1d){
+  // have line held at ratio of 1.0 over whole x range
+  fOutTH1DRatioLines[th1d]->SetX1(fOutRatioTH1DHists[th1d]->GetXaxis()->GetXmin());
+  fOutTH1DRatioLines[th1d]->SetY1(1.0);
+  fOutTH1DRatioLines[th1d]->SetX2(fOutRatioTH1DHists[th1d]->GetXaxis()->GetXmax());
+  fOutTH1DRatioLines[th1d]->SetY2(1.0);
+
+  // customize appearance
+  fOutTH1DRatioLines[th1d]->SetLineColor(kRed);
+  fOutTH1DRatioLines[th1d]->SetLineWidth(2);
 }
 
 void StackPlots::SaveCanvas(const UInt_t th1d, const Bool_t isLogY){
@@ -404,6 +459,16 @@ void StackPlots::InitRatioPlots() {
   fOutRatioTH1DHists.resize(fNTH1D);
 }
 
+void StackPlots::InitRatioLines() {
+  // init ratio line used for comparisons
+
+  // th1D hists
+  fOutTH1DRatioLines.resize(fNTH1D);
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    fOutTH1DRatioLines[th1d] = new TLine();
+  }
+}
+
 void StackPlots::InitOutputCanvPads() {
   // init canvases + pads
 
@@ -424,12 +489,13 @@ void StackPlots::InitOutputCanvPads() {
   }
 }
 
-/*  need y axis labels!!!!!!!!!!!
-    fOutDataTH1DHists[th1d]->GetYaxis()->SetTitle("akdfadf");
-    fOutTH1DStackPads[th1d]->Modified();
-*/
+void StackPlots::InitUpperAxes() {
+  // init ratio line used for comparisons
 
-    /* // need a way to not cut off labels
-    TGaxis tgaxis(fOutTH1DStackPads[th1d]->GetUxmin(),fOutTH1DStackPads[th1d]->GetUymin(),fOutTH1DStackPads[th1d]->GetUxmin(),fOutTH1DStackPads[th1d]->GetUymax(),fOutTH1DStackPads[th1d]->GetUymin(),fOutTH1DStackPads[th1d]->GetUymax(),505);
-    tgaxis.Draw("SAME");
-    */
+  // th1D hists
+  fOutTH1DTGaxes.resize(fNTH1D);
+  for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    fOutTH1DTGaxes[th1d] = new TGaxis();
+  }
+}
+
