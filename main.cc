@@ -16,7 +16,7 @@ int main(){
   colorMap["ttbar"] = kRed+2;
 
   // Total Integrated Luminosity
-  Double_t lumi = 0.03650; // int lumi 36.50 pb^-1
+  Double_t lumi = 0.04024; // int lumi 
 
   // Samples to process 
   SamplePairVec Samples;
@@ -28,7 +28,7 @@ int main(){
   TString outtype = "png";
 
   // Allow user to set output directory for whole project --> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "firststudies";
+  TString outdir = "firststudies_4024pb";
 
   // First make total output directory ... sub directories made inside objects
   MakeOutDirectory(outdir);
