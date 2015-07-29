@@ -89,7 +89,7 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const D
 }
 
 Analysis::~Analysis(){
-  Analysis::DeleteBranches();
+  //  Analysis::DeleteBranches();
   delete fInTree;
   delete fInFile;
   Analysis::DeleteHists();
@@ -273,25 +273,25 @@ void Analysis::SetUpPlots() {
   fTH1DMap["wmt"]  = Analysis::MakeTH1DPlot("wmt","",30,30.,120.,"W_{T} Mass from Single Muon [GeV/c^{2}]","Events / 3 GeV/c^{2}");
   fTH1DMap["wemt"] = Analysis::MakeTH1DPlot("wemt","",30,30.,120.,"W_{T} Mass from Single Electron [GeV/c^{2}]","Events / 3 GeV/c^{2}");
 
-  fTH1DMap["signaljetpt"]      = Analysis::MakeTH1DPlot("signaljetpt","",40,0.,400.,"Leading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["signaljeteta"]     = Analysis::MakeTH1DPlot("signaljeteta","",30,-3.,3.,"Leading Jet #eta","Events"); 
   fTH1DMap["signaljetphi"]     = Analysis::MakeTH1DPlot("signaljetphi","",32,-3.2,3.2,"Leading Jet #phi","Events"); 
+  fTH1DMap["signaljetpt"]      = Analysis::MakeTH1DPlot("signaljetpt","",40,0.,400.,"Leading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["signaljetCHfrac"]  = Analysis::MakeTH1DPlot("signaljetCHfrac","",50,0.,1.,"Leading Jet CH Fraction","Events"); 
   fTH1DMap["signaljetNHfrac"]  = Analysis::MakeTH1DPlot("signaljetNHfrac","",50,0.,1.,"Leading Jet NH Fraction","Events"); 
   fTH1DMap["signaljetEMfrac"]  = Analysis::MakeTH1DPlot("signaljetEMfrac","",50,0.,1.,"Leading Jet Neutral EM Fraction","Events"); 
   fTH1DMap["signaljetCEMfrac"] = Analysis::MakeTH1DPlot("signaljetCEMfrac","",50,0.,1.,"Leading Jet Charged EM Fraction","Events"); 
 
-  fTH1DMap["secondjetpt"]      = Analysis::MakeTH1DPlot("secondjetpt","",40,0.,400.,"Subleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["secondjeteta"]     = Analysis::MakeTH1DPlot("secondjeteta","",30,-3.,3.,"Subleading Jet #eta","Events"); 
   fTH1DMap["secondjetphi"]     = Analysis::MakeTH1DPlot("secondjetphi","",32,-3.2,3.2,"Subleading Jet #phi","Events"); 
+  fTH1DMap["secondjetpt"]      = Analysis::MakeTH1DPlot("secondjetpt","",40,0.,400.,"Subleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["secondjetCHfrac"]  = Analysis::MakeTH1DPlot("secondjetCHfrac","",50,0.,1.,"Subleading Jet CH Fraction","Events"); 
   fTH1DMap["secondjetNHfrac"]  = Analysis::MakeTH1DPlot("secondjetNHfrac","",50,0.,1.,"Subleading Jet NH Fraction","Events"); 
   fTH1DMap["secondjetEMfrac"]  = Analysis::MakeTH1DPlot("secondjetEMfrac","",50,0.,1.,"Subleading Jet Neutral EM Fraction","Events"); 
   fTH1DMap["secondjetCEMfrac"] = Analysis::MakeTH1DPlot("secondjetCEMfrac","",50,0.,1.,"Subleading Jet Charged EM Fraction","Events"); 
 
-  fTH1DMap["thirdjetpt"]       = Analysis::MakeTH1DPlot("thirdjetpt","",40,0.,400.,"Subsubleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["thirdjeteta"]      = Analysis::MakeTH1DPlot("thirdjeteta","",30,-3.,3.,"Subsubleading Jet #eta","Events"); 
   fTH1DMap["thirdjetphi"]      = Analysis::MakeTH1DPlot("thirdjetphi","",32,-3.2,3.2,"Subsubleading Jet #phi","Events"); 
+  fTH1DMap["thirdjetpt"]       = Analysis::MakeTH1DPlot("thirdjetpt","",40,0.,400.,"Subsubleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["thirdjetCHfrac"]   = Analysis::MakeTH1DPlot("thirdjetCHfrac","",50,0.,1.,"Subsubleading Jet CH Fraction","Events"); 
   fTH1DMap["thirdjetNHfrac"]   = Analysis::MakeTH1DPlot("thirdjetNHfrac","",50,0.,1.,"Subsubleading Jet NH Fraction","Events"); 
   fTH1DMap["thirdjetEMfrac"]   = Analysis::MakeTH1DPlot("thirdjetEMfrac","",50,0.,1.,"Subsubleading Jet Neutral EM Fraction","Events"); 

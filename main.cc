@@ -25,11 +25,12 @@ int main(){
   Double_t lumi = 0.04024; // int lumi 
 
   // Selection we want (zpeak with muons, zpeak with electrons, etc)
-  TString selection = "zmumu";
+  TString selection = "zelel";
 
   // Samples to process 
   SamplePairVec Samples;
-  Samples.push_back(SamplePair("doublemu",false));
+  //Samples.push_back(SamplePair("doublemu",false)); // selection = zmumu
+  Samples.push_back(SamplePair("doubleel",false));
   Samples.push_back(SamplePair("zmumu",true));
   Samples.push_back(SamplePair("ttbar",true));
 
@@ -43,7 +44,7 @@ int main(){
   // First do PU reweight calculation ... will build separate object for it.  for now just use vector from macro
   std::cout << "Do PU reweighting with z -> mu mu peak" << std::endl;
 
-  gROOT->ProcessLine(".L PUReWeight.C");
+  //  gROOT->ProcessLine(".L macros/PUReWeight.C");
   DblVec puweights = PUReWeight();
 
   std::cout << "Finished PU reweighting, now begin Analysis" << std::endl;

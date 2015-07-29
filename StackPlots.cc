@@ -22,29 +22,75 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Dou
   fLumi = lumi;
 
   // use the plots already stored in Analysis.cpp ... use selection to decide what to loop over --> doubles
-  if (fSelection.Contains("zmumu",TString::kExact)) {
-    fTH1DNames.push_back("zmass");
-    fTH1DNames.push_back("zpt");
-  }  
-  fTH1DNames.push_back("pfmet");
-  fTH1DNames.push_back("signaljetpt");
+
+  fTH1DNames.push_back("mu1eta");
+  fTH1DNames.push_back("mu1phi");
+  fTH1DNames.push_back("mu1pt");
+  fTH1DNames.push_back("mu2eta");
+  fTH1DNames.push_back("mu2phi");
+  fTH1DNames.push_back("mu2pt");
+
+  fTH1DNames.push_back("el1eta");
+  fTH1DNames.push_back("el1phi");
+  fTH1DNames.push_back("el1pt");
+  fTH1DNames.push_back("el2eta");
+  fTH1DNames.push_back("el2phi");
+  fTH1DNames.push_back("el2pt");
+  
+  fTH1DNames.push_back("zeta");
+  fTH1DNames.push_back("zmass");
+  fTH1DNames.push_back("zphi");
+  fTH1DNames.push_back("zpt");
+
+  fTH1DNames.push_back("zeeeta");
+  fTH1DNames.push_back("zeemass");
+  fTH1DNames.push_back("zeephi");
+  fTH1DNames.push_back("zeept");
+
+  fTH1DNames.push_back("emueta");
+  fTH1DNames.push_back("emumass");
+  fTH1DNames.push_back("emuphi");
+  fTH1DNames.push_back("emupt");
+
+  fTH1DNames.push_back("wmt");
+  fTH1DNames.push_back("wemt");
+
   fTH1DNames.push_back("signaljeteta");
+  fTH1DNames.push_back("signaljetphi");
+  fTH1DNames.push_back("signaljetpt");
   fTH1DNames.push_back("signaljetCHfrac");
   fTH1DNames.push_back("signaljetNHfrac");
   fTH1DNames.push_back("signaljetEMfrac");
   fTH1DNames.push_back("signaljetCEMfrac");
-  fTH1DNames.push_back("secondjetpt");
+
   fTH1DNames.push_back("secondjeteta");
+  fTH1DNames.push_back("secondjetphi");
+  fTH1DNames.push_back("secondjetpt");
   fTH1DNames.push_back("secondjetCHfrac");
   fTH1DNames.push_back("secondjetNHfrac");
   fTH1DNames.push_back("secondjetEMfrac");
   fTH1DNames.push_back("secondjetCEMfrac");
-  fTH1DNames.push_back("thirdjetpt");
+
   fTH1DNames.push_back("thirdjeteta");
+  fTH1DNames.push_back("thirdjetphi");
+  fTH1DNames.push_back("thirdjetpt");
   fTH1DNames.push_back("thirdjetCHfrac");
   fTH1DNames.push_back("thirdjetNHfrac");
   fTH1DNames.push_back("thirdjetEMfrac");
   fTH1DNames.push_back("thirdjetCEMfrac");
+
+  fTH1DNames.push_back("ht");
+  fTH1DNames.push_back("mht");
+
+  fTH1DNames.push_back("pfmet");
+  fTH1DNames.push_back("pfmetphi");
+  fTH1DNames.push_back("t1pfmet");
+  fTH1DNames.push_back("t1pfmetphi");
+  fTH1DNames.push_back("mumet");
+  fTH1DNames.push_back("mumetphi");
+  fTH1DNames.push_back("t1mumet");
+  fTH1DNames.push_back("t1mumetphi");
+
   fTH1DNames.push_back("njets");
   fTH1DNames.push_back("nvtx");
 
@@ -413,7 +459,7 @@ void StackPlots::OpenInputFiles() {
   // open input files into TFileVec --> data 
   fDataFiles.resize(fNData);
   for (UInt_t data = 0; data < fNData; data++) {
-    TString datafile = Form("%s/%s_data/plots.root",fOutDir.Data(),fDataNames[data].Data());
+    TString datafile = Form("%s/%s/%s_data/plots.root",fOutDir.Data(),fSelection.Data(),fDataNames[data].Data());
     fDataFiles[data] = TFile::Open(datafile.Data());
     CheckValidFile(fDataFiles[data],datafile);
   }
@@ -421,7 +467,7 @@ void StackPlots::OpenInputFiles() {
   // open input files into TFileVec --> mc 
   fMCFiles.resize(fNMC);
   for (UInt_t mc = 0; mc < fNMC; mc++) {
-    TString mcfile = Form("%s/%s_MC/plots.root",fOutDir.Data(),fMCNames[mc].Data());
+    TString mcfile = Form("%s/%s/%s_MC/plots.root",fOutDir.Data(),fSelection.Data(),fMCNames[mc].Data());
     fMCFiles[mc] = TFile::Open(mcfile.Data());
     CheckValidFile(fMCFiles[mc],mcfile);
   }
