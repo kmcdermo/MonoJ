@@ -1,7 +1,6 @@
 #include <vector>
 
-
-std::vector<Double_t> pureweight(){
+std::vector<Double_t> PUReWeight(){
 
   TFile * datafile = TFile::Open("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/doublemu/treewithwgt.root");  
   TFile * mcfile1  = TFile::Open("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/zll/treewithwgt.root");  
@@ -19,8 +18,7 @@ std::vector<Double_t> pureweight(){
   mcnvtx1->Sumw2();
   mcnvtx2->Sumw2();
   
-
-  // must have tobject name be the one, not variable!
+  // must have tobject name be the one, not variable! 
 
   datatree->Draw("nvtx>>datanvtx","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (cflagcsctight == 1 && cflaghbhenoise == 1) )","goff");
   mctree1->Draw("nvtx>>mcnvtx1","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * 0.04024 * wgt / wgtsum)","goff");
@@ -41,69 +39,45 @@ std::vector<Double_t> pureweight(){
   datanvtx->Draw("PE");
   mcnvtx1->Draw("HIST SAME");
 
-
   c1->SaveAs("before.png");
 
   TCanvas * c2 = new TCanvas();
   c2->cd();
   c2->SetLogy(1);
 
-  TH1D * datanvtx_copy = datanvtx->Clone();
+  TH1D * datanvtx_copy = (TH1D*)datanvtx->Clone();
   
   datanvtx->Divide(mcnvtx1);
 
   std::vector<Double_t> puweights;
    
   for (Int_t i = 1; i <= 50; i++ ){
-
     puweights.push_back(datanvtx->GetBinContent(i));
-    
     Double_t tmp = mcnvtx1->GetBinContent(i);
-
     mcnvtx1->SetBinContent(i,puweights[i-1]*tmp);
   }
-  
-  
 
   datanvtx_copy->Draw("PE");
   mcnvtx1->Draw("HIST SAME");
 
   c2->SaveAs("after.png");
- 
-  for (Int_t i = 0; i < 50; i++ ){
-
-    std::cout << puweights[i] << std::endl;
-  }
-
-
-  /*
-
-
-
-  TH1D * redatanvtx  = new TH1D("redatanvtx","",50,0,50);
-  TH1D * remcnvtx1   = new TH1D("remcnvtx1","",50,0,50);
-  TH1D * remcnvtx2   = new TH1D("remcnvtx2","",50,0,50);
   
-  datatree->Draw("nvtx>>redatanvtx","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (cflagcsctight == 1 && cflaghbhenoise == 1) )","goff");
-  mctree1->Draw("nvtx>>remcnvtx1","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * 0.04024 * wgt / wgtsum)","goff");
-  mctree2->Draw("nvtx>>remcnvtx2","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * 0.04024 * wgt / wgtsum)","goff");
-
-  remcnvtx1->Add(remcnvtx2);
-
-
-  TCanvas * c2 = new TCanvas();
-  c2->cd();
+  delete c1;
+  delete c2;
   
-  redatanvtx->SetLineColor(kRed);
-  remcnvtx1->SetLineColor(kBlue);
+  delete datanvtx_copy;
+  delete datanvtx;
+  delete mcnvtx1;
+  delete mcnvtx2;
 
-  redatanvtx->Draw("PE");
-  remcnvtx1->Draw("HIST SAME");
+  delete datatree;
+  delete mctree1;
+  delete mctree2;
 
-  */
+  delete datafile;
+  delete mcfile1;
+  delete mcfile2;
 
-
-  
   return puweights;
 }
 

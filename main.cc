@@ -1,6 +1,7 @@
 #include "Analysis.hh"
 #include "StackPlots.hh"
 #include "Common.hh"
+#include "macros/PUReWeight.C"
 
 #include "TROOT.h"
 
@@ -40,8 +41,12 @@ int main(){
 
   //++++++++++++++++++++++++++++++++++++++++// Analysis begins here
   // First do PU reweight calculation ... will build separate object for it.  for now just use vector from macro
-  gROOT->ProcessLine(".L pureweight.C");
-  std::vector<Double_t> puweights = pureweight();
+  std::cout << "Do PU reweighting with z -> mu mu peak" << std::endl;
+
+  gROOT->ProcessLine(".L PUReWeight.C");
+  DblVec puweights = PUReWeight();
+
+  std::cout << "Finished PU reweighting, now begin Analysis" << std::endl;
 
   // First make total output directory ... sub directories made inside objects
   MakeOutDirectory(outdir);

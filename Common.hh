@@ -1,5 +1,5 @@
-#ifndef _typedef_
-#define _typedef_
+#ifndef _common_
+#define _common_
 
 #include "TString.h"
 #include "TColor.h"
@@ -12,6 +12,8 @@
 #include <vector>
 #include <utility>
 #include <map>
+
+typedef std::vector<Double_t> DblVec;
 
 typedef std::map<TString,Color_t> ColorMap;
 typedef std::vector<TString>      TStrVec;

@@ -19,12 +19,8 @@
 #include <iostream>
 #include <fstream>
 
-typedef std::vector<Double_t>     DblVec;
-typedef std::vector<UInt_t>   UIntVec;
-typedef std::vector<Int_t>    IntVec;
-
-typedef std::map<TString,Double_t> DblMap;
-typedef DblMap::iterator           DblMapIter;
+typedef std::vector<UInt_t> UIntVec;
+typedef std::vector<Int_t>  IntVec;
 
 typedef std::map<TString,TH1D*> TH1DMap;
 typedef TH1DMap::iterator       TH1DMapIter;
@@ -33,7 +29,7 @@ class Analysis
 {
 public:
 
-  Analysis(const SamplePair SamplePair, const TString selection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType);
+  Analysis(const SamplePair SamplePair, const TString selection, const DblVec puweights, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType);
   
   void SetBranchAddresses();
   void DoAnalysis();
@@ -51,6 +47,7 @@ private:
   TString fSample;
   Bool_t fIsMC;
   TString fSelection;
+  DblVec   fPUWeights;
   Double_t fLumi;
 
   TFile * fInFile;
@@ -61,7 +58,7 @@ private:
   TFile * fOutFile;
   TString fOutType;
 
-  DblMap   fYieldsMap;
+  Double_t fNSelected;
   ofstream fYieldsTxt;
 
   TH1DMap fTH1DMap;

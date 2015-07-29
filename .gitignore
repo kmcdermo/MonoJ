@@ -20,6 +20,10 @@
 *.tar
 *.zip
 
+# User defined #
+################
+*.root
+
 # Logs and databases #
 ######################
 *.log
