@@ -1,10 +1,12 @@
 #include "Analysis.hh"
 
-Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType){
+Analysis::Analysis(const SamplePair samplePair, const TString selection, const DblVec puweights, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType){
   // store in data members
-  fSample = samplePair.first;
-  fIsMC   = samplePair.second;
-  fLumi   = lumi;
+  fSample    = samplePair.first;
+  fIsMC      = samplePair.second;
+  fSelection = selection;
+  fPUWeights = puweights;
+  fLumi      = lumi;
 
   //Get File
   TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
@@ -13,7 +15,16 @@ Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const Color
     if (fSample.Contains("zmumu",TString::kExact)){ // z -> mm
       fileName.Append("zll/treewithwgt.root");
     }
-    else if (fSample.Contains("ttbar",TString::kExact)){ // z -> mm
+    else if (fSample.Contains("zelel",TString::kExact)){ // z -> ee
+      fileName.Append("zll/treewithwgt.root");
+    }
+    else if (fSample.Contains("wmunu",TString::kExact)){ // w -> mv
+      fileName.Append("wln/treewithwgt.root");
+    }
+    else if (fSample.Contains("welnu",TString::kExact)){ // w -> ev
+      fileName.Append("wln/treewithwgt.root");
+    }
+    else if (fSample.Contains("ttbar",TString::kExact)){ // ttbar
       fileName.Append("ttbar/treewithwgt.root");
     }
     else {
@@ -24,6 +35,15 @@ Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const Color
     fileName.Append("Data/");
     if (fSample.Contains("doublemu",TString::kExact)){ // z-> mm
       fileName.Append("doublemu/treewithwgt.root");
+    }
+    else if (fSample.Contains("doubleel",TString::kExact)){ // z-> ee
+      fileName.Append("doubleel/treewithwgt.root");
+    }
+    else if (fSample.Contains("singlemu",TString::kExact)){ // w-> mv
+      fileName.Append("singlemu/treewithwgt.root");
+    }
+    else if (fSample.Contains("singleel",TString::kExact)){ // w-> ev
+      fileName.Append("singleel/treewithwgt.root");
     }
     else {
       std::cout << "Not a known sample: " << fSample << " isMC: " << fIsMC << " ...exiting..." << std::endl;
@@ -50,31 +70,38 @@ Analysis::Analysis(const SamplePair samplePair, const Double_t lumi, const Color
   }
 
   // make output directory
-  MakeOutDirectory(Form("%s/%s",fOutDir.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s/%s",fOutDir.Data(),fSelection.Data(),fOutName.Data()));
 
   // make output root file
-  fOutFile = new TFile(Form("%s/%s/plots.root",fOutDir.Data(),fOutName.Data()),"RECREATE");
+  fOutFile = new TFile(Form("%s/%s/%s/plots.root",fOutDir.Data(),fSelection.Data(),fOutName.Data()),"RECREATE");
 
   // set color map
   fColorMap = colorMap;
 
   // allow user to pick png, pdf, gif, etc
   fOutType = outType;
+
+  // keep track of nEvents that pass given selection selection --> ensure that this is set to zero
+  // currently map the selection
+  fYieldsMap["zmumu"] = 0.;
+  fYieldsMap["zelel"] = 0.;
+
+  // open the yields text file in append mode
+  fYieldsTxt.open(Form("%s/%s/yields.txt",fOutDir.Data(),fSelection.Data()),std::ios_base::app);
 }
 
 Analysis::~Analysis(){
+  Analysis::DeleteBranches();
   delete fInTree;
   delete fInFile;
   Analysis::DeleteHists();
   delete fOutFile;
+  fYieldsTxt.close();
 }
 
 void Analysis::DoAnalysis(){
   // set up output plots to be produced
   Analysis::SetUpPlots();
-
-  // keep track of nEvents that pass given selection selection 
-  Double_t passed = 0;
 
   // Loop over entries in input tree
   for (UInt_t entry = 0; entry < fInTree->GetEntries(); entry++) {
@@ -82,61 +109,112 @@ void Analysis::DoAnalysis(){
 
     Double_t weight = 0;
     if (fIsMC) {
-      weight = xsec * fLumi * wgt / wgtsum;  
+      weight = (xsec * fLumi * wgt / wgtsum) * fPUWeights[nvtx];  
     }
     else {
       weight = 1.0; // data is currently to 1.0
     }
     
-    if ( (hltdoublemu > 0 || hltsinglemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid) ) { // plot valid zmass for dimuons
-      // double plots
-      
-      if ( (fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1) ){
-	
-	fTH1DMap["zmass"]->Fill(zmass,weight);
-	fTH1DMap["zpt"]->Fill(zpt,weight);
-	fTH1DMap["pfmet"]->Fill(pfmet,weight);
-
-	if (njets>=1){ // plots stuff with jets >= 1
-	  fTH1DMap["signaljetpt"]->Fill(signaljetpt,weight);
-	  fTH1DMap["signaljeteta"]->Fill(signaljeteta,weight);
-	  fTH1DMap["signaljetCHfrac"]->Fill(signaljetCHfrac,weight);
-	  fTH1DMap["signaljetNHfrac"]->Fill(signaljetNHfrac,weight);
-	  fTH1DMap["signaljetEMfrac"]->Fill(signaljetEMfrac,weight);
-	  fTH1DMap["signaljetCEMfrac"]->Fill(signaljetCEMfrac,weight);
-	}
-	// int plots
-	fTH1DMap["njets"]->Fill(njets,weight);
-	fTH1DMap["nvtx"]->Fill(nvtx,weight);
-	
-	passed += weight; // tiny counter to print yields
-      } // extra selection over hbe noise filters
+    // selection for z peak with di muons
+    Bool_t selection = false;
+    if (fSelection.Contains("zmumu",TString::kExact)) {
+      selection = ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid));
     }
+    else if (fSelection.Contains("zelel",TString::kExact)) {
+      selection = ((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid));
+    }
+    else if (fSelection.Contains("singlemu",TString::kExact))
+
+
+    Bool_t met_filters     = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
+    
+    // Assumption is that all data/MC is orthogonal in these zee, zmumu, otherwise will have to duplicate filling code, or just comment out? For now just set it ourselves
+
+    
+
+
+    if ( zmumu_selection && met_filters ){ 
+      fYieldsMap["zmumu"] += weight; 	// save the event weight for yields!
+      
+      fTH1DMap["zmass"]->Fill(zmass,weight);
+      fTH1DMap["zpt"]->Fill(zpt,weight);
+      fTH1DMap["pfmet"]->Fill(pfmet,weight);
+      
+      if (njets>=1){ // plots stuff for signal jet
+	fTH1DMap["signaljetpt"]->Fill(signaljetpt,weight);
+	fTH1DMap["signaljeteta"]->Fill(signaljeteta,weight);
+	fTH1DMap["signaljetCHfrac"]->Fill(signaljetCHfrac,weight);
+	fTH1DMap["signaljetNHfrac"]->Fill(signaljetNHfrac,weight);
+	fTH1DMap["signaljetEMfrac"]->Fill(signaljetEMfrac,weight);
+	fTH1DMap["signaljetCEMfrac"]->Fill(signaljetCEMfrac,weight);
+      }
+      
+      if (njets>=2){ // plots stuff with sub leading jet
+	fTH1DMap["secondjetpt"]->Fill(secondjetpt,weight);
+	fTH1DMap["secondjeteta"]->Fill(secondjeteta,weight);
+	fTH1DMap["secondjetCHfrac"]->Fill(secondjetCHfrac,weight);
+	fTH1DMap["secondjetNHfrac"]->Fill(secondjetNHfrac,weight);
+	fTH1DMap["secondjetEMfrac"]->Fill(secondjetEMfrac,weight);
+	fTH1DMap["secondjetCEMfrac"]->Fill(secondjetCEMfrac,weight);
+      }
+      
+      if (njets>=3){ // plots stuff with sub sub leading jet
+	fTH1DMap["thirdjetpt"]->Fill(thirdjetpt,weight);
+	fTH1DMap["thirdjeteta"]->Fill(thirdjeteta,weight);
+	fTH1DMap["thirdjetCHfrac"]->Fill(thirdjetCHfrac,weight);
+	fTH1DMap["thirdjetNHfrac"]->Fill(thirdjetNHfrac,weight);
+	fTH1DMap["thirdjetEMfrac"]->Fill(thirdjetEMfrac,weight);
+	fTH1DMap["thirdjetCEMfrac"]->Fill(thirdjetCEMfrac,weight);
+      }
+
+      fTH1DMap["njets"]->Fill(njets,weight);
+      fTH1DMap["nvtx"]->Fill(nvtx,weight);
+    } // end filling histos after checking selection criteria 
   } // end loop over entries
 
-  // save the histos once loop is over
+  // dump yields into text file
+  fYieldsTxt << "Yields for: " << fSample.Data() << std::endl;
+  fYieldsTxt << "---------------------" << std::endl;
+  for (DblMapIter iter = fYieldsMap.begin(); iter != fYieldsMap.end(); ++iter){
+    fYieldsTxt << (*iter).first.Data() << " : " << (*iter).second << std::endl;
+  }
+  fYieldsTxt << std::endl;
 
-  std::cout << "nEvents passed selection: " << passed << std::endl;
+  // save the histos once loop is over
   Analysis::SaveHists();
 }
 
-void Analysis::SetUpPlots(){
+void Analysis::SetUpPlots() {
   fTH1DMap["zmass"] = Analysis::MakeTH1DPlot("zmass","",60,60.,120.,"Dimuon Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zpt"]   = Analysis::MakeTH1DPlot("zpt","",20,0.,500.,"Dimuon p_{T} [GeV/c]","Events / 25 GeV/c"); 
   fTH1DMap["pfmet"] = Analysis::MakeTH1DPlot("pfmet","",50,0.,200.,"E_{T}^{Miss} [GeV]","Events / 4 GeV"); 
 
   fTH1DMap["signaljetpt"]      = Analysis::MakeTH1DPlot("signaljetpt","",40,0.,400.,"Leading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
-  fTH1DMap["signaljeteta"]     = Analysis::MakeTH1DPlot("signaljeteta","",50,-5.,5.,"Leading Jet #eta","Events"); 
+  fTH1DMap["signaljeteta"]     = Analysis::MakeTH1DPlot("signaljeteta","",30,-3.,3.,"Leading Jet #eta","Events"); 
   fTH1DMap["signaljetCHfrac"]  = Analysis::MakeTH1DPlot("signaljetCHfrac","",50,0.,1.,"Leading Jet CH Fraction","Events"); 
   fTH1DMap["signaljetNHfrac"]  = Analysis::MakeTH1DPlot("signaljetNHfrac","",50,0.,1.,"Leading Jet NH Fraction","Events"); 
   fTH1DMap["signaljetEMfrac"]  = Analysis::MakeTH1DPlot("signaljetEMfrac","",50,0.,1.,"Leading Jet Neutral EM Fraction","Events"); 
   fTH1DMap["signaljetCEMfrac"] = Analysis::MakeTH1DPlot("signaljetCEMfrac","",50,0.,1.,"Leading Jet Charged EM Fraction","Events"); 
 
+  fTH1DMap["secondjetpt"]      = Analysis::MakeTH1DPlot("secondjetpt","",40,0.,400.,"Subleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["secondjeteta"]     = Analysis::MakeTH1DPlot("secondjeteta","",30,-3.,3.,"Subleading Jet #eta","Events"); 
+  fTH1DMap["secondjetCHfrac"]  = Analysis::MakeTH1DPlot("secondjetCHfrac","",50,0.,1.,"Subleading Jet CH Fraction","Events"); 
+  fTH1DMap["secondjetNHfrac"]  = Analysis::MakeTH1DPlot("secondjetNHfrac","",50,0.,1.,"Subleading Jet NH Fraction","Events"); 
+  fTH1DMap["secondjetEMfrac"]  = Analysis::MakeTH1DPlot("secondjetEMfrac","",50,0.,1.,"Subleading Jet Neutral EM Fraction","Events"); 
+  fTH1DMap["secondjetCEMfrac"] = Analysis::MakeTH1DPlot("secondjetCEMfrac","",50,0.,1.,"Subleading Jet Charged EM Fraction","Events"); 
+
+  fTH1DMap["thirdjetpt"]       = Analysis::MakeTH1DPlot("thirdjetpt","",40,0.,400.,"Subsubleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["thirdjeteta"]      = Analysis::MakeTH1DPlot("thirdjeteta","",30,-3.,3.,"Subsubleading Jet #eta","Events"); 
+  fTH1DMap["thirdjetCHfrac"]   = Analysis::MakeTH1DPlot("thirdjetCHfrac","",50,0.,1.,"Subsubleading Jet CH Fraction","Events"); 
+  fTH1DMap["thirdjetNHfrac"]   = Analysis::MakeTH1DPlot("thirdjetNHfrac","",50,0.,1.,"Subsubleading Jet NH Fraction","Events"); 
+  fTH1DMap["thirdjetEMfrac"]   = Analysis::MakeTH1DPlot("thirdjetEMfrac","",50,0.,1.,"Subsubleading Jet Neutral EM Fraction","Events"); 
+  fTH1DMap["thirdjetCEMfrac"]  = Analysis::MakeTH1DPlot("thirdjetCEMfrac","",50,0.,1.,"Subsubleading Jet Charged EM Fraction","Events"); 
+
   fTH1DMap["nvtx"]  = Analysis::MakeTH1DPlot("nvtx","",50,0,50,"Number of Primary Vertices","Events");
-  fTH1DMap["njets"] = Analysis::MakeTH1DPlot("njets","",50,0,50,"Jet Multiplicity","Events");
+  fTH1DMap["njets"] = Analysis::MakeTH1DPlot("njets","",10,0,10,"Jet Multiplicity","Events");
 }
 
-TH1D * Analysis::MakeTH1DPlot(const TString hname, const TString htitle, const Int_t nbins, const Double_t xlow, const Double_t xhigh, const TString xtitle, const TString ytitle){
+TH1D * Analysis::MakeTH1DPlot(const TString hname, const TString htitle, const Int_t nbins, const Double_t xlow, const Double_t xhigh, const TString xtitle, const TString ytitle) {
   TH1D * hist = new TH1D(hname.Data(),htitle.Data(),nbins,xlow,xhigh);
   hist->GetXaxis()->SetTitle(xtitle.Data());
   hist->GetYaxis()->SetTitle(ytitle.Data());
@@ -168,10 +246,10 @@ void Analysis::SaveHists() {
 
     // first save as log, then linear
     canv->SetLogy(1);
-    canv->SaveAs(Form("%s/%s/%s_log.%s",fOutDir.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
+    canv->SaveAs(Form("%s/%s/%s/%s_log.%s",fOutDir.Data(),fSelection.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
 
     canv->SetLogy(0);
-    canv->SaveAs(Form("%s/%s/%s_lin.%s",fOutDir.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
+    canv->SaveAs(Form("%s/%s/%s/%s_lin.%s",fOutDir.Data(),fSelection.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
   }
 
   delete canv;
@@ -372,3 +450,190 @@ void Analysis::SetBranchAddresses() {
   fInTree->SetBranchAddress("wgtsum", &wgtsum, &b_wgtsum);
 }
 
+void Analysis::DeleteBranches() {
+  delete b_event;   //!
+  delete b_run;   //!
+  delete b_lumi;   //!
+  delete b_xsec;   //!
+  delete b_wgt;   //!
+  delete b_kfact;   //!
+  delete b_puwgt;   //!
+  delete b_puobs;   //!
+  delete b_putrue;   //!
+  delete b_nvtx;   //!
+  delete b_hltmet90;   //!
+  delete b_hltmet120;   //!
+  delete b_hltmetwithmu90;   //!
+  delete b_hltmetwithmu120;   //!
+  delete b_hltmetwithmu170;   //!
+  delete b_hltmetwithmu300;   //!
+  delete b_hltjetmet90;   //!
+  delete b_hltjetmet120;   //!
+  delete b_hltphoton165;   //!
+  delete b_hltphoton175;   //!
+  delete b_hltdoublemu;   //!
+  delete b_hltsinglemu;   //!
+  delete b_hltdoubleel;   //!
+  delete b_hltsingleel;   //!
+  delete b_flagcsctight;   //!
+  delete b_flaghbhenoise;   //!
+  delete b_flaghcallaser;   //!
+  delete b_flagecaltrig;   //!
+  delete b_flageebadsc;   //!
+  delete b_flagecallaser;   //!
+  delete b_flagtrkfail;   //!
+  delete b_flagtrkpog;   //!
+  delete b_flaghnoiseloose;   //!
+  delete b_flaghnoisetight;   //!
+  delete b_flaghnoisehilvl;   //!
+  delete b_nmuons;   //!
+  delete b_nelectrons;   //!
+  delete b_ntightmuons;   //!
+  delete b_ntightelectrons;   //!
+  delete b_ntaus;   //!
+  delete b_njets;   //!
+  delete b_nbjets;   //!
+  delete b_nfatjets;   //!
+  delete b_nphotons;   //!
+  delete b_pfmet;   //!
+  delete b_pfmetphi;   //!
+  delete b_t1pfmet;   //!
+  delete b_t1pfmetphi;   //!
+  delete b_pfmupt;   //!
+  delete b_pfmuphi;   //!
+  delete b_mumet;   //!
+  delete b_mumetphi;   //!
+  delete b_phmet;   //!
+  delete b_phmetphi;   //!
+  delete b_t1mumet;   //!
+  delete b_t1mumetphi;   //!
+  delete b_t1phmet;   //!
+  delete b_t1phmetphi;   //!
+  delete b_fatjetpt;   //!
+  delete b_fatjeteta;   //!
+  delete b_fatjetphi;   //!
+  delete b_fatjetprmass;   //!
+  delete b_fatjetsdmass;   //!
+  delete b_fatjettrmass;   //!
+  delete b_fatjetftmass;   //!
+  delete b_fatjettau2;   //!
+  delete b_fatjettau1;   //!
+  delete b_fatjetCHfrac;   //!
+  delete b_fatjetNHfrac;   //!
+  delete b_fatjetEMfrac;   //!
+  delete b_fatjetCEMfrac;   //!
+  delete b_fatjetmetdphi;   //!
+  delete b_signaljetpt;   //!
+  delete b_signaljeteta;   //!
+  delete b_signaljetphi;   //!
+  delete b_signaljetbtag;   //!
+  delete b_signaljetCHfrac;   //!
+  delete b_signaljetNHfrac;   //!
+  delete b_signaljetEMfrac;   //!
+  delete b_signaljetCEMfrac;   //!
+  delete b_signaljetmetdphi;   //!
+  delete b_secondjetpt;   //!
+  delete b_secondjeteta;   //!
+  delete b_secondjetphi;   //!
+  delete b_secondjetbtag;   //!
+  delete b_secondjetCHfrac;   //!
+  delete b_secondjetNHfrac;   //!
+  delete b_secondjetEMfrac;   //!
+  delete b_secondjetCEMfrac;   //!
+  delete b_secondjetmetdphi;   //!
+  delete b_thirdjetpt;   //!
+  delete b_thirdjeteta;   //!
+  delete b_thirdjetphi;   //!
+  delete b_thirdjetbtag;   //!
+  delete b_thirdjetCHfrac;   //!
+  delete b_thirdjetNHfrac;   //!
+  delete b_thirdjetEMfrac;   //!
+  delete b_thirdjetCEMfrac;   //!
+  delete b_thirdjetmetdphi;   //!
+  delete b_jetjetdphi;   //!
+  delete b_jetmetdphimin;   //!
+  delete b_incjetmetdphimin;   //!
+  delete b_ht;   //!
+  delete b_dht;   //!
+  delete b_mht;   //!
+  delete b_alphat;   //!
+  delete b_apcjetmetmax;   //!
+  delete b_apcjetmetmin;   //!
+  delete b_mu1pid;   //!
+  delete b_mu1pt;   //!
+  delete b_mu1eta;   //!
+  delete b_mu1phi;   //!
+  delete b_mu1id;   //!
+  delete b_mu2pid;   //!
+  delete b_mu2pt;   //!
+  delete b_mu2eta;   //!
+  delete b_mu2phi;   //!
+  delete b_mu2id;   //!
+  delete b_el1pid;   //!
+  delete b_el1pt;   //!
+  delete b_el1eta;   //!
+  delete b_el1phi;   //!
+  delete b_el1id;   //!
+  delete b_el2pid;   //!
+  delete b_el2pt;   //!
+  delete b_el2eta;   //!
+  delete b_el2phi;   //!
+  delete b_el2id;   //!
+  delete b_zmass;   //!
+  delete b_zpt;   //!
+  delete b_zeta;   //!
+  delete b_zphi;   //!
+  delete b_wmt;   //!
+  delete b_emumass;   //!
+  delete b_emupt;   //!
+  delete b_emueta;   //!
+  delete b_emuphi;   //!
+  delete b_zeemass;   //!
+  delete b_zeeept;   //!
+  delete b_zeeeta;   //!
+  delete b_zeephi;   //!
+  delete b_wemt;   //!
+  delete b_phpt;   //!
+  delete b_pheta;   //!
+  delete b_phphi;   //!
+  delete b_loosephpt;   //!
+  delete b_loosepheta;   //!
+  delete b_loosephphi;   //!
+  delete b_loosephsieie;   //!
+  delete b_loosephrndiso;   //!
+  delete b_wzid;   //!
+  delete b_wzmass;   //!
+  delete b_wzmt;   //!
+  delete b_wzpt;   //!
+  delete b_wzeta;   //!
+  delete b_wzphi;   //!
+  delete b_l1id;   //!
+  delete b_l1pt;   //!
+  delete b_l1eta;   //!
+  delete b_l1phi;   //!
+  delete b_l2id;   //!
+  delete b_l2pt;   //!
+  delete b_l2eta;   //!
+  delete b_l2phi;   //!
+  delete b_i1id;   //!
+  delete b_i1pt;   //!
+  delete b_i1eta;   //!
+  delete b_i1phi;   //!
+  delete b_i2id;   //!
+  delete b_i2pt;   //!
+  delete b_i2eta;   //!
+  delete b_i2phi;   //!
+  delete b_i3id;   //!
+  delete b_i3pt;   //!
+  delete b_i3eta;   //!
+  delete b_i3phi;   //!
+  delete b_cflagcsctight;   //!
+  delete b_cflaghbhenoise;   //!
+  delete b_cflaghcallaser;   //!
+  delete b_cflagecaltrig;   //!
+  delete b_cflageebadsc;   //!
+  delete b_cflagecallaser;   //!
+  delete b_cflagtrkfail;   //!
+  delete b_cflagtrkpog;   //!
+  delete b_wgtsum;   //!
+}

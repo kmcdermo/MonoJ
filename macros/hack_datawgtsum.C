@@ -1,4 +1,4 @@
-void hack_wgtsum(TString dir) {
+void hack_datawgtsum(TString dir) {
   TFile* infile = new TFile(Form("Data/%s/tree.root",dir.Data()));
   TTree* frtree = (TTree*)infile->Get("tree/tree");
   if (!frtree) return;

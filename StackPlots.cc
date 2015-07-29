@@ -1,6 +1,6 @@
 #include "StackPlots.hh"
 
-StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
+StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
   // input data members
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     if ((*iter).second) { // isMC == true
@@ -15,12 +15,17 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMa
   fNData = fDataNames.size();
   fNMC   = fMCNames.size();
 
+  // save selection
+  fSelection = selection;
+
   // save lumi
   fLumi = lumi;
 
-  // use the plots already stored in Analysis.cpp --> doubles
-  fTH1DNames.push_back("zmass");
-  fTH1DNames.push_back("zpt");
+  // use the plots already stored in Analysis.cpp ... use selection to decide what to loop over --> doubles
+  if (fSelection.Contains("zmumu",TString::kExact)) {
+    fTH1DNames.push_back("zmass");
+    fTH1DNames.push_back("zpt");
+  }  
   fTH1DNames.push_back("pfmet");
   fTH1DNames.push_back("signaljetpt");
   fTH1DNames.push_back("signaljeteta");
@@ -28,6 +33,18 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMa
   fTH1DNames.push_back("signaljetNHfrac");
   fTH1DNames.push_back("signaljetEMfrac");
   fTH1DNames.push_back("signaljetCEMfrac");
+  fTH1DNames.push_back("secondjetpt");
+  fTH1DNames.push_back("secondjeteta");
+  fTH1DNames.push_back("secondjetCHfrac");
+  fTH1DNames.push_back("secondjetNHfrac");
+  fTH1DNames.push_back("secondjetEMfrac");
+  fTH1DNames.push_back("secondjetCEMfrac");
+  fTH1DNames.push_back("thirdjetpt");
+  fTH1DNames.push_back("thirdjeteta");
+  fTH1DNames.push_back("thirdjetCHfrac");
+  fTH1DNames.push_back("thirdjetNHfrac");
+  fTH1DNames.push_back("thirdjetEMfrac");
+  fTH1DNames.push_back("thirdjetCEMfrac");
   fTH1DNames.push_back("njets");
   fTH1DNames.push_back("nvtx");
 
@@ -37,12 +54,15 @@ StackPlots::StackPlots(SamplePairVec Samples, const Double_t lumi, const ColorMa
   // output data members
   fOutDir  = outdir;
   fOutName = "stackedplots"; // where to put output stack plots 
-  MakeOutDirectory(Form("%s/%s",fOutDir.Data(),fOutName.Data())); // make output directory 
-  fOutFile = new TFile(Form("%s/%s/stackplots_canvases.root",fOutDir.Data(),fOutName.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
+  MakeOutDirectory(Form("%s/%s/%s",fOutDir.Data(),fSelection.Data(),fOutName.Data())); // make output directory 
+  fOutFile = new TFile(Form("%s/%s/%s/stackplots_canvases.root",fOutDir.Data(),fSelection.Data(),fOutName.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
   fOutType = outtype; // allow user to pick png, pdf, gif, etc for stacked plots
 
   // define color map + title map
   fSampleTitleMap["zmumu"] = "Z #rightarrow #mu^{+} #mu^{-}";
+  fSampleTitleMap["zelel"] = "Z #rightarrow e^{+} e^{-}";
+  fSampleTitleMap["wmunu"] = "W #rightarrow #mu #nu";
+  fSampleTitleMap["welnu"] = "W #rightarrow e #nu";
   fSampleTitleMap["ttbar"] = "t#bar{t}";
   fColorMap = colorMap;
 
@@ -280,7 +300,7 @@ void StackPlots::SaveCanvas(const UInt_t th1d, const Bool_t isLogY){
   fOutTH1DStackPads[th1d]->SetLogy(isLogY); //  set no logy on this pad
   fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
   StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
-  fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s/%s_%s.%s",fOutDir.Data(),fOutName.Data(),fTH1DNames[th1d].Data(),suffix.Data(),fOutType.Data()));
+  fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s/%s/%s_%s.%s",fOutDir.Data(),fSelection.Data(),fOutName.Data(),fTH1DNames[th1d].Data(),suffix.Data(),fOutType.Data()));
   fOutFile->cd();
   fOutTH1DCanvases[th1d]->Write(Form("%s_%s",fTH1DNames[th1d].Data(),suffix.Data()));
 }

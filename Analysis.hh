@@ -15,11 +15,16 @@
 #include <utility>
 #include <vector>
 #include <map>
-#include <iostream>
 
+#include <iostream>
+#include <fstream>
+
+typedef std::vector<Double_t>     DblVec;
 typedef std::vector<UInt_t>   UIntVec;
 typedef std::vector<Int_t>    IntVec;
-typedef std::vector<Double_t> DblVec;
+
+typedef std::map<TString,Double_t> DblMap;
+typedef DblMap::iterator           DblMapIter;
 
 typedef std::map<TString,TH1D*> TH1DMap;
 typedef TH1DMap::iterator       TH1DMapIter;
@@ -28,7 +33,7 @@ class Analysis
 {
 public:
 
-  Analysis(const SamplePair SamplePair, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType);
+  Analysis(const SamplePair SamplePair, const TString selection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType);
   
   void SetBranchAddresses();
   void DoAnalysis();
@@ -36,15 +41,18 @@ public:
   TH1D * MakeTH1DPlot(const TString hname, const TString htitle, const Int_t nbins, const Double_t xlow, const Double_t xhigh, const TString xtitle, const TString ytitle);
   void SaveHists();
   void DeleteHists();
-    
+  
+  void DeleteBranches();
+  
   ~Analysis();
 
 private:
   // initialized in constructor
   TString fSample;
   Bool_t fIsMC;
+  TString fSelection;
   Double_t fLumi;
-  
+
   TFile * fInFile;
   TTree * fInTree;
 
@@ -52,6 +60,9 @@ private:
   TString fOutName;
   TFile * fOutFile;
   TString fOutType;
+
+  DblMap   fYieldsMap;
+  ofstream fYieldsTxt;
 
   TH1DMap fTH1DMap;
 

@@ -39,7 +39,7 @@ typedef std::map<TString,TString> TStrMap;
 class StackPlots
 {
 public:
-  StackPlots(const SamplePairVec Samples, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype);
+  StackPlots(const SamplePairVec Samples, const TString selection, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype);
   
   void OpenInputFiles();
   void InitInputPlots();
@@ -70,6 +70,7 @@ private:
   TStrVec fDataNames;
   TStrVec fMCNames;
   TStrVec fTH1DNames;
+  TString fSelection;
 
   Double_t fLumi;
   

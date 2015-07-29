@@ -1,8 +1,10 @@
-#include <iostream>
 #include "Analysis.hh"
 #include "StackPlots.hh"
 #include "Common.hh"
+
 #include "TROOT.h"
+
+#include <iostream>
 
 int main(){
   // set TDR Style
@@ -13,10 +15,16 @@ int main(){
   // Color for MC Stacks
   ColorMap colorMap;
   colorMap["zmumu"] = kCyan;
+  colorMap["zelel"] = kBlue+1;
+  colorMap["wmunu"] = kGreen+3;
+  colorMap["welnu"] = kGreen-7;
   colorMap["ttbar"] = kRed+2;
 
   // Total Integrated Luminosity
   Double_t lumi = 0.04024; // int lumi 
+
+  // Selection we want (zpeak with muons, zpeak with electrons, etc)
+  TString selection = "zmumu";
 
   // Samples to process 
   SamplePairVec Samples;
@@ -27,21 +35,26 @@ int main(){
   // Allow user to set outtype for plots
   TString outtype = "png";
 
-  // Allow user to set output directory for whole project --> if running only stacking... will need to specify inputs in .cc file
+  // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
   TString outdir = "firststudies_4024pb";
+
+  //++++++++++++++++++++++++++++++++++++++++// Analysis begins here
+  // First do PU reweight calculation ... will build separate object for it.  for now just use vector from macro
+  gROOT->ProcessLine(".L pureweight.C");
+  std::vector<Double_t> puweights = pureweight();
 
   // First make total output directory ... sub directories made inside objects
   MakeOutDirectory(outdir);
 
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),lumi,colorMap,outdir,outtype);
+    Analysis sample((*iter),selection,puweights,lumi,colorMap,outdir,outtype);
     sample.DoAnalysis();
   }
   
   std::cout << "Done with Analysis ... now make stack plots" << std::endl;
 
-  StackPlots * stacker = new StackPlots(Samples,lumi,colorMap,outdir,outtype);
+  StackPlots * stacker = new StackPlots(Samples,selection,lumi,colorMap,outdir,outtype);
   stacker->DoStacks();
   delete stacker;
 }
