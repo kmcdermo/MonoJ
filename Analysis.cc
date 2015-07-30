@@ -12,44 +12,12 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const D
   TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
   if (fIsMC){ // MC
     fileName.Append("Spring15MC_50ns/");
-    if (fSample.Contains("zmumu",TString::kExact)){ // z -> mm
-      fileName.Append("zll/treewithwgt.root");
-    }
-    else if (fSample.Contains("zelel",TString::kExact)){ // z -> ee
-      fileName.Append("zll/treewithwgt.root");
-    }
-    else if (fSample.Contains("wmunu",TString::kExact)){ // w -> mv
-      fileName.Append("wln/treewithwgt.root");
-    }
-    else if (fSample.Contains("welnu",TString::kExact)){ // w -> ev
-      fileName.Append("wln/treewithwgt.root");
-    }
-    else if (fSample.Contains("ttbar",TString::kExact)){ // ttbar
-      fileName.Append("ttbar/treewithwgt.root");
-    }
-    else {
-      std::cout << "Not a known sample: " << fSample << " isMC: " << fIsMC << " ...exiting..." << std::endl;
-    }
   }
   else{ // Data
     fileName.Append("Data/");
-    if (fSample.Contains("doublemu",TString::kExact)){ // z-> mm
-      fileName.Append("doublemu/treewithwgt.root");
-    }
-    else if (fSample.Contains("doubleel",TString::kExact)){ // z-> ee
-      fileName.Append("doubleel/treewithwgt.root");
-    }
-    else if (fSample.Contains("singlemu",TString::kExact)){ // w-> mv
-      fileName.Append("singlemu/treewithwgt.root");
-    }
-    else if (fSample.Contains("singleel",TString::kExact)){ // w-> ev
-      fileName.Append("singleel/treewithwgt.root");
-    }
-    else {
-      std::cout << "Not a known sample: " << fSample << " isMC: " << fIsMC << " ...exiting..." << std::endl;
-    }
   }
-
+  fileName.Append(Form("%s/treewithwgt.root",fSample.Data()));
+    
   // Open the file + tree
   fInFile = TFile::Open(Form("%s",fileName.Data()));
   CheckValidFile(fInFile,fileName);
@@ -243,39 +211,39 @@ void Analysis::DoAnalysis(){
 void Analysis::SetUpPlots() {
   fTH1DMap["mu1eta"] = Analysis::MakeTH1DPlot("mu1eta","",30,-3.,3.,"Leading Muon #eta","Events"); 
   fTH1DMap["mu1phi"] = Analysis::MakeTH1DPlot("mu1phi","",32,-3.2,3.2,"Leading Muon #phi","Events"); 
-  fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",40,0.,400.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",50,0.,500.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["mu2eta"] = Analysis::MakeTH1DPlot("mu2eta","",30,-3.,3.,"Subleading Muon #eta","Events"); 
   fTH1DMap["mu2phi"] = Analysis::MakeTH1DPlot("mu2phi","",32,-3.2,3.2,"Subleading Muon #phi","Events"); 
-  fTH1DMap["mu2pt"]  = Analysis::MakeTH1DPlot("mu2pt","",40,0.,400.,"Subleading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["mu2pt"]  = Analysis::MakeTH1DPlot("mu2pt","",50,0.,500.,"Subleading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
 
   fTH1DMap["el1eta"] = Analysis::MakeTH1DPlot("el1eta","",30,-3.,3.,"Leading Electron #eta","Events"); 
   fTH1DMap["el1phi"] = Analysis::MakeTH1DPlot("el1phi","",32,-3.2,3.2,"Leading Electron #phi","Events"); 
-  fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",40,0.,400.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",50,0.,500.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["el2eta"] = Analysis::MakeTH1DPlot("el2eta","",30,-3.,3.,"Subleading Electron #eta","Events"); 
   fTH1DMap["el2phi"] = Analysis::MakeTH1DPlot("el2phi","",32,-3.2,3.2,"Subleading Electron #phi","Events"); 
-  fTH1DMap["el2pt"]  = Analysis::MakeTH1DPlot("el2pt","",40,0.,400.,"Subleading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["el2pt"]  = Analysis::MakeTH1DPlot("el2pt","",50,0.,500.,"Subleading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
 
   fTH1DMap["zeta"]    = Analysis::MakeTH1DPlot("zeta","",30,-3.,3.,"Dimuon #eta","Events"); 
   fTH1DMap["zmass"]   = Analysis::MakeTH1DPlot("zmass","",60,60.,120.,"Dimuon Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zphi"]    = Analysis::MakeTH1DPlot("zphi","",32,-3.2,3.2,"Dimuon #phi","Events"); 
-  fTH1DMap["zpt"]     = Analysis::MakeTH1DPlot("zpt","",20,0.,500.,"Dimuon p_{T} [GeV/c]","Events / 25 GeV/c"); 
+  fTH1DMap["zpt"]     = Analysis::MakeTH1DPlot("zpt","",40,0.,1000.,"Dimuon p_{T} [GeV/c]","Events / 25 GeV/c"); 
 
   fTH1DMap["zeeeta"]  = Analysis::MakeTH1DPlot("zeeeta","",30,-3.,3.,"Dielectron #eta","Events"); 
   fTH1DMap["zeemass"] = Analysis::MakeTH1DPlot("zeemass","",60,60.,120.,"Dielectron Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zeephi"]  = Analysis::MakeTH1DPlot("zeephi","",32,-3.2,3.2,"Dielectron #phi","Events"); 
-  fTH1DMap["zeept"]   = Analysis::MakeTH1DPlot("zeept","",20,0.,500.,"Dielectron p_{T} [GeV/c]","Events / 25 GeV/c"); 
+  fTH1DMap["zeept"]   = Analysis::MakeTH1DPlot("zeept","",40,0.,1000.,"Dielectron p_{T} [GeV/c]","Events / 25 GeV/c"); 
 
   fTH1DMap["emueta"]  = Analysis::MakeTH1DPlot("emueta","",30,-3.,3.,"Electron-Muon #eta","Events"); 
   fTH1DMap["emumass"] = Analysis::MakeTH1DPlot("emumass","",60,60.,120.,"Electron-Muon Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["emuphi"]  = Analysis::MakeTH1DPlot("emuphi","",32,-3.2,3.2,"Electron-Muon #phi","Events"); 
-  fTH1DMap["emupt"]   = Analysis::MakeTH1DPlot("emupt","",40,0.,400.,"Electron-Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["emupt"]   = Analysis::MakeTH1DPlot("emupt","",40,0.,1000.,"Electron-Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
 
   fTH1DMap["wmt"]  = Analysis::MakeTH1DPlot("wmt","",30,30.,120.,"W_{T} Mass from Single Muon [GeV/c^{2}]","Events / 3 GeV/c^{2}");
   fTH1DMap["wemt"] = Analysis::MakeTH1DPlot("wemt","",30,30.,120.,"W_{T} Mass from Single Electron [GeV/c^{2}]","Events / 3 GeV/c^{2}");
 
   fTH1DMap["signaljeteta"]     = Analysis::MakeTH1DPlot("signaljeteta","",30,-3.,3.,"Leading Jet #eta","Events"); 
   fTH1DMap["signaljetphi"]     = Analysis::MakeTH1DPlot("signaljetphi","",32,-3.2,3.2,"Leading Jet #phi","Events"); 
-  fTH1DMap["signaljetpt"]      = Analysis::MakeTH1DPlot("signaljetpt","",40,0.,400.,"Leading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["signaljetpt"]      = Analysis::MakeTH1DPlot("signaljetpt","",80,0.,800.,"Leading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["signaljetCHfrac"]  = Analysis::MakeTH1DPlot("signaljetCHfrac","",50,0.,1.,"Leading Jet CH Fraction","Events"); 
   fTH1DMap["signaljetNHfrac"]  = Analysis::MakeTH1DPlot("signaljetNHfrac","",50,0.,1.,"Leading Jet NH Fraction","Events"); 
   fTH1DMap["signaljetEMfrac"]  = Analysis::MakeTH1DPlot("signaljetEMfrac","",50,0.,1.,"Leading Jet Neutral EM Fraction","Events"); 
@@ -283,7 +251,7 @@ void Analysis::SetUpPlots() {
 
   fTH1DMap["secondjeteta"]     = Analysis::MakeTH1DPlot("secondjeteta","",30,-3.,3.,"Subleading Jet #eta","Events"); 
   fTH1DMap["secondjetphi"]     = Analysis::MakeTH1DPlot("secondjetphi","",32,-3.2,3.2,"Subleading Jet #phi","Events"); 
-  fTH1DMap["secondjetpt"]      = Analysis::MakeTH1DPlot("secondjetpt","",40,0.,400.,"Subleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["secondjetpt"]      = Analysis::MakeTH1DPlot("secondjetpt","",80,0.,800.,"Subleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["secondjetCHfrac"]  = Analysis::MakeTH1DPlot("secondjetCHfrac","",50,0.,1.,"Subleading Jet CH Fraction","Events"); 
   fTH1DMap["secondjetNHfrac"]  = Analysis::MakeTH1DPlot("secondjetNHfrac","",50,0.,1.,"Subleading Jet NH Fraction","Events"); 
   fTH1DMap["secondjetEMfrac"]  = Analysis::MakeTH1DPlot("secondjetEMfrac","",50,0.,1.,"Subleading Jet Neutral EM Fraction","Events"); 
@@ -291,22 +259,22 @@ void Analysis::SetUpPlots() {
 
   fTH1DMap["thirdjeteta"]      = Analysis::MakeTH1DPlot("thirdjeteta","",30,-3.,3.,"Subsubleading Jet #eta","Events"); 
   fTH1DMap["thirdjetphi"]      = Analysis::MakeTH1DPlot("thirdjetphi","",32,-3.2,3.2,"Subsubleading Jet #phi","Events"); 
-  fTH1DMap["thirdjetpt"]       = Analysis::MakeTH1DPlot("thirdjetpt","",40,0.,400.,"Subsubleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["thirdjetpt"]       = Analysis::MakeTH1DPlot("thirdjetpt","",80,0.,800.,"Subsubleading Jet p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DMap["thirdjetCHfrac"]   = Analysis::MakeTH1DPlot("thirdjetCHfrac","",50,0.,1.,"Subsubleading Jet CH Fraction","Events"); 
   fTH1DMap["thirdjetNHfrac"]   = Analysis::MakeTH1DPlot("thirdjetNHfrac","",50,0.,1.,"Subsubleading Jet NH Fraction","Events"); 
   fTH1DMap["thirdjetEMfrac"]   = Analysis::MakeTH1DPlot("thirdjetEMfrac","",50,0.,1.,"Subsubleading Jet Neutral EM Fraction","Events"); 
   fTH1DMap["thirdjetCEMfrac"]  = Analysis::MakeTH1DPlot("thirdjetCEMfrac","",50,0.,1.,"Subsubleading Jet Charged EM Fraction","Events"); 
 
-  fTH1DMap["ht"]  = Analysis::MakeTH1DPlot("ht","",40,0.,400.,"H_{T} [GeV/c]","Events / 10 GeV/c"); 
-  fTH1DMap["mht"] = Analysis::MakeTH1DPlot("mht","",50,0.,200.,"E_{T}^{Miss} from H_{T} [GeV/c]","Events / 4 GeV/c"); 
+  fTH1DMap["ht"]  = Analysis::MakeTH1DPlot("ht","",80,0.,800.,"H_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["mht"] = Analysis::MakeTH1DPlot("mht","",80,0.,400.,"E_{T}^{Miss} from H_{T} [GeV/c]","Events / 5 GeV/c"); 
 
-  fTH1DMap["pfmet"]      = Analysis::MakeTH1DPlot("pfmet","",50,0.,200.,"PF E_{T}^{Miss} [GeV]","Events / 4 GeV"); 
+  fTH1DMap["pfmet"]      = Analysis::MakeTH1DPlot("pfmet","",80,0.,400.,"PF E_{T}^{Miss} [GeV]","Events / 5 GeV"); 
   fTH1DMap["pfmetphi"]   = Analysis::MakeTH1DPlot("pfmetphi","",32,-3.2,3.2,"PF E_{T}^{Miss} #phi","Events"); 
-  fTH1DMap["t1pfmet"]    = Analysis::MakeTH1DPlot("t1pfmet","",50,0.,200.,"Type-1 PF E_{T}^{Miss} [GeV]","Events / 4 GeV"); 
+  fTH1DMap["t1pfmet"]    = Analysis::MakeTH1DPlot("t1pfmet","",80,0.,400.,"Type-1 PF E_{T}^{Miss} [GeV]","Events / 5 GeV"); 
   fTH1DMap["t1pfmetphi"] = Analysis::MakeTH1DPlot("t1pfmetphi","",32,-3.2,3.2,"Type-1 PF E_{T}^{Miss} #phi","Events"); 
-  fTH1DMap["mumet"]      = Analysis::MakeTH1DPlot("mumet","",50,0.,200.,"PF E_{T}^{Miss} without Muons [GeV]","Events / 4 GeV");
+  fTH1DMap["mumet"]      = Analysis::MakeTH1DPlot("mumet","",80,0.,400.,"PF E_{T}^{Miss} without Muons [GeV]","Events / 5 GeV");
   fTH1DMap["mumetphi"]   = Analysis::MakeTH1DPlot("mumetphi","",32,-3.2,3.2,"PF E_{T}^{Miss} without Muons #phi","Events");  
-  fTH1DMap["t1mumet"]    = Analysis::MakeTH1DPlot("t1mumet","",50,0.,200.,"Type-1 PF E_{T}^{Miss} without Muons [GeV]","Events / 4 GeV"); 
+  fTH1DMap["t1mumet"]    = Analysis::MakeTH1DPlot("t1mumet","",80,0.,400.,"Type-1 PF E_{T}^{Miss} without Muons [GeV]","Events / 5 GeV"); 
   fTH1DMap["t1mumetphi"] = Analysis::MakeTH1DPlot("t1mumetphi","",32,-3.2,3.2,"Type-1 PF E_{T}^{Miss} without Muons #phi","Events");  
 
   fTH1DMap["nvtx"]  = Analysis::MakeTH1DPlot("nvtx","",50,0,50,"Number of Primary Vertices","Events");

@@ -39,11 +39,17 @@ void CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname){
   }
 }
 
-void HaddQCD(TStrVec qcdsamples) {
-  TString hadd = "hadd qcd.root";
+void Hadd(SamplePairVec samples, const TString outdir, const TString selection, const TString combinedName) {
+  // need to make directory for hadd'ed file
+  TString combinedOutdir = Form("%s/%s/%s",outdir.Data(),selection.Data(),combinedName.Data());
+  MakeOutDir(combingOutdir);
+  
+  // Form string for doing hadd
+  TString hadd = Form("hadd %s/%s/%s/plots.root",outdir.Data(),selection.Data(),combinedName.Data());
   TString tohadd = "";
-  for (UInt_t qcd = 0; qcd < qcdsamples.size(); qcd++) {
-    tohadd.Append(qcdsamples[qcd]);
+
+  for (SamplePairVecIter iter = samples.begin(); iter != samples.end(); ++iter) {
+    tohadd.Append(Form(" %s/%s/%s/plots.root",outdir.Data(),selection.Data(),(*iter).first.Data());
   }
   hadd.Append(tohadd);
   

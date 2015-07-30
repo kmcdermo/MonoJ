@@ -105,12 +105,10 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Dou
   fOutType = outtype; // allow user to pick png, pdf, gif, etc for stacked plots
 
   // define color map + title map
-  fSampleTitleMap["zmumu"] = "Z #rightarrow #mu^{+} #mu^{-}";
-  fSampleTitleMap["zelel"] = "Z #rightarrow e^{+} e^{-}";
-  fSampleTitleMap["wmunu"] = "W #rightarrow #mu #nu";
-  fSampleTitleMap["welnu"] = "W #rightarrow e #nu";
+  fSampleTitleMap["zll"]   = "Z #rightarrow l^{+}l^{-}";
+  fSampleTitleMap["wln"]   = "W #rightarrow l#nu";
   fSampleTitleMap["ttbar"] = "t#bar{t}";
-  fSampleTitleMap["QCD"]   = "QCD";
+  fSampleTitleMap["qcd"]   = "QCD";
   fColorMap = colorMap;
 
   // with all that defined, initialize everything in constructor
