@@ -110,6 +110,7 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Dou
   fSampleTitleMap["wmunu"] = "W #rightarrow #mu #nu";
   fSampleTitleMap["welnu"] = "W #rightarrow e #nu";
   fSampleTitleMap["ttbar"] = "t#bar{t}";
+  fSampleTitleMap["QCD"]   = "QCD";
   fColorMap = colorMap;
 
   // with all that defined, initialize everything in constructor

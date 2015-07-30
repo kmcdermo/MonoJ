@@ -39,7 +39,7 @@ std::vector<Double_t> PUReWeight(){
   datanvtx->Draw("PE");
   mcnvtx1->Draw("HIST SAME");
 
-  c1->SaveAs("before.png");
+  //  c1->SaveAs("before.png");
 
   TCanvas * c2 = new TCanvas();
   c2->cd();
@@ -60,7 +60,7 @@ std::vector<Double_t> PUReWeight(){
   datanvtx_copy->Draw("PE");
   mcnvtx1->Draw("HIST SAME");
 
-  c2->SaveAs("after.png");
+  //  c2->SaveAs("after.png");
   
   delete c1;
   delete c2;

@@ -20,6 +20,7 @@ int main(){
   colorMap["wmunu"] = kGreen+3;
   colorMap["welnu"] = kGreen-7;
   colorMap["ttbar"] = kRed+2;
+  colorMap["QCD"]   = kOrange+7;
 
   // Total Integrated Luminosity
   Double_t lumi = 0.04024; // int lumi 
@@ -31,7 +32,7 @@ int main(){
   SamplePairVec Samples;
   //Samples.push_back(SamplePair("doublemu",false)); // selection = zmumu
   Samples.push_back(SamplePair("doubleel",false));
-  Samples.push_back(SamplePair("zmumu",true));
+  Samples.push_back(SamplePair("zelel",true));
   Samples.push_back(SamplePair("ttbar",true));
 
   // Allow user to set outtype for plots
@@ -41,6 +42,12 @@ int main(){
   TString outdir = "firststudies_4024pb";
 
   //++++++++++++++++++++++++++++++++++++++++// Analysis begins here
+
+  
+
+
+  /*
+
   // First do PU reweight calculation ... will build separate object for it.  for now just use vector from macro
   std::cout << "Do PU reweighting with z -> mu mu peak" << std::endl;
 
@@ -57,12 +64,16 @@ int main(){
     Analysis sample((*iter),selection,puweights,lumi,colorMap,outdir,outtype);
     sample.DoAnalysis();
   }
-  
-  std::cout << "Done with Analysis ... now make stack plots" << std::endl;
+
+  std::cout << "Done with Analysis ... now hadd QCD" << std::endl;  
+
+  // make macro here
+
+  std::cout << "Hadded QCD ... now do stacking " << std::endl;
 
   StackPlots * stacker = new StackPlots(Samples,selection,lumi,colorMap,outdir,outtype);
   stacker->DoStacks();
-  delete stacker;
+  delete stacker;*/
 }
 
 

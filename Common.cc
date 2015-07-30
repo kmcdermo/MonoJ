@@ -38,3 +38,14 @@ void CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname){
     //    std::cout << "Successfully initialized plot: " << pname.Data() << " in input file: " << fname.Data() << std::endl;
   }
 }
+
+void HaddQCD(TStrVec qcdsamples) {
+  TString hadd = "hadd qcd.root";
+  TString tohadd = "";
+  for (UInt_t qcd = 0; qcd < qcdsamples.size(); qcd++) {
+    tohadd.Append(qcdsamples[qcd]);
+  }
+  hadd.Append(tohadd);
+  
+  gSystem->Exec(hadd.Data());
+}

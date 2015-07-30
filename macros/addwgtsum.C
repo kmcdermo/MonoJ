@@ -16,8 +16,10 @@ double sumwgt(TTree* tree) {
   return weightsum;
 }
 
-void addwgtsum(TString sample) {
-  TFile* infile = TFile::Open(Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/tree.root",sample.Data()));
+//void addwgtsum(TString sample) {
+void addwgtsum() {
+  //  TFile* infile = TFile::Open(Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/tree.root",sample.Data()));
+  TFile* infile = TFile::Open("tree.root","UPDATE");
   TTree* intree = (TTree*)infile->Get("gentree/gentree");
   TTree* frtree = (TTree*)infile->Get("tree/tree");
   if (!intree) intree = (TTree*)infile->Get("gentree");
@@ -36,7 +38,7 @@ void addwgtsum(TString sample) {
 
   //  std::string cut = "mumet > 200 || t1mumet > 200";
 
-  TFile* outfile = TFile::Open(Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/tree.root",sample.Data()),"RECREATE");
+  /*  TFile* outfile = TFile::Open("treewithwgt.root","RECREATE");
 
   // for now do not need to copy gen tree, just tree with weights
   //  TDirectoryFile* gentreedir = new TDirectoryFile("gentree", "gentree");
@@ -50,9 +52,10 @@ void addwgtsum(TString sample) {
   treedir->cd();
   TTree* outtree = frtree->CopyTree("");
   outfile->Write();
-
+  */
+  infile->Write();
   infile->Close();
-  outfile->Close();
+  //  outfile->Close();
 
   std::cout << "Finished macro" << std::endl;
 }
