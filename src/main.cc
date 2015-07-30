@@ -1,7 +1,8 @@
+#include "../interface/Common.hh"
+
 #include "../interface/Analysis.hh"
 #include "../interface/StackPlots.hh"
-#include "../interface/Common.hh"
-#include "../macros/PUReWeight.C"
+#include "../interface/PUReweight.hh"
 
 #include "TROOT.h"
 
@@ -22,11 +23,14 @@ int main(){
   colorMap["top"] = kRed+2;
   colorMap["qcd"] = kOrange+7;
 
+  // nPV needs nBins set for PU reweights and actual plots
+  Int_t nBins_vtx = 50;
+
   // Allow user to set outtype for plots
   TString outtype = "png";
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "firststudies_4024pb";
+  TString outdir = "justdata";
 
   // First make total output directory ... sub directories made inside objects
   MakeOutDirectory(outdir);
@@ -43,7 +47,7 @@ int main(){
   Double_t lumi = 0.04024; // int lumi 
 
   // Selection we want (zmumu = zpeak with muons, zelel = zpeak with electrons, singleel)
-  TString selection = "zelel";
+  TString selection = "zmumu";
 
   //========================================// 
   //             PU Reweighting             //
@@ -51,8 +55,19 @@ int main(){
 
   // currently set for z->mumu peak matchng selection in Analysis.cc, could make this a compiled code eventually
 
-  std::cout << "Do PU reweighting with z --> mu mu peak" << std::endl;
-  DblVec puweights = PUReWeight(); 
+  TString PURWselection = "zmumu";
+  std::cout << Form("Do PU reweighting first with %s!",PURWselection.Data()) << std::endl;
+  
+  SamplePairVec PURWSamples;
+  PURWSamples.push_back(SamplePair("doublemu",false));
+  PURWSamples.push_back(SamplePair("zll",true));
+
+  PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,lumi,nBins_vtx);
+
+  Bool_t doReWeight = true; // false if no actual reweighting to be performed
+  DblVec puweights = reweight->GetPUWeights(doReWeight); 
+
+  delete reweight;
   std::cout << "Finished PU reweighting, now begin Analysis" << std::endl;
 
   //========================================// 
@@ -63,7 +78,7 @@ int main(){
   // -------------------------------------- //
   // Largest samples to process 
   SamplePairVec Samples;
-  Samples.push_back(SamplePair("doubleel",false));
+  Samples.push_back(SamplePair("doublemu",false));
   Samples.push_back(SamplePair("zll",true));
   Samples.push_back(SamplePair("wln",true));
   Samples.push_back(SamplePair("ww",true));
@@ -72,7 +87,7 @@ int main(){
 
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),selection,puweights,lumi,colorMap,outdir,outtype);
+    Analysis sample((*iter),selection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis();
   }
 
@@ -89,7 +104,7 @@ int main(){
 
   for (SamplePairVecIter iter = TopSamples.begin(); iter != TopSamples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),selection,puweights,lumi,colorMap,outdir,outtype);
+    Analysis sample((*iter),selection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis();
   }
 
@@ -119,7 +134,7 @@ int main(){
 
   for (SamplePairVecIter iter = QCDSamples.begin(); iter != QCDSamples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),selection,puweights,lumi,colorMap,outdir,outtype);
+    Analysis sample((*iter),selection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis();
   }
 

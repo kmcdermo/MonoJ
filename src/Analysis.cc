@@ -1,12 +1,13 @@
 #include "../interface/Analysis.hh"
 
-Analysis::Analysis(const SamplePair samplePair, const TString selection, const DblVec puweights, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType){
+Analysis::Analysis(const SamplePair samplePair, const TString selection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const ColorMap colorMap, const TString outdir, const TString outType){
   // store in data members
   fSample    = samplePair.first;
   fIsMC      = samplePair.second;
   fSelection = selection;
   fPUWeights = puweights;
   fLumi      = lumi;
+  fNBins_vtx = nBins_vtx;
 
   //Get File
   TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
@@ -277,7 +278,7 @@ void Analysis::SetUpPlots() {
   fTH1DMap["t1mumet"]    = Analysis::MakeTH1DPlot("t1mumet","",80,0.,400.,"Type-1 PF E_{T}^{Miss} without Muons [GeV]","Events / 5 GeV"); 
   fTH1DMap["t1mumetphi"] = Analysis::MakeTH1DPlot("t1mumetphi","",32,-3.2,3.2,"Type-1 PF E_{T}^{Miss} without Muons #phi","Events");  
 
-  fTH1DMap["nvtx"]  = Analysis::MakeTH1DPlot("nvtx","",50,0,50,"Number of Primary Vertices","Events");
+  fTH1DMap["nvtx"]  = Analysis::MakeTH1DPlot("nvtx","",fNBins_vtx,0,fNBins_vtx,"Number of Primary Vertices","Events");
   fTH1DMap["njets"] = Analysis::MakeTH1DPlot("njets","",10,0,10,"Jet Multiplicity","Events");
 }
 

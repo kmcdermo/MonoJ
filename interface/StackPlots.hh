@@ -25,7 +25,6 @@
 #include <iostream>
 
 typedef std::vector<TFile*>   TFileVec;
-typedef std::vector<TH1D*>    TH1DVec;
 typedef std::vector<TH1DVec>  TH1DVecVec;
 typedef std::vector<THStack*> THStackVec;
 typedef std::vector<TLine*>   TLineVec;
