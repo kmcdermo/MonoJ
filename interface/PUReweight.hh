@@ -20,7 +20,7 @@ class PUReweight
 {
 public:
 
-  PUReweight(SamplePairVec Samples, const TString selection, const Double_t lumi, const Int_t nBins);
+  PUReweight(SamplePairVec Samples, const TString selection, const Double_t lumi, const Int_t nBins, const TString outdir, const TString outtype);
   DblVec GetPUWeights(const Bool_t doPUReWeight);
   ~PUReweight();
 
@@ -35,6 +35,9 @@ private:
   TString  fSelection;
   Double_t fLumi;
   Int_t    fNBins;
+
+  TString fOutDir;
+  TString fOutType;
 
   TH1DVec fInDataNvtx;
   TH1DVec fInMCNvtx;

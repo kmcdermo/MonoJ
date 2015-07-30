@@ -26,11 +26,11 @@ int main(){
   // nPV needs nBins set for PU reweights and actual plots
   Int_t nBins_vtx = 50;
 
-  // Allow user to set outtype for plots
-  TString outtype = "png";
-
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
   TString outdir = "justdata";
+
+  // Allow user to set outtype for plots
+  TString outtype = "png";
 
   // First make total output directory ... sub directories made inside objects
   MakeOutDirectory(outdir);
@@ -62,7 +62,7 @@ int main(){
   PURWSamples.push_back(SamplePair("doublemu",false));
   PURWSamples.push_back(SamplePair("zll",true));
 
-  PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,lumi,nBins_vtx);
+  PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,lumi,nBins_vtx,outdir,outtype);
 
   Bool_t doReWeight = true; // false if no actual reweighting to be performed
   DblVec puweights = reweight->GetPUWeights(doReWeight); 

@@ -1,6 +1,6 @@
 #include "../interface/PUReweight.hh"
 
-PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Double_t lumi, const Int_t nBins) {
+PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Double_t lumi, const Int_t nBins, const TString outdir, const TString outtype) {
   // save samples for PU weighting
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     if ((*iter).second) { // isMC == true
@@ -23,6 +23,10 @@ PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Dou
 
   // set nBins for nvtx distribution
   fNBins = nBins;
+
+  // set outputs
+  fOutDir  = outdir;
+  fOutType = outtype;
 
   // Initialize input TH1D's for data
   fInDataNvtx.resize(fNData);
@@ -138,7 +142,7 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
     // draw and save
     fOutDataNvtx->Draw("PE");
     fOutMCNvtx->Draw("HIST SAME");
-    c1->SaveAs("nvtx_beforePURW.png");
+    c1->SaveAs(Form("%s/nvtx_beforePURW.%s",fOutDir.Data(),fOutType.Data()));
 
     // Draw after reweighting 
     TCanvas * c2 = new TCanvas();
@@ -165,7 +169,7 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
     // draw output and save it
     fOutDataNvtx_copy->Draw("PE");
     fOutMCNvtx->Draw("HIST SAME");
-    c2->SaveAs("nvtx_afterPURW.png");
+    c2->SaveAs(Form("%s/nvtx_afterPURW.%s",fOutDir.Data(),fOutType.Data()));
 
     delete c1;
     delete c2;
