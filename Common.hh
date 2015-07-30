@@ -28,5 +28,6 @@ void MakeOutDirectory(TString outdir);
 void CheckValidFile(TFile *& file, const TString fname);
 void CheckValidTree(TTree*& tree, const TString tname, const TString fname);
 void CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname);
+void Hadd(SamplePairVec samples, const TString outdir, const TString selection, const TString combinedName);
 
 #endif
