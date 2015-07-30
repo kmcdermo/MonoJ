@@ -30,5 +30,5 @@ ${SRCDIR}/dict.cc: ${HEADERS}
 	rootcling -f $@ -c -p $^
 
 clean:
-	-rm -f ${EXES} ${DEPDIR}/*.d ${SRCDIR}/*.o ${SRCDIR}/*.pcm ./*/*~
+	-rm -f ${EXES} ${DEPDIR}/*.d ${OBJDIR}/*.o ${SRCDIR}/*.pcm ./*/*~
 

@@ -24,7 +24,7 @@
 ################
 *.root
 *~
-main  
+main
 
 # Ignore Pictures #
 ###################
