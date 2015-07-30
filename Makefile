@@ -14,13 +14,16 @@ SRCS := $(wildcard ${SRCDIR}/*.cc)
 OBJS := $(addprefix ${OBJDIR}/,$(notdir $(SRCS:.cc=.o)))
 DEPS := $(addprefix ${DEPDIR}/,$(notdir $(SRCS:.cc=.d)))
 
--include ${DEPS}
+
 
 main: ${OBJS} 
 	${CXX} ${CXXFLAGS} -o $@ ${OBJS} ${LDFLAGS}
 
-${OBJS}: ${OBJDIR}/%.o: ${SRCDIR}/%.cc
-	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
+${OBJS}: ${OBJDIR}/%.o: ${SRCDIR}/%.cc ${DEPDIR}/%.d
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -o $@ -c $<
+
+${DEPS}: ${DEPDIR}/%.d: ${SRCDIR}/%.cc
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -MM -MT '$patsubt ${SRCDIR}/%.cc,${OBJDIR}/%.o,$<)' $< -MF $@
 
 # ROOT6
 HEADDIR := interface
