@@ -4,27 +4,27 @@ std::vector<Double_t> PUReWeight(){
 
   TFile * datafile = TFile::Open("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/doublemu/treewithwgt.root");  
   TFile * mcfile1  = TFile::Open("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/zll/treewithwgt.root");  
-  TFile * mcfile2  = TFile::Open("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/ttbar/treewithwgt.root");  
+  //  TFile * mcfile2  = TFile::Open("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/ttbar/treewithwgt.root");  
 
   TTree * datatree = (TTree*)datafile->Get("tree/tree");
   TTree * mctree1  = (TTree*)mcfile1->Get("tree/tree");
-  TTree * mctree2  = (TTree*)mcfile2->Get("tree/tree");
+  //  TTree * mctree2  = (TTree*)mcfile2->Get("tree/tree");
 
   TH1D * datanvtx  = new TH1D("datanvtx","",50,0,50);
   TH1D * mcnvtx1   = new TH1D("mcnvtx1","",50,0,50);
-  TH1D * mcnvtx2   = new TH1D("mcnvtx2","",50,0,50);
+  //  TH1D * mcnvtx2   = new TH1D("mcnvtx2","",50,0,50);
 
   datanvtx->Sumw2();
   mcnvtx1->Sumw2();
-  mcnvtx2->Sumw2();
+  //  mcnvtx2->Sumw2();
   
   // must have tobject name be the one, not variable! 
 
   datatree->Draw("nvtx>>datanvtx","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (cflagcsctight == 1 && cflaghbhenoise == 1) )","goff");
   mctree1->Draw("nvtx>>mcnvtx1","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * 0.04024 * wgt / wgtsum)","goff");
-  mctree2->Draw("nvtx>>mcnvtx2","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * 0.04024 * wgt / wgtsum)","goff");
+  //  mctree2->Draw("nvtx>>mcnvtx2","( ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid)) && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * 0.04024 * wgt / wgtsum)","goff");
 
-  mcnvtx1->Add(mcnvtx2);
+  //  mcnvtx1->Add(mcnvtx2);
 
   datanvtx->Scale(1.0/datanvtx->Integral());  
   mcnvtx1->Scale(1.0/mcnvtx1->Integral());
@@ -68,15 +68,15 @@ std::vector<Double_t> PUReWeight(){
   delete datanvtx_copy;
   delete datanvtx;
   delete mcnvtx1;
-  delete mcnvtx2;
+  //  delete mcnvtx2;
 
   delete datatree;
   delete mctree1;
-  delete mctree2;
+  //  delete mctree2;
 
   delete datafile;
   delete mcfile1;
-  delete mcfile2;
+  //  delete mcfile2;
 
   return puweights;
 }
