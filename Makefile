@@ -23,7 +23,7 @@ ${OBJS}: ${OBJDIR}/%.o: ${SRCDIR}/%.cc ${DEPDIR}/%.d
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -o $@ -c $<
 
 ${DEPS}: ${DEPDIR}/%.d: ${SRCDIR}/%.cc
-	${CXX} ${CPPFLAGS} ${CXXFLAGS} -MM -MT '$patsubt ${SRCDIR}/%.cc,${OBJDIR}/%.o,$<)' $< -MF $@
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -MM -MT $(patsubst ${SRCDIR}/%.cc,${OBJDIR}/%.o,$<) $< -MF $@
 
 # ROOT6
 HEADDIR := interface
