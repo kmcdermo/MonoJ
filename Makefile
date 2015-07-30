@@ -14,8 +14,6 @@ SRCS := $(wildcard ${SRCDIR}/*.cc)
 OBJS := $(addprefix ${OBJDIR}/,$(notdir $(SRCS:.cc=.o)))
 DEPS := $(addprefix ${DEPDIR}/,$(notdir $(SRCS:.cc=.d)))
 
-
-
 main: ${OBJS} 
 	${CXX} ${CXXFLAGS} -o $@ ${OBJS} ${LDFLAGS}
 
