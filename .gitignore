@@ -24,7 +24,14 @@
 ################
 *.root
 *~
-main
+main  
+
+# Ignore Pictures #
+###################
+*.png
+*.pdf
+*.gif
+*.jpg
 
 # Logs and databases #
 ######################
