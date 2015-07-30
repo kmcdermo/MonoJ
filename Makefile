@@ -6,23 +6,29 @@ TGTS := main
 
 EXES := ${TGTS}
 
-SRCS := $(wildcard *.cc)
-DEPS := $(SRCS:.cc=.d)
-OBJS := $(SRCS:.cc=.o)
+SRCDIR := src
+OBJDIR := bin
+DEPDIR := dep
+
+SRCS := $(wildcard ${SRCDIR}/*.cc)
+OBJS := $(addprefix ${OBJDIR}/,$(notdir $(SRCS:.cc=.o)))
+DEPS := $(addprefix ${DEPDIR}/,$(notdir $(SRCS:.cc=.d)))
 
 -include ${DEPS}
 
 main: ${OBJS} 
-	${CXX} ${CXXFLAGS} -o $@ ${OBJS}  ${LDFLAGS}
+	${CXX} ${CXXFLAGS} -o $@ ${OBJS} ${LDFLAGS}
 
-${OBJS}: %.o: %.cc
+${OBJS}: ${OBJDIR}/%.o: ${SRCDIR}/%.cc
 	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c -o $@ $<
 
-HEADERS := $(wildcard *.h)
+# ROOT6
+HEADDIR := interface
+HEADERS := $(wildcard ${HEADDIR}/*.h)
 
-dict.cc: ${HEADERS} 
+${SRCDIR}/dict.cc: ${HEADERS} 
 	rootcling -f $@ -c -p $^
 
 clean:
-	-rm -f ${EXES} *.d *.o *.pcm *~
+	-rm -f ${EXES} ${DEPDIR}/*.d ${SRCDIR}/*.o ${SRCDIR}/*.pcm ./*/*~
 

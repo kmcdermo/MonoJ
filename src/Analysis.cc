@@ -1,4 +1,4 @@
-#include "Analysis.hh"
+#include "../interface/Analysis.hh"
 
 Analysis::Analysis(const SamplePair samplePair, const TString selection, const DblVec puweights, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outType){
   // store in data members

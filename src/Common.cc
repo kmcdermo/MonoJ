@@ -1,4 +1,4 @@
-#include "Common.hh"
+#include "../interface/Common.hh"
 
 void MakeOutDirectory(TString outdir){
   FileStat_t dummyFileStat;

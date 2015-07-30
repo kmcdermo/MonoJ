@@ -1,7 +1,7 @@
-#include "Analysis.hh"
-#include "StackPlots.hh"
-#include "Common.hh"
-#include "macros/PUReWeight.C"
+#include "../interface/Analysis.hh"
+#include "../interface/StackPlots.hh"
+#include "../interface/Common.hh"
+#include "../macros/PUReWeight.C"
 
 #include "TROOT.h"
 

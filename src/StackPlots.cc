@@ -1,4 +1,4 @@
-#include "StackPlots.hh"
+#include "../interface/StackPlots.hh"
 
 StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
   // input data members
