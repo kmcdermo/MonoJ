@@ -23,6 +23,8 @@
 # User defined #
 ################
 *.root
+*~
+main
 
 # Logs and databases #
 ######################
