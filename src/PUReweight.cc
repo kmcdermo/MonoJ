@@ -28,38 +28,22 @@ PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Dou
   fOutDir  = outdir;
   fOutType = outtype;
 
-  // Initialize input TH1D's for data
-  fInDataNvtx.resize(fNData);
-  for (UInt_t data = 0; data < fNData; data++){
-    fInDataNvtx[data] = new TH1D(Form("nvtx_%s",fDataNames[data].Data()),"",fNBins,0,fNBins);
-    fInDataNvtx[data]->Sumw2();
-  }
-  // output th1d
-  fOutDataNvtx      = new TH1D("nvtx_data","",fNBins,0,fNBins);
-  fOutDataNvtx_copy = new TH1D("nvtx_data_copy","",fNBins,0,fNBins);
+  // Initialize output TH1D's for data
+  fOutDataNvtx = new TH1D("nvtx_data","",fNBins,0.,Double_t(fNBins));
+  fOutDataNvtx->Sumw2();
+  fOutDataNvtx_copy = new TH1D("nvtx_data_copy","",fNBins,0.,Double_t(fNBins));
+  fOutDataNvtx_copy->Sumw2();
 
-  // Initialize TH1D's for MC
-  fInMCNvtx.resize(fNMC);
-  for (UInt_t mc = 0; mc < fNMC; mc++){
-    fInMCNvtx[mc] = new TH1D(Form("nvtx_%s",fMCNames[mc].Data()),"",fNBins,0,fNBins);
-    fInMCNvtx[mc]->Sumw2();
-  }
-  // output th1d
-  fOutMCNvtx = new TH1D("nvtx_mc","",fNBins,0,fNBins);
+  // Initialize outputs for MC
+  fOutMCNvtx = new TH1D("nvtx_mc","",fNBins,0.,Double_t(fNBins));
+  fOutMCNvtx->Sumw2();
 }
 
 PUReweight::~PUReweight(){
   // delete data hists
-  for (UInt_t data = 0; data < fNData; data++){
-    delete fInDataNvtx[data];
-  }
   delete fOutDataNvtx;
   delete fOutDataNvtx_copy;
 
-  // delete MC hists
-  for (UInt_t mc = 0; mc < fNMC; mc++){
-    delete fInMCNvtx[mc];
-  }
   delete fOutMCNvtx;
 }
 
@@ -70,13 +54,13 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
   if (doPUReWeight) { // if true, perform reweighting procedure
 
     TString basecut; // selection based cut
-    if (fSelection.Contains("zmumu"),TString::kExact) {
+    if (fSelection.Contains("zmumu",TString::kExact)) {
       basecut = "((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid))";
     }
-    else if (fSelection.Contains("zelel"),TString::kExact) {
+    else if (fSelection.Contains("zelel",TString::kExact)) {
       basecut = "((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid))";
     }
-    else if (fSelection.Contains("singlemu"),TString::kExact) {
+    else if (fSelection.Contains("singlemu",TString::kExact)) {
       basecut = "((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1))"; 
     }      
 
@@ -84,21 +68,27 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
     for (UInt_t data = 0; data < fNData; data++){
     
       // create appropriate selection cut
-      TString cut = basecut;
+      TString cut = basecut.Data();
       cut.Prepend("( ");
       cut.Append("&& (cflagcsctight == 1 && cflaghbhenoise == 1) )"); // met filters for data
       
-      // files + trees for data
-      TFile * file = TFile::Open(Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoX/Trees/Data/%s/treewithwgt.root",fDataNames[data].Data()));
+      // files + trees + tmp hist for data
+      TString filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/%s/treewithwgt.root",fDataNames[data].Data());
+      TFile * file = TFile::Open(filename.Data());
+      CheckValidFile(file,filename);
       TTree * tree = (TTree*)file->Get("tree/tree");      
-      
+      CheckValidTree(tree,"tree/tree,",filename);      
+      TH1D * tmpnvtx = new TH1D("tmpnvtx","",fNBins,0.,Double_t(fNBins));
+      tmpnvtx->Sumw2();
+
       // fill each input data nvtx
-      tree->Draw(Form("nvtx>>nvtx_%s",fDataNames[data].Data()),cut.Data(),"goff");
+      tree->Draw("nvtx>>tmpnvtx",Form("%s",cut.Data()),"goff");
 
       // add input data hist to total data hist
-      fOutDataNvtx->Add(fInDataNvtx[data]);
+      fOutDataNvtx->Add(tmpnvtx);
 
       // delete objects
+      delete tmpnvtx;
       delete tree;
       delete file;
     }
@@ -109,45 +99,52 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
       // create appropriate selection cut
       TString cut = basecut;
       cut.Prepend("( ");
-      cut.Append(Form("&& (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * %f * wgt / wgtsum)",fLumi)); // met filters for mc + weights
+      cut.Append(Form(" && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * %f * wgt / wgtsum)",fLumi)); // met filters for mc + weights
       
-      // files + trees for mc
-      TFile * file = TFile::Open(Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoX/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data()));
+      // files + trees for mc + tmp hists
+      TString filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data());
+      TFile * file = TFile::Open(filename.Data());
+      CheckValidFile(file,filename);
       TTree * tree = (TTree*)file->Get("tree/tree");      
-      
+      CheckValidTree(tree,"tree/tree,",filename);            
+      TH1D * tmpnvtx = new TH1D("tmpnvtx","",fNBins,0.,Double_t(fNBins));
+      tmpnvtx->Sumw2();
+
       // fill each input mc nvtx
-      tree->Draw(Form("nvtx>>nvtx_%s",fMCNames[mc].Data()),cut.Data(),"goff");
+      tree->Draw("nvtx>>tmpnvtx",Form("%s",cut.Data()),"goff");
 
       // add input mc hist to total mc hist
-      fOutMCNvtx->Add(fInMCNvtx[mc]);
+      fOutMCNvtx->Add(tmpnvtx);
 
       // delete objects
+      delete tmpnvtx;
       delete tree;
       delete file;
     }
-    
+
     // scale to unit area to not bias against data
     fOutDataNvtx->Scale(1.0/fOutDataNvtx->Integral());  
     fOutMCNvtx->Scale(1.0/fOutMCNvtx->Integral());
 
     // Draw before reweighting
     TCanvas * c1 = new TCanvas();
-    c1->SetTitle("Before PU Reweighting");
     c1->cd();
+    c1->SetTitle("Before PU Reweighting");
     c1->SetLogy(1);
   
     fOutDataNvtx->SetLineColor(kRed);
     fOutMCNvtx->SetLineColor(kBlue);
 
-    // draw and save
+    // draw and save in output directory --> appended by what selection we used for this pu reweight
     fOutDataNvtx->Draw("PE");
     fOutMCNvtx->Draw("HIST SAME");
-    c1->SaveAs(Form("%s/nvtx_beforePURW.%s",fOutDir.Data(),fOutType.Data()));
+
+    c1->SaveAs(Form("%s/nvtx_beforePURW_%s.%s",fOutDir.Data(),fSelection.Data(),fOutType.Data()));
 
     // Draw after reweighting 
     TCanvas * c2 = new TCanvas();
-    c2->SetTitle("After PU Reweighting");
     c2->cd();
+    c2->SetTitle("After PU Reweighting");
     c2->SetLogy(1);
 
     // copy fOutDataNvtx to save output of reweights properly
@@ -166,10 +163,10 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
       fOutMCNvtx->SetBinContent(ibin,puweights[ibin-1]*tmp); 
     }
 
-    // draw output and save it
+    // draw output and save it, see comment above about selection
     fOutDataNvtx_copy->Draw("PE");
     fOutMCNvtx->Draw("HIST SAME");
-    c2->SaveAs(Form("%s/nvtx_afterPURW.%s",fOutDir.Data(),fOutType.Data()));
+    c2->SaveAs(Form("%s/nvtx_afterPURW_%s.%s",fOutDir.Data(),fSelection.Data(),fOutType.Data()));
 
     delete c1;
     delete c2;

@@ -39,9 +39,6 @@ private:
   TString fOutDir;
   TString fOutType;
 
-  TH1DVec fInDataNvtx;
-  TH1DVec fInMCNvtx;
-
   TH1D * fOutDataNvtx;
   TH1D * fOutDataNvtx_copy;
   TH1D * fOutMCNvtx;

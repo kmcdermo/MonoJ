@@ -27,7 +27,7 @@ int main(){
   Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "justdata";
+  TString outdir = "test_hadd";
 
   // Allow user to set outtype for plots
   TString outtype = "png";
@@ -66,10 +66,10 @@ int main(){
 
   Bool_t doReWeight = true; // false if no actual reweighting to be performed
   DblVec puweights = reweight->GetPUWeights(doReWeight); 
-
+  
   delete reweight;
   std::cout << "Finished PU reweighting, now begin Analysis" << std::endl;
-
+  
   //========================================// 
   //      Produce Plots Per Sample          //
   //========================================// 
@@ -79,11 +79,11 @@ int main(){
   // Largest samples to process 
   SamplePairVec Samples;
   Samples.push_back(SamplePair("doublemu",false));
-  Samples.push_back(SamplePair("zll",true));
+  /*Samples.push_back(SamplePair("zll",true));
   Samples.push_back(SamplePair("wln",true));
   Samples.push_back(SamplePair("ww",true));
   Samples.push_back(SamplePair("zz",true));
-  Samples.push_back(SamplePair("wz",true));
+  Samples.push_back(SamplePair("wz",true));*/
 
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
@@ -98,9 +98,9 @@ int main(){
   SamplePairVec TopSamples;
   TopSamples.push_back(SamplePair("ttbar",true)); 
   TopSamples.push_back(SamplePair("singlett",true)); 
-  TopSamples.push_back(SamplePair("singletbart",true)); 
-  TopSamples.push_back(SamplePair("singletw",true)); 
-  TopSamples.push_back(SamplePair("singletbarw",true)); 
+  //  TopSamples.push_back(SamplePair("singletbart",true)); 
+  //  TopSamples.push_back(SamplePair("singletw",true)); 
+  //  TopSamples.push_back(SamplePair("singletbarw",true)); 
 
   for (SamplePairVecIter iter = TopSamples.begin(); iter != TopSamples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
@@ -118,7 +118,7 @@ int main(){
   SamplePairVec QCDSamples;
   QCDSamples.push_back(SamplePair("qcd15to30",true)); 
   QCDSamples.push_back(SamplePair("qcd30to50",true)); 
-  QCDSamples.push_back(SamplePair("qcd50to80",true)); 
+  /*  QCDSamples.push_back(SamplePair("qcd50to80",true)); 
   QCDSamples.push_back(SamplePair("qcd80to120",true)); 
   QCDSamples.push_back(SamplePair("qcd120to170",true)); 
   QCDSamples.push_back(SamplePair("qcd170to300",true)); 
@@ -130,7 +130,7 @@ int main(){
   QCDSamples.push_back(SamplePair("qcd1400to1800",true));
   QCDSamples.push_back(SamplePair("qcd1800to2400",true));
   QCDSamples.push_back(SamplePair("qcd2400to3200",true));
-  QCDSamples.push_back(SamplePair("qcd3200toinf",true)); 
+  QCDSamples.push_back(SamplePair("qcd3200toinf",true)); */
 
   for (SamplePairVecIter iter = QCDSamples.begin(); iter != QCDSamples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
@@ -142,7 +142,7 @@ int main(){
   Hadd(QCDSamples,outdir,selection,"qcd");
   Samples.push_back(SamplePair("qcd",true)); // add hadded file to total samples for stacking
   std::cout << "Done with QCD Hadd ... now make all stack plots" << std::endl;  
-
+  
   //========================================// 
   //        Stack Plots Production          //
   //========================================// 
