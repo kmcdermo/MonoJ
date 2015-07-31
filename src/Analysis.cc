@@ -74,7 +74,7 @@ Analysis::~Analysis(){
   delete fOutFile;
 }
 
-void Analysis::DoAnalysis(){
+void Analysis::DoAnalysis(std::ofstream & yields){
   // set up output plots to be produced
   Analysis::SetUpPlots();
 
@@ -113,8 +113,8 @@ void Analysis::DoAnalysis(){
     Bool_t met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
 
     Bool_t jet_selection = false;
-    if (fNJetsSln != -1) {
-      jet_selection = ((njets == fNJetsSln));
+    if (fNJetsSeln != -1) {
+      jet_selection = ((njets == fNJetsSeln));
     }
     else {
       jet_selection = true; // no selection, so set it to true

@@ -95,7 +95,7 @@ int main(){
     yields << "Used PU Reweighting with selection: " << PURWselection.Data() << " njets cut: " << ((PURWnjetsselection != -1) ? Form("%i",PURWnjetsselection) : "NONE") << std::endl;
     // include samples used for reweighting, to be safe
     yields << "Samples used in PURW:" << std::endl;
-    for (SamplePairVecIter iter = SamEples.begin(); iter != Samples.end(); ++iter) {
+    for (SamplePairVecIter iter = PURWSamples.begin(); iter != PURWSamples.end(); ++iter) {
       yields << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     }
   }
@@ -180,7 +180,26 @@ int main(){
   std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  
   Hadd(QCDSamples,outdir,selection,njetsselection,"qcd");
   Samples.push_back(SamplePair("qcd",true)); // add hadded file to total samples for stacking 
-  std::cout << "Done with QCD Hadd ... now make all stack plots" << std::endl;  
+  std::cout << "Done with QCD Hadd ... now do Gamma Analysis" << std::endl;  
+
+  // -------------------------------------- //
+  // Photon backgrounds
+  SamplePairVec GammaSamples;
+  GammaSamples.push_back(SamplePair("gamma100to200",true)); 
+  GammaSamples.push_back(SamplePair("gamma200to400",true)); 
+  GammaSamples.push_back(SamplePair("gamma400to600",true)); 
+  GammaSamples.push_back(SamplePair("gamma600toinf",true)); 
+
+  for (SamplePairVecIter iter = GammaSamples.begin(); iter != GammaSamples.end(); ++iter) {
+    std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+    Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
+    sample.DoAnalysis(yields);
+  }
+
+  std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
+  Hadd(QCDSamples,outdir,selection,njetsselection,"gamma");
+  Samples.push_back(SamplePair("gamma",true)); // add hadded file to total samples for stacking 
+  std::cout << "Done with Gamma Hadd ... now make all stack plots" << std::endl;  
   
   yields << "--------------------------------------------" << std::endl << std::endl;
 

@@ -56,7 +56,6 @@ PUReweight::~PUReweight(){
 
 DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
 
-  // change yields to pass to stackplots!  that way all hadd'ed stuff is done... remove from analysis
   // add phtons to main
 
   // get photns from adish
@@ -137,8 +136,8 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
       if (fSelection.Contains("singlephoton",TString::kExact)) { // annoying since MC photon sits elsewhere
 	filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/PHYS14MC/%s/treewithwgt.root",fMCNames[mc].Data());
       }
-      else if {
-      filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data());
+      else {
+	filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data());
       }
 
       TFile * file = TFile::Open(filename.Data());

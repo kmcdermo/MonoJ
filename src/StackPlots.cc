@@ -192,7 +192,7 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
       }
 
       if (th1d == (fNTH1D - 1)) { // add individual entry for data if nvtx plot in yields
-	yields << fNDataNames[data].Data() << ": " << fInDataTH1DHists[th1d][data]->Integral() << std::endl;
+	yields << fDataNames[data].Data() << ": " << fInDataTH1DHists[th1d][data]->Integral() << std::endl;
       }
 
     } // end loop over data samples
@@ -219,7 +219,7 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
       fTH1DLegends[th1d]->AddEntry(fInMCTH1DHists[th1d][mc],fSampleTitleMap[fMCNames[mc]],"lf");
 
       if (th1d == (fNTH1D - 1)) { // add individual entry for MC if nvtx plot in yields
-	yields << fNMCNames[mc].Data() << ": " << fInMCTH1DHists[th1d][mc]->Integral() << std::endl;
+	yields << fMCNames[mc].Data() << ": " << fInMCTH1DHists[th1d][mc]->Integral() << std::endl;
       }
     } // end loop over mc samples
 
