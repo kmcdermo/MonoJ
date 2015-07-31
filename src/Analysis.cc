@@ -64,9 +64,6 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const I
 
   // make sure counter for yields is zero
   fNSelected = 0;
-  
-  // open the yields text file in append mode
-  fYieldsTxt.open(Form("%s/%s%s/yields.txt",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data()),std::ios_base::app);
 }
 
 Analysis::~Analysis(){
@@ -75,7 +72,6 @@ Analysis::~Analysis(){
   delete fInFile;
   Analysis::DeleteHists();
   delete fOutFile;
-  fYieldsTxt.close();
 }
 
 void Analysis::DoAnalysis(){
@@ -107,10 +103,10 @@ void Analysis::DoAnalysis(){
     }
     else if (fSelection.Contains("singlephoton",TString::kExact)){
       if (fIsMC) { // triggers bugged in phys14
-	selection = (nphotons == 1);
+	selection = ((nphotons == 1));
       }
       else { // only apply triggers in data
-	selection = (((hltphoton165 == 1) || (hltphoton175 == 1)) && nphotons == 1);
+	selection = (((hltphoton165 == 1) || (hltphoton175 == 1)) && (nphotons == 1));
       }
     }
 
@@ -118,14 +114,15 @@ void Analysis::DoAnalysis(){
 
     Bool_t jet_selection = false;
     if (fNJetsSln != -1) {
-      jet_selection = (njets == fNJetsSln);
+      jet_selection = ((njets == fNJetsSln));
     }
     else {
       jet_selection = true; // no selection, so set it to true
     }
 
+    // now see if event passes final selection
     if ( selection && met_filters && jet_selection ){ 
-      fNSelected += weight; 	// save the event weight for yields!
+      fNSelected += weight; // save the event weight for yields!
 
       if (nphotons>=1) {
 	fTH1DMap["phpt"]->Fill(phpt,weight);
@@ -233,13 +230,14 @@ void Analysis::DoAnalysis(){
 	fTH1DMap["t1mumetphi"]->Fill(t1mumetphi,weight); 
       }
 
+      // will use the integrals of these plots to derive total yields as no additional cuts are placed on these plots in StackPlots.cc .. cross check
       fTH1DMap["njets"]->Fill(njets,weight);
       fTH1DMap["nvtx"]->Fill(nvtx,weight);
     } // end filling histos after checking selection criteria 
   } // end loop over entries
 
   // dump yields into text file
-  fYieldsTxt << fSample.Data() << fNSelected << std::endl;
+  yields << fSample.Data() << ", isMC: " << fIsMC << ": " << fNSelected << std::endl;
 
   // save the histos once loop is over
   Analysis::SaveHists();

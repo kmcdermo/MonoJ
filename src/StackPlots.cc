@@ -99,6 +99,8 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int
   fTH1DNames.push_back("t1mumet");
   fTH1DNames.push_back("t1mumetphi");
 
+  // will use the integrals of these plots to derive total yields as no additional cuts are placed on these plots ... always keep at back of vector... kind of hacky! 
+  // could do fancy string matching looping over 
   fTH1DNames.push_back("njets");
   fTH1DNames.push_back("nvtx");
 
@@ -171,13 +173,13 @@ StackPlots::~StackPlots(){
   delete fOutFile;
 }
 
-void StackPlots::DoStacks() {
-  StackPlots::MakeStackPlots();
+void StackPlots::DoStacks(std::ofstream & yields) {
+  StackPlots::MakeStackPlots(yields);
   StackPlots::MakeRatioPlots();
   StackPlots::MakeOutputCanvas();
 }
 
-void StackPlots::MakeStackPlots(){
+void StackPlots::MakeStackPlots(std::ofstream & yields){
   // copy th1d plots into output hists/stacks
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ //th1d hists
     // data, copy + add only
@@ -188,8 +190,21 @@ void StackPlots::MakeStackPlots(){
       else{
 	fOutDataTH1DHists[th1d]->Add(fInDataTH1DHists[th1d][data]);
       }
+
+      if (th1d == (fNTH1D - 1)) { // add individual entry for data if nvtx plot in yields
+	yields << fNDataNames[data].Data() << ": " << fInDataTH1DHists[th1d][data]->Integral() << std::endl;
+      }
+
     } // end loop over data samples
+
+    // add legend entry for total data
     fTH1DLegends[th1d]->AddEntry(fOutDataTH1DHists[th1d],"Data","pl"); // add data entry to legend
+
+    // add total yield for data here if nvtx plot
+    if (th1d == (fNTH1D - 1)) { // add individual entry for data if nvtx plot in yields
+      yields << "--------------------" << std::endl;
+      yields << "Data Total: " << fOutDataTH1DHists[th1d]->Integral() << std::endl << std::endl;
+    }
 
     // mc, copy + add to hists, add to tstack
     for (UInt_t mc = 0; mc < fNMC; mc++) {
@@ -202,8 +217,17 @@ void StackPlots::MakeStackPlots(){
       //  just add input to stacks
       fOutMCTH1DStacks[th1d]->Add(fInMCTH1DHists[th1d][mc]);
       fTH1DLegends[th1d]->AddEntry(fInMCTH1DHists[th1d][mc],fSampleTitleMap[fMCNames[mc]],"lf");
-      //      std::cout << "supposed title: " << fInMCTH1DHists[th1d][mc]->GetYaxis()->GetTitle() << std::endl;
+
+      if (th1d == (fNTH1D - 1)) { // add individual entry for MC if nvtx plot in yields
+	yields << fNMCNames[mc].Data() << ": " << fInMCTH1DHists[th1d][mc]->Integral() << std::endl;
+      }
     } // end loop over mc samples
+
+    // add total yield for MC here if nvtx plot
+    if (th1d == (fNTH1D - 1)) { // add individual entry for data if nvtx plot in yields
+      yields << "--------------------" << std::endl;
+      yields << "MC Total: " << fOutMCTH1DHists[th1d]->Integral() << std::endl;
+    }
   } // end loop over th1d plots
 }
 

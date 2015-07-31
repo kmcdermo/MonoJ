@@ -32,7 +32,7 @@ public:
   Analysis(const SamplePair SamplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const ColorMap colorMap, const TString outdir, const TString outType);
   
   void SetBranchAddresses();
-  void DoAnalysis();
+  void DoAnalysis(std::ofstream & yields);
   void SetUpPlots();
   TH1D * MakeTH1DPlot(const TString hname, const TString htitle, const Int_t nbins, const Double_t xlow, const Double_t xhigh, const TString xtitle, const TString ytitle);
   void SaveHists();
@@ -62,7 +62,6 @@ private:
   TString fOutType;
 
   Double_t fNSelected;
-  ofstream fYieldsTxt;
 
   TH1DMap fTH1DMap;
 

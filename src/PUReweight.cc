@@ -56,9 +56,18 @@ PUReweight::~PUReweight(){
 
 DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
 
-  // add photon cuts data
-  // add njet cuts both
   // change yields to pass to stackplots!  that way all hadd'ed stuff is done... remove from analysis
+  // add phtons to main
+
+  // get photns from adish
+  // run wegithsum
+  // add to eos
+
+  // check machinery still works
+
+  // run over phonts+qcd to get pt spectrum
+  // check to see met filters are effectively 1 for phtons mc
+
 
   DblVec puweights; // return weights
   
@@ -75,7 +84,12 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
       basecut = "((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1))"; 
     }      
     else if (fSelection.Contains("singlephoton",TString::kExact)) {    
-      basecut = "((nphotons == 1))"
+      basecut = "((nphotons == 1))";
+    }
+
+    // add selection for njets
+    if (fNJetsSeln != -1){
+      basecut.Prepend(Form("(njets == %i) && ",fNJetsSeln));
     }
 
     // get vtx distribution for data first
@@ -84,7 +98,10 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
       // create appropriate selection cut
       TString cut = basecut.Data();
       cut.Prepend("( ");
-      cut.Append("&& (cflagcsctight == 1 && cflaghbhenoise == 1) )"); // met filters for data
+      if (fSelection.Contains("singlephoton",TString::kExact)) { // annoying since data triggers != MC triggers
+	cut.Append(" && (((hltphoton165 == 1) || (hltphoton175 == 1)) && (nphotons == 1))");
+      }
+      cut.Append(" && (cflagcsctight == 1 && cflaghbhenoise == 1) )"); // met filters for data
       
       // files + trees + tmp hist for data
       TString filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/%s/treewithwgt.root",fDataNames[data].Data());
@@ -116,7 +133,14 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
       cut.Append(Form(" && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * %f * wgt / wgtsum)",fLumi)); // met filters for mc + weights
       
       // files + trees for mc + tmp hists
-      TString filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data());
+      TString filename;
+      if (fSelection.Contains("singlephoton",TString::kExact)) { // annoying since MC photon sits elsewhere
+	filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/PHYS14MC/%s/treewithwgt.root",fMCNames[mc].Data());
+      }
+      else if {
+      filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data());
+      }
+
       TFile * file = TFile::Open(filename.Data());
       CheckValidFile(file,filename);
       TTree * tree = (TTree*)file->Get("tree/tree");      
@@ -153,7 +177,7 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
     fOutDataNvtx->Draw("PE");
     fOutMCNvtx->Draw("HIST SAME");
 
-    c1->SaveAs(Form("%s/nvtx_beforePURW_%s.%s",fOutDir.Data(),fSelection.Data(),fOutType.Data()));
+    c1->SaveAs(Form("%s/nvtx_beforePURW_%s%s.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
 
     // Draw after reweighting 
     TCanvas * c2 = new TCanvas();
@@ -180,7 +204,7 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
     // draw output and save it, see comment above about selection
     fOutDataNvtx_copy->Draw("PE");
     fOutMCNvtx->Draw("HIST SAME");
-    c2->SaveAs(Form("%s/nvtx_afterPURW_%s.%s",fOutDir.Data(),fSelection.Data(),fOutType.Data()));
+    c2->SaveAs(Form("%s/nvtx_afterPURW_%s%s.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
 
     delete c1;
     delete c2;

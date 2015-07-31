@@ -23,6 +23,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <fstream>
 
 typedef std::vector<TFile*>   TFileVec;
 typedef std::vector<TH1D*>    TH1DVec;
@@ -50,9 +51,9 @@ public:
   void InitOutputCanvPads();
   void InitUpperAxes();
 
-  void DoStacks();
+  void DoStacks(std::ofstream & yields);
 
-  void MakeStackPlots();
+  void MakeStackPlots(std::ofstream & yields);
   void MakeRatioPlots();
   void MakeOutputCanvas();
 
@@ -74,7 +75,7 @@ private:
   TString fSelection;
   Int_t   fNJetsSeln;
 
-  TString 
+  TString fNJetsStr;
 
   Double_t fLumi;
   

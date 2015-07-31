@@ -7,6 +7,8 @@
 #include "TROOT.h"
 
 #include <iostream>
+#include <fstream>
+
 
 int main(){
   // set TDR Style
@@ -23,7 +25,7 @@ int main(){
   colorMap["top"]   = kRed+2;
   colorMap["qcd"]   = kOrange+7;
   colorMap["gamma"] = kBlue-4;
-
+  
   // nPV needs nBins set for PU reweights and actual plots
   Int_t nBins_vtx = 50;
 
@@ -53,6 +55,18 @@ int main(){
   // Njets selection (==1, ==2) ... -1 = no selection
   Int_t njetsselection = -1;
 
+  // Second make selection inside total directory
+  TString njetsstr = "";
+  if (njetsselection != -1){
+    njetsstr = Form("_nj%i",njetsselection);
+  }
+  MakeOutDirectory(Form("%s/%s%s",outdir.Data(),selection.Data(),njetsstr.Data()));
+
+  // now make ofstream object to store yield info
+  ofstream yields(Form("%s/%s%s/yields.txt",outdir.Data(),selection.Data(),njetsstr.Data()));
+  yields << "Yields with selection: " << selection.Data() << " njets cut: " << ((njetsselection != -1) ? Form("%i",njetsselection) : "NONE") << std::endl;
+  yields << "=============================================================" << std::endl << std::endl;
+    
   //========================================// 
   //             PU Reweighting             //
   //========================================// 
@@ -73,11 +87,31 @@ int main(){
   DblVec puweights = reweight->GetPUWeights(doReWeight); 
   
   delete reweight;
+  
+  // add info about reweighting technique to yields
+  yields << "PU Reweighting Info" << std::endl;
+  yields << "-------------------" << std::endl << std::endl;
+  if (doReWeight) {
+    yields << "Used PU Reweighting with selection: " << PURWselection.Data() << " njets cut: " << ((PURWnjetsselection != -1) ? Form("%i",PURWnjetsselection) : "NONE") << std::endl;
+    // include samples used for reweighting, to be safe
+    yields << "Samples used in PURW:" << std::endl;
+    for (SamplePairVecIter iter = SamEples.begin(); iter != Samples.end(); ++iter) {
+      yields << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+    }
+  }
+  else {
+    yields << "No PU reweighting applied!" << std::endl;
+  }
+  yields << "-------------------" << std::endl << std::endl;
+
   std::cout << "Finished PU reweighting, now begin Analysis" << std::endl;
   
   //========================================// 
   //      Produce Plots Per Sample          //
   //========================================// 
+
+  yields << "Yields from individual Samples from Analysis" << std::endl;
+  yields << "--------------------------------------------" << std::endl << std::endl;
 
   // run over data + MC samples (dibosons and the like) first, then Top samples, then QCD
   // -------------------------------------- //
@@ -93,7 +127,7 @@ int main(){
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
-    sample.DoAnalysis();
+    sample.DoAnalysis(yields);
   }
 
   std::cout << "Done with Analysis ... now do Top Analysis" << std::endl;  
@@ -110,7 +144,7 @@ int main(){
   for (SamplePairVecIter iter = TopSamples.begin(); iter != TopSamples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
-    sample.DoAnalysis();
+    sample.DoAnalysis(yields);
   }
  
   std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
@@ -140,7 +174,7 @@ int main(){
   for (SamplePairVecIter iter = QCDSamples.begin(); iter != QCDSamples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
-    sample.DoAnalysis();
+    sample.DoAnalysis(yields);
   }
 
   std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  
@@ -148,13 +182,20 @@ int main(){
   Samples.push_back(SamplePair("qcd",true)); // add hadded file to total samples for stacking 
   std::cout << "Done with QCD Hadd ... now make all stack plots" << std::endl;  
   
+  yields << "--------------------------------------------" << std::endl << std::endl;
+
   //========================================// 
   //        Stack Plots Production          //
   //========================================// 
 
+  yields << "Total Yields taken from nvtx in StackPlots" << std::endl;
+  yields << "------------------------------------------" << std::endl << std::endl;
+
   StackPlots * stacker = new StackPlots(Samples,selection,njetsselection,lumi,colorMap,outdir,outtype);
-  stacker->DoStacks();
+  stacker->DoStacks(yields);
   delete stacker;
+
+  yields.close(); // close yields txt
 }
 
 
