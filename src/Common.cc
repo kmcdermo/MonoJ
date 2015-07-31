@@ -41,15 +41,15 @@ void CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname){
 
 void Hadd(SamplePairVec samples, const TString outdir, const TString selection, const TString combinedName) {
   // need to make directory for hadd'ed file
-  TString combinedOutdir = Form("%s/%s/%s",outdir.Data(),selection.Data(),combinedName.Data());
+  TString combinedOutdir = Form("%s/%s/%s_MC",outdir.Data(),selection.Data(),combinedName.Data());
   MakeOutDirectory(combinedOutdir);
   
   // Form string for doing hadd
-  TString hadd = Form("hadd %s/plots.root",combinedOutdir.Data());
+  TString hadd = Form("hadd -f %s/plots.root",combinedOutdir.Data());
   TString tohadd = "";
 
   for (SamplePairVecIter iter = samples.begin(); iter != samples.end(); ++iter) {
-    tohadd.Append(Form(" %s/%s/%s/plots.root",outdir.Data(),selection.Data(),(*iter).first.Data()));
+    tohadd.Append(Form(" %s/%s/%s_MC/plots.root",outdir.Data(),selection.Data(),(*iter).first.Data()));
   }
   hadd.Append(tohadd);
   
