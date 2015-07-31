@@ -39,7 +39,7 @@ typedef std::map<TString,TString> TStrMap;
 class StackPlots
 {
 public:
-  StackPlots(const SamplePairVec Samples, const TString selection, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype);
+  StackPlots(const SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype);
   
   void OpenInputFiles();
   void InitInputPlots();
@@ -58,6 +58,7 @@ public:
 
   void DrawUpperPad(const UInt_t th1d, const Bool_t isLogY);
   Double_t GetMaximum(const UInt_t th1d);
+  Double_t GetMinimum(const UInt_t th1d);
   void SetUpperAxes(const UInt_t th1d);
   void DrawLowerPad(const UInt_t th1d);
   void SetLines(const UInt_t th1d);
@@ -71,6 +72,9 @@ private:
   TStrVec fMCNames;
   TStrVec fTH1DNames;
   TString fSelection;
+  Int_t   fNJetsSeln;
+
+  TString 
 
   Double_t fLumi;
   

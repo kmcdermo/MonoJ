@@ -29,7 +29,7 @@ class Analysis
 {
 public:
 
-  Analysis(const SamplePair SamplePair, const TString selection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const ColorMap colorMap, const TString outdir, const TString outType);
+  Analysis(const SamplePair SamplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const ColorMap colorMap, const TString outdir, const TString outType);
   
   void SetBranchAddresses();
   void DoAnalysis();
@@ -47,6 +47,8 @@ private:
   TString fSample;
   Bool_t fIsMC;
   TString fSelection;
+  Int_t   fNJetsSeln;
+  TString fNJetsStr;
   DblVec   fPUWeights;
   Double_t fLumi;
   Int_t    fNBins_vtx;

@@ -1,6 +1,6 @@
 #include "../interface/StackPlots.hh"
 
-StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
+StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
   // input data members
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     if ((*iter).second) { // isMC == true
@@ -17,11 +17,19 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Dou
 
   // save selection
   fSelection = selection;
+  fNJetsSeln = njetsselection;
+
+  fNJetsStr = "";
+  if (fNJetsSeln != -1){
+    fNJetsStr = Form("_nj%i",fNJetsSeln);
+  }
 
   // save lumi
   fLumi = lumi;
 
   // use the plots already stored in Analysis.cpp ... use selection to decide what to loop over --> doubles
+  fTH1DNames.push_back("phpt");
+  fTH1DNames.push_back("phpt_nj_lte2");
 
   fTH1DNames.push_back("mu1eta");
   fTH1DNames.push_back("mu1phi");
@@ -100,18 +108,19 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Dou
   // output data members
   fOutDir  = outdir;
   fOutName = "stackedplots"; // where to put output stack plots 
-  MakeOutDirectory(Form("%s/%s/%s",fOutDir.Data(),fSelection.Data(),fOutName.Data())); // make output directory 
-  fOutFile = new TFile(Form("%s/%s/%s/stackplots_canvases.root",fOutDir.Data(),fSelection.Data(),fOutName.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
+  MakeOutDirectory(Form("%s/%s%s/%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data())); // make output directory 
+  fOutFile = new TFile(Form("%s/%s%s/%s/stackplots_canvases.root",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
   fOutType = outtype; // allow user to pick png, pdf, gif, etc for stacked plots
 
   // define color map + title map
-  fSampleTitleMap["zll"] = "Z #rightarrow l^{+}l^{-}";
-  fSampleTitleMap["wln"] = "W #rightarrow l#nu";
-  fSampleTitleMap["ww"]  = "WW";
-  fSampleTitleMap["zz"]  = "ZZ";
-  fSampleTitleMap["wz"]  = "WZ";
-  fSampleTitleMap["top"] = "Top";
-  fSampleTitleMap["qcd"] = "QCD";
+  fSampleTitleMap["zll"]   = "Z #rightarrow l^{+}l^{-}";
+  fSampleTitleMap["wln"]   = "W #rightarrow l#nu";
+  fSampleTitleMap["ww"]    = "WW";
+  fSampleTitleMap["zz"]    = "ZZ";
+  fSampleTitleMap["wz"]    = "WZ";
+  fSampleTitleMap["top"]   = "Top";
+  fSampleTitleMap["qcd"]   = "QCD";
+  fSampleTitleMap["gamma"] = "Photon+Jets";
 
   fColorMap = colorMap;
 
@@ -248,6 +257,11 @@ void StackPlots::DrawUpperPad(const UInt_t th1d, const Bool_t isLogY) {
   else {
     fOutDataTH1DHists[th1d]->SetMaximum(max*1.05);
   }
+  
+  // set minimum only for logy
+  if (isLogY) {
+    fOutDataTH1DHists[th1d]->SetMinimum(StackPlots::GetMinimum(th1d) * 0.5);
+  }
 
   // now draw the plots for upper pad in absurd order because ROOT is dumb
   fOutDataTH1DHists[th1d]->Draw("PE"); // draw first so labels appear
@@ -292,6 +306,41 @@ Double_t StackPlots::GetMaximum(const UInt_t th1d) {
     max = fOutMCTH1DHists[th1d]->GetBinContent(fOutMCTH1DHists[th1d]->GetMaximumBin());
   }
   return max;
+}
+
+Double_t StackPlots::GetMinimum(const UInt_t th1d) {
+  // need to loop through to check bin != 0
+  Double_t datamin  = 1e9;
+  Bool_t newdatamin = false;
+  for (Int_t bin = 1; bin <= fOutDataTH1DHists[th1d]->GetNbinsX(); bin++){
+    Float_t tmpmin = fOutDataTH1DHists[th1d]->GetBinContent(bin);
+    if ((tmpmin < datamin) && (tmpmin > 0)) {
+      datamin    = tmpmin;
+      newdatamin = true;
+    }
+  }
+
+  Double_t mcmin  = 1e9;
+  Bool_t newmcmin = false;
+  for (Int_t bin = 1; bin <= fOutMCTH1DHists[th1d]->GetNbinsX(); bin++){
+    Float_t tmpmin = fOutMCTH1DHists[th1d]->GetBinContent(bin);
+    if ((tmpmin < mcmin) && (tmpmin > 0)) {
+      mcmin    = tmpmin;
+      newmcmin = true;
+    }
+  }
+  
+  // now set return variable min
+  Double_t min = 1; // to not royally mess up logy plots in case where plots have no fill and no new min is set for data or mc
+  if (newdatamin || newmcmin) {
+    if (datamin < mcmin) {
+      min = datamin;
+    }
+    else {
+      min = mcmin;
+    }
+  }
+  return min;
 }
 
 void StackPlots::DrawLowerPad(const UInt_t th1d) {    
@@ -349,7 +398,7 @@ void StackPlots::SaveCanvas(const UInt_t th1d, const Bool_t isLogY){
   fOutTH1DStackPads[th1d]->SetLogy(isLogY); //  set no logy on this pad
   fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
   StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
-  fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s/%s/%s_%s.%s",fOutDir.Data(),fSelection.Data(),fOutName.Data(),fTH1DNames[th1d].Data(),suffix.Data(),fOutType.Data()));
+  fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s%s/%s/%s_%s.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data(),fTH1DNames[th1d].Data(),suffix.Data(),fOutType.Data()));
   fOutFile->cd();
   fOutTH1DCanvases[th1d]->Write(Form("%s_%s",fTH1DNames[th1d].Data(),suffix.Data()));
 }
@@ -362,7 +411,7 @@ void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from 
   TString extraText      = "Preliminary";
   Double_t extraTextFont = 52;  // default is helvetica-italics
 
-  TString lumiText = Form("#sqrt{s} = 13 TeV, L = %1.5f fb^{-1}", fLumi); // must change this spec once we are in fb range!
+  TString lumiText = Form("#sqrt{s} = 13 TeV, L = %2.2f pb^{-1}", fLumi); // must change this spec once we are in fb range!
   
   // text sizes and text offsets with respect to the top frame
   // in unit of the top margin size
@@ -462,7 +511,7 @@ void StackPlots::OpenInputFiles() {
   // open input files into TFileVec --> data 
   fDataFiles.resize(fNData);
   for (UInt_t data = 0; data < fNData; data++) {
-    TString datafile = Form("%s/%s/%s_data/plots.root",fOutDir.Data(),fSelection.Data(),fDataNames[data].Data());
+    TString datafile = Form("%s/%s%s/%s_data/plots.root",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fDataNames[data].Data());
     fDataFiles[data] = TFile::Open(datafile.Data());
     CheckValidFile(fDataFiles[data],datafile);
   }
@@ -470,7 +519,7 @@ void StackPlots::OpenInputFiles() {
   // open input files into TFileVec --> mc 
   fMCFiles.resize(fNMC);
   for (UInt_t mc = 0; mc < fNMC; mc++) {
-    TString mcfile = Form("%s/%s/%s_MC/plots.root",fOutDir.Data(),fSelection.Data(),fMCNames[mc].Data());
+    TString mcfile = Form("%s/%s%s/%s_MC/plots.root",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fMCNames[mc].Data());
     fMCFiles[mc] = TFile::Open(mcfile.Data());
     CheckValidFile(fMCFiles[mc],mcfile);
   }

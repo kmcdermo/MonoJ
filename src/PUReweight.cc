@@ -1,6 +1,6 @@
 #include "../interface/PUReweight.hh"
 
-PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Double_t lumi, const Int_t nBins, const TString outdir, const TString outtype) {
+PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const Int_t nBins, const TString outdir, const TString outtype) {
   // save samples for PU weighting
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     if ((*iter).second) { // isMC == true
@@ -17,6 +17,13 @@ PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Dou
 
   // save selection
   fSelection = selection;
+  fNJetsSeln = njetsselection;
+  
+  // string for output of njets... -1 == no requirment on njets
+  fNJetsStr = "";
+  if (fNJetsSeln != -1){
+    fNJetsStr = Form("_nj%i",fNJetsSeln);
+  }
 
   // save lumi
   fLumi = lumi;
@@ -49,6 +56,10 @@ PUReweight::~PUReweight(){
 
 DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
 
+  // add photon cuts data
+  // add njet cuts both
+  // change yields to pass to stackplots!  that way all hadd'ed stuff is done... remove from analysis
+
   DblVec puweights; // return weights
   
   if (doPUReWeight) { // if true, perform reweighting procedure
@@ -63,6 +74,9 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
     else if (fSelection.Contains("singlemu",TString::kExact)) {
       basecut = "((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1))"; 
     }      
+    else if (fSelection.Contains("singlephoton",TString::kExact)) {    
+      basecut = "((nphotons == 1))"
+    }
 
     // get vtx distribution for data first
     for (UInt_t data = 0; data < fNData; data++){

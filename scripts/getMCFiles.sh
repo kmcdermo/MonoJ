@@ -6,7 +6,7 @@ source /afs/cern.ch/project/eos/installation/cms/etc/setup.sh
 for sample in wln ww wz zz singlett singletbart singletw singletbarw qcd15to30 qcd30to50 qcd50to80 qcd80to120 qcd120to170 qcd170to300 qcd300to470 qcd470to600 qcd600to800 qcd800to1000 qcd1000to1400 qcd1400to1800 qcd1800to2400 qcd2400to3200 qcd3200toinf
 do
     
-    ./launchssh.sh ${sample}
+    ./launchMCssh.sh ${sample}
 
 #    if [ -f ../treewithwgt.root ] ; then
 #    eos rm -r eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/${sample}

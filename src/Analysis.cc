@@ -1,18 +1,30 @@
 #include "../interface/Analysis.hh"
 
-Analysis::Analysis(const SamplePair samplePair, const TString selection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const ColorMap colorMap, const TString outdir, const TString outType){
+Analysis::Analysis(const SamplePair samplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const ColorMap colorMap, const TString outdir, const TString outType){
   // store in data members
   fSample    = samplePair.first;
   fIsMC      = samplePair.second;
   fSelection = selection;
+  fNJetsSeln = njetsselection;
   fPUWeights = puweights;
   fLumi      = lumi;
   fNBins_vtx = nBins_vtx;
 
+  // string for output of njets... -1 == no requirment on njets
+  fNJetsStr = "";
+  if (fNJetsSeln != -1){
+    fNJetsStr = Form("_nj%i",fNJetsSeln);
+  }
+
   //Get File
   TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
   if (fIsMC){ // MC
-    fileName.Append("Spring15MC_50ns/");
+    if (fSample.Contains("gamma",TString::kExact) ){ // use phys14 for photons
+      fileName.Append("PHYS14MC/");
+    }
+    else {
+      fileName.Append("Spring15MC_50ns/");
+    }
   }
   else{ // Data
     fileName.Append("Data/");
@@ -39,10 +51,10 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const D
   }
 
   // make output directory
-  MakeOutDirectory(Form("%s/%s/%s",fOutDir.Data(),fSelection.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
 
   // make output root file
-  fOutFile = new TFile(Form("%s/%s/%s/plots.root",fOutDir.Data(),fSelection.Data(),fOutName.Data()),"RECREATE");
+  fOutFile = new TFile(Form("%s/%s%s/%s/plots.root",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()),"RECREATE");
 
   // set color map
   fColorMap = colorMap;
@@ -54,7 +66,7 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const D
   fNSelected = 0;
   
   // open the yields text file in append mode
-  fYieldsTxt.open(Form("%s/%s/yields.txt",fOutDir.Data(),fSelection.Data()),std::ios_base::app);
+  fYieldsTxt.open(Form("%s/%s%s/yields.txt",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data()),std::ios_base::app);
 }
 
 Analysis::~Analysis(){
@@ -93,11 +105,35 @@ void Analysis::DoAnalysis(){
     else if (fSelection.Contains("singlemu",TString::kExact)){
       selection = ((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1));
     }
+    else if (fSelection.Contains("singlephoton",TString::kExact)){
+      if (fIsMC) { // triggers bugged in phys14
+	selection = (nphotons == 1);
+      }
+      else { // only apply triggers in data
+	selection = (((hltphoton165 == 1) || (hltphoton175 == 1)) && nphotons == 1);
+      }
+    }
 
     Bool_t met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
-    
-    if ( selection && met_filters ){ 
+
+    Bool_t jet_selection = false;
+    if (fNJetsSln != -1) {
+      jet_selection = (njets == fNJetsSln);
+    }
+    else {
+      jet_selection = true; // no selection, so set it to true
+    }
+
+    if ( selection && met_filters && jet_selection ){ 
       fNSelected += weight; 	// save the event weight for yields!
+
+      if (nphotons>=1) {
+	fTH1DMap["phpt"]->Fill(phpt,weight);
+
+	if (njets<=2){ //only two jets
+	  fTH1DMap["phpt_nj_lte2"]->Fill(phpt,weight);
+	}
+      }
 
       if (nmuons>=1) {
 	fTH1DMap["mu1eta"]->Fill(mu1eta,weight);
@@ -210,6 +246,9 @@ void Analysis::DoAnalysis(){
 }
 
 void Analysis::SetUpPlots() {
+  fTH1DMap["phpt"]         = Analysis::MakeTH1DPlot("phpt","",40,0.,1000.,"Phton p_{T} [GeV/c]","Events / 25 GeV/c"); 
+  fTH1DMap["phpt_nj_lte2"] = Analysis::MakeTH1DPlot("phpt_nj_lte2","",40,0.,1000.,"Phton p_{T} (n_{jets} #leq 2) [GeV/c]","Events / 25 GeV/c"); 
+
   fTH1DMap["mu1eta"] = Analysis::MakeTH1DPlot("mu1eta","",30,-3.,3.,"Leading Muon #eta","Events"); 
   fTH1DMap["mu1phi"] = Analysis::MakeTH1DPlot("mu1phi","",32,-3.2,3.2,"Leading Muon #phi","Events"); 
   fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",50,0.,500.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
@@ -304,8 +343,23 @@ void Analysis::SaveHists() {
 
     canv->cd();
     if (fIsMC){
-      (*mapiter).second->SetLineColor(fColorMap[fSample]);
-      (*mapiter).second->SetFillColor(fColorMap[fSample]);
+      if ( (fSample.Contains("ttbar",TString::kExact)) || (fSample.Contains("singlett",TString::kExact)) || (fSample.Contains("singletbart",TString::kExact)) || (fSample.Contains("singletw",TString::kExact)) || (fSample.Contains("singletbarw",TString::kExact)) ) {
+	(*mapiter).second->SetLineColor(fColorMap["top"]);
+	(*mapiter).second->SetFillColor(fColorMap["top"]);
+      }
+      else if (fSample.Contains("qcd",TString::kExact)) {
+	(*mapiter).second->SetLineColor(fColorMap["qcd"]);
+	(*mapiter).second->SetFillColor(fColorMap["qcd"]);
+      }
+      else if (fSample.Contains("gamma",TString::kExact)) {
+	(*mapiter).second->SetLineColor(fColorMap["gamma"]);
+	(*mapiter).second->SetFillColor(fColorMap["gamma"]);
+      }
+      else {
+	(*mapiter).second->SetLineColor(fColorMap[fSample]);
+	(*mapiter).second->SetFillColor(fColorMap[fSample]);
+      }
+      
       (*mapiter).second->Draw("HIST");
     }
     else {
@@ -314,10 +368,10 @@ void Analysis::SaveHists() {
 
     // first save as log, then linear
     canv->SetLogy(1);
-    canv->SaveAs(Form("%s/%s/%s/%s_log.%s",fOutDir.Data(),fSelection.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
+    canv->SaveAs(Form("%s/%s%s/%s/%s_log.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
 
     canv->SetLogy(0);
-    canv->SaveAs(Form("%s/%s/%s/%s_lin.%s",fOutDir.Data(),fSelection.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
+    canv->SaveAs(Form("%s/%s%s/%s/%s_lin.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data(),(*mapiter).first.Data(),fOutType.Data()));
   }
 
   delete canv;
