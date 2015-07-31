@@ -83,19 +83,31 @@ void Analysis::DoAnalysis(){
     }
     
     // selection for z peak with di muons
-    Bool_t selection = false;
+    TString basecut = "( ";
     if (fSelection.Contains("zmumu",TString::kExact)) {
-      selection = ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid));
+      basecut.Append("((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid))");
     }
     else if (fSelection.Contains("zelel",TString::kExact)) {
-      selection = ((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid));
+      basecut.Append("((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid))");
     }
     else if (fSelection.Contains("singlemu",TString::kExact)){
-      selection = ((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1));
+      basecut.Append("((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1))");
     }
 
-    Bool_t met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
+    // apply met filters
+    if (fIsMC) {
+      basecut.Append(" && (flagcsctight == 1 && flaghbhenoise == 1)"); 
+    }    
+    else {
+      basecut.Append(" && (cflagcsctight == 1 && cflaghbhenoise == 1)"); 
+    }
+
+    basecut.Append(" )");
+
+    // HOW TO INCLUDE PU RW IN TTREE->DRAW??
+
     
+
     if ( selection && met_filters ){ 
       fNSelected += weight; 	// save the event weight for yields!
 
