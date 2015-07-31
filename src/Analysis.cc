@@ -341,7 +341,11 @@ void Analysis::SaveHists() {
 
     canv->cd();
     if (fIsMC){
-      if ( (fSample.Contains("ttbar",TString::kExact)) || (fSample.Contains("singlett",TString::kExact)) || (fSample.Contains("singletbart",TString::kExact)) || (fSample.Contains("singletw",TString::kExact)) || (fSample.Contains("singletbarw",TString::kExact)) ) {
+      if ( (fSample.Contains("ww",TString::kExact)) || (fSample.Contains("wz",TString::kExact)) || (fSample.Contains("zz",TString::kExact)) ){
+	(*mapiter).second->SetLineColor(fColorMap["diboson"]);
+	(*mapiter).second->SetFillColor(fColorMap["diboson"]);
+      }
+      else if ( (fSample.Contains("ttbar",TString::kExact)) || (fSample.Contains("singlett",TString::kExact)) || (fSample.Contains("singletbart",TString::kExact)) || (fSample.Contains("singletw",TString::kExact)) || (fSample.Contains("singletbarw",TString::kExact)) ) {
 	(*mapiter).second->SetLineColor(fColorMap["top"]);
 	(*mapiter).second->SetFillColor(fColorMap["top"]);
       }

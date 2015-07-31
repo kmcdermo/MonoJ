@@ -17,14 +17,12 @@ int main(){
   // Variables needed in all functions for plotting and the like so it is universal
   // Color for MC Stacks
   ColorMap colorMap;
-  colorMap["zll"]   = kCyan;
-  colorMap["wln"]   = kGreen+3;
-  colorMap["ww"]    = kYellow-7;
-  colorMap["zz"]    = kPink-4;
-  colorMap["wz"]    = kMagenta+2;
-  colorMap["top"]   = kRed+2;
-  colorMap["qcd"]   = kOrange+7;
-  colorMap["gamma"] = kBlue-4;
+  colorMap["zll"]     = kCyan;
+  colorMap["wln"]     = kGreen+3;
+  colorMap["diboson"] = kMagenta+2;
+  colorMap["top"]     = kRed+2;
+  colorMap["qcd"]     = kOrange+7;
+  colorMap["gamma"]   = kBlue-4;
   
   // nPV needs nBins set for PU reweights and actual plots
   Int_t nBins_vtx = 50;
@@ -120,9 +118,6 @@ int main(){
   Samples.push_back(SamplePair("doublemu",false));
   Samples.push_back(SamplePair("zll",true));
   Samples.push_back(SamplePair("wln",true));
-  Samples.push_back(SamplePair("ww",true));
-  Samples.push_back(SamplePair("zz",true));
-  Samples.push_back(SamplePair("wz",true));
   
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
@@ -130,7 +125,25 @@ int main(){
     sample.DoAnalysis(yields);
   }
 
-  std::cout << "Done with Analysis ... now do Top Analysis" << std::endl;  
+  std::cout << "Done with Data, Zll,Wln Analysis ... now do Diboson Analysis" << std::endl;  
+
+  // -------------------------------------- //
+  // diboson analysis
+  SamplePairVec DBSamples;
+  DBSamples.push_back(SamplePair("ww",true));
+  DBSamples.push_back(SamplePair("zz",true));
+  DBSamples.push_back(SamplePair("wz",true));
+
+  for (SamplePairVecIter iter = DBSamples.begin(); iter != DBSamples.end(); ++iter) {
+    std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+    Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
+    sample.DoAnalysis(yields);
+  }
+ 
+  std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
+  Hadd(DBSamples,outdir,selection,njetsselection,"diboson");
+  Samples.push_back(SamplePair("diboson",true)); // add hadded file to total samples for stacking
+  std::cout << "Done with Diboson Hadd ... now do Top Analysis" << std::endl;  
 
   // -------------------------------------- //
   // top backgrounds
@@ -216,5 +229,3 @@ int main(){
 
   yields.close(); // close yields txt
 }
-
-

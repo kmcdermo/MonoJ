@@ -56,18 +56,6 @@ PUReweight::~PUReweight(){
 
 DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
 
-  // add phtons to main
-
-  // get photns from adish
-  // run wegithsum
-  // add to eos
-
-  // check machinery still works
-
-  // run over phonts+qcd to get pt spectrum
-  // check to see met filters are effectively 1 for phtons mc
-
-
   DblVec puweights; // return weights
   
   if (doPUReWeight) { // if true, perform reweighting procedure

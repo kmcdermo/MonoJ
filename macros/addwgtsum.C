@@ -17,9 +17,9 @@ double sumwgt(TTree* tree) {
 }
 
 //void addwgtsum(TString sample) {
-void addwgtsum() {
+void addwgtsum(TString dir) {
   //  TFile* infile = TFile::Open(Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/tree.root",sample.Data()));
-  TFile* infile = TFile::Open("tree.root","UPDATE");
+  TFile* infile = TFile::Open(Form("%s/tree.root",dir.Data()),"UPDATE");
   TTree* intree = (TTree*)infile->Get("gentree/gentree");
   TTree* frtree = (TTree*)infile->Get("tree/tree");
   if (!intree) intree = (TTree*)infile->Get("gentree");
@@ -56,6 +56,11 @@ void addwgtsum() {
   infile->Write();
   infile->Close();
   //  outfile->Close();
+
+  // moving name to with wgtsum
+  std::cout << "Moving file from tree.root to treewithwgt.root" << std::endl;
+
+  gSystem->Exec(Form("mv %s/tree.root %s/treewithwgt.root",dir.Data(),dir.Data()));
 
   std::cout << "Finished macro" << std::endl;
 }
