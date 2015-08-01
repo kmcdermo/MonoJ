@@ -17,7 +17,8 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const I
   }
 
   //Get File
-  TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
+  //  TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
+  TString fileName = "";
   if (fIsMC){ // MC
     if (fSample.Contains("gamma",TString::kExact) ){ // use phys14 for photons
       fileName.Append("PHYS14MC/");

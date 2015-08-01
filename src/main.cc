@@ -69,36 +69,39 @@ int main(){
   //             PU Reweighting             //
   //========================================// 
 
-  // currently set for z->mumu peak matchng selection in Analysis.cc, could make this a compiled code eventually
-  
-  TString PURWselection = "zmumu";
-  Int_t   PURWnjetsselection = -1;
-  std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
-  
-  SamplePairVec PURWSamples;
-  PURWSamples.push_back(SamplePair("doublemu",false));
-  PURWSamples.push_back(SamplePair("zll",true));
-  //  PURWSamples.push_back(SamplePair("ttbar",true));
-
-  PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype);
-
-  Bool_t doReWeight = true; // false if no actual reweighting to be performed
-  DblVec puweights = reweight->GetPUWeights(doReWeight); 
-  
-  delete reweight;
-  
   // add info about reweighting technique to yields
   yields << "PU Reweighting Info" << std::endl;
   yields << "-------------------" << std::endl << std::endl;
+
+  Bool_t doReWeight = true; // false if no actual reweighting to be performed
+  DblVec puweights;
   if (doReWeight) {
+    TString PURWselection = "zmumu";
+    Int_t   PURWnjetsselection = -1;
+    std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
+    
+    SamplePairVec PURWSamples;
+    PURWSamples.push_back(SamplePair("doublemu",false));
+    PURWSamples.push_back(SamplePair("zll",true));
+    //  PURWSamples.push_back(SamplePair("ttbar",true));
+    
+    PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype);
+    puweights = reweight->GetPUWeights(); 
+  
+    delete reweight;
+
     yields << "Used PU Reweighting with selection: " << PURWselection.Data() << " njets cut: " << ((PURWnjetsselection != -1) ? Form("%i",PURWnjetsselection) : "NONE") << std::endl;
     // include samples used for reweighting, to be safe
     yields << "Samples used in PURW:" << std::endl;
     for (SamplePairVecIter iter = PURWSamples.begin(); iter != PURWSamples.end(); ++iter) {
       yields << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     }
-  }
-  else {
+  } // end if for doReWeight
+
+  else { // no reweight!  so just push back puweights  = 1.0 for all nvtx bins
+    for (Int_t i = 1; i <= nBins_vtx; i++ ){ // could do i = 0; i < nBins_vtx ... just do this to match bin indexing in ROOT and look like function inside PUReweight.cc
+      puweights.push_back(1.0);
+    }
     yields << "No PU reweighting applied!" << std::endl;
   }
   yields << "-------------------" << std::endl << std::endl;
