@@ -86,10 +86,12 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
       TString cut = basecut.Data();
       cut.Prepend("( ");
       if (fSelection.Contains("singlephoton",TString::kExact)) { // annoying since data triggers != MC triggers
-	cut.Append(" && (((hltphoton165 == 1) || (hltphoton175 == 1)) && (nphotons == 1))");
+	cut.Append(" && ((hltphoton165 == 1) || (hltphoton175 == 1)) )");
       }
-      cut.Append(" && (cflagcsctight == 1 && cflaghbhenoise == 1) )"); // met filters for data
-      
+      else { // no photon triggers, and also no checks on these for photons as PHYS14MC sample is 50% efficient.
+	cut.Append(" && ((cflagcsctight == 1) && (cflaghbhenoise == 1)) )"); // met filters for data
+      }      
+
       // files + trees + tmp hist for data
       TString filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/%s/treewithwgt.root",fDataNames[data].Data());
       TFile * file = TFile::Open(filename.Data());
@@ -117,7 +119,14 @@ DblVec PUReweight::GetPUWeights(const Bool_t doPUReWeight){
       // create appropriate selection cut
       TString cut = basecut;
       cut.Prepend("( ");
-      cut.Append(Form(" && (flagcsctight == 1 && flaghbhenoise == 1) ) * (xsec * %f * wgt / wgtsum)",fLumi)); // met filters for mc + weights
+      if (fSelection.Contains("singlephoton",TString::kExact)) { // no met filters for single photons from PHYS14
+	cut.Append(" )");
+      }
+      else { // met filters for all other mc
+	cut.Append(Form(" && ((flagcsctight == 1) && (flaghbhenoise == 1)) )"));
+      }
+      
+      cut.Append(Form("* (xsec * %f * wgt / wgtsum)",fLumi)); // make sure to add weights for all mc!
       
       // files + trees for mc + tmp hists
       TString filename;

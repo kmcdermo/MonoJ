@@ -28,7 +28,7 @@ int main(){
   Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "fullbatch_zmumu";
+  TString outdir = "test_zmumu";
 
   // Allow user to set outtype for plots
   TString outtype = "png";
@@ -45,10 +45,10 @@ int main(){
   // Important variables to set for analysis
 
   // Total Integrated Luminosity
-  Double_t lumi = 40.03; // int lumi 
+  Double_t lumi = 0.04003; // int lumi in fb^-1
 
-  // Selection we want (zmumu = zpeak with muons, zelel = zpeak with electrons, singleel)
-  TString selection = "singlephoton";
+  // Selection we want (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
+  TString selection = "zmumu";
 
   // Njets selection (==1, ==2) ... -1 = no selection
   Int_t njetsselection = -1;
@@ -61,7 +61,7 @@ int main(){
   MakeOutDirectory(Form("%s/%s%s",outdir.Data(),selection.Data(),njetsstr.Data()));
 
   // now make ofstream object to store yield info
-  ofstream yields(Form("%s/%s%s/yields.txt",outdir.Data(),selection.Data(),njetsstr.Data()));
+  ofstream yields(Form("%s/%s%s/yields.txt",outdir.Data(),selection.Data(),njetsstr.Data()),std::ios_base::app);
   yields << "Yields with selection: " << selection.Data() << " njets cut: " << ((njetsselection != -1) ? Form("%i",njetsselection) : "NONE") << std::endl;
   yields << "=============================================================" << std::endl << std::endl;
     
@@ -73,11 +73,12 @@ int main(){
   
   TString PURWselection = "zmumu";
   Int_t   PURWnjetsselection = -1;
-  std::cout << Form("Do PU reweighting first with %s!",PURWselection.Data()) << std::endl;
+  std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
   
   SamplePairVec PURWSamples;
   PURWSamples.push_back(SamplePair("doublemu",false));
   PURWSamples.push_back(SamplePair("zll",true));
+  //  PURWSamples.push_back(SamplePair("ttbar",true));
 
   PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype);
 
@@ -107,17 +108,17 @@ int main(){
   //========================================// 
   //      Produce Plots Per Sample          //
   //========================================// 
-
+  
   yields << "Yields from individual Samples from Analysis" << std::endl;
   yields << "--------------------------------------------" << std::endl << std::endl;
-
+  
   // run over data + MC samples (dibosons and the like) first, then Top samples, then QCD
   // -------------------------------------- //
   // Largest samples to process 
   SamplePairVec Samples;
   Samples.push_back(SamplePair("doublemu",false));
   Samples.push_back(SamplePair("zll",true));
-  Samples.push_back(SamplePair("wln",true));
+  //  Samples.push_back(SamplePair("wln",true));
   
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
@@ -126,7 +127,8 @@ int main(){
   }
 
   std::cout << "Done with Data, Zll,Wln Analysis ... now do Diboson Analysis" << std::endl;  
-
+  
+  
   // -------------------------------------- //
   // diboson analysis
   SamplePairVec DBSamples;
@@ -144,7 +146,7 @@ int main(){
   Hadd(DBSamples,outdir,selection,njetsselection,"diboson");
   Samples.push_back(SamplePair("diboson",true)); // add hadded file to total samples for stacking
   std::cout << "Done with Diboson Hadd ... now do Top Analysis" << std::endl;  
-
+  
   // -------------------------------------- //
   // top backgrounds
   SamplePairVec TopSamples;
@@ -153,13 +155,13 @@ int main(){
   TopSamples.push_back(SamplePair("singletbart",true)); 
   TopSamples.push_back(SamplePair("singletw",true)); 
   TopSamples.push_back(SamplePair("singletbarw",true)); 
-
+  
   for (SamplePairVecIter iter = TopSamples.begin(); iter != TopSamples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis(yields);
   }
- 
+
   std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
   Hadd(TopSamples,outdir,selection,njetsselection,"top");
   Samples.push_back(SamplePair("top",true)); // add hadded file to total samples for stacking
@@ -196,6 +198,7 @@ int main(){
   std::cout << "Done with QCD Hadd ... now do Gamma Analysis" << std::endl;  
 
   // -------------------------------------- //
+  /*
   // Photon backgrounds
   SamplePairVec GammaSamples;
   GammaSamples.push_back(SamplePair("gamma100to200",true)); 
@@ -213,7 +216,7 @@ int main(){
   Hadd(QCDSamples,outdir,selection,njetsselection,"gamma");
   Samples.push_back(SamplePair("gamma",true)); // add hadded file to total samples for stacking 
   std::cout << "Done with Gamma Hadd ... now make all stack plots" << std::endl;  
-  
+  */
   yields << "--------------------------------------------" << std::endl << std::endl;
 
   //========================================// 

@@ -110,7 +110,13 @@ void Analysis::DoAnalysis(std::ofstream & yields){
       }
     }
 
-    Bool_t met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
+    Bool_t met_filters = false;
+    if (fSelection.Contains("singlephoton",TString::kExact)) {
+      met_filters = true; // bugged met filters in PHYS14 MC single photons (50% efficient), so do not apply, just set to true
+    }
+    else { // all other selections should have met_filters
+      met_fitlers = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
+    }
 
     Bool_t jet_selection = false;
     if (fNJetsSeln != -1) {

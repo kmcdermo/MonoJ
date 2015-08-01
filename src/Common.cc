@@ -25,7 +25,7 @@ void CheckValidTree(TTree*& tree, const TString tname, const TString fname){
     exit(1);
   }
   else {
-    //    std::cout << "Successfully opened tree: " << tname.Data() << " in input file: " << fname.Data() << std::endl;
+    std::cout << "Successfully opened tree: " << tname.Data() << " in input file: " << fname.Data() << std::endl;
   }
 }
 
@@ -46,7 +46,7 @@ void Hadd(SamplePairVec samples, const TString outdir, const TString selection, 
     jetstring = Form("_nj%i",njetsselection);
   }
 
-  TString combinedOutdir = Form("%s/%s/%s_MC",outdir.Data(),selection.Data(),jetstring.Data(),combinedName.Data());
+  TString combinedOutdir = Form("%s/%s%s/%s_MC",outdir.Data(),selection.Data(),jetstring.Data(),combinedName.Data());
   MakeOutDirectory(combinedOutdir);
   
   // Form string for doing hadd
@@ -54,7 +54,7 @@ void Hadd(SamplePairVec samples, const TString outdir, const TString selection, 
   TString tohadd = "";
 
   for (SamplePairVecIter iter = samples.begin(); iter != samples.end(); ++iter) {
-    tohadd.Append(Form(" %s/%s/%s_MC/plots.root",outdir.Data(),selection.Data(),jetstring.Data(),(*iter).first.Data()));
+    tohadd.Append(Form(" %s/%s%s/%s_MC/plots.root",outdir.Data(),selection.Data(),jetstring.Data(),(*iter).first.Data()));
   }
   hadd.Append(tohadd);
   
