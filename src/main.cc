@@ -28,7 +28,7 @@ int main(){
   Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "test_zmumu";
+  TString outdir = "fullbatch_doublemu";
 
   // Allow user to set outtype for plots
   TString outtype = "png";
@@ -107,7 +107,7 @@ int main(){
   yields << "-------------------" << std::endl << std::endl;
 
   std::cout << "Finished PU reweighting, now begin Analysis" << std::endl;
-  
+  std::cout << Form("Analysis %s selection, njets selection: %d!, with luminosity: %2.2f pb^-1",selection.Data(),njetsselection,lumi*1000) << std::endl;
   //========================================// 
   //      Produce Plots Per Sample          //
   //========================================// 
@@ -130,7 +130,6 @@ int main(){
   }
 
   std::cout << "Done with Data, Zll,Wln Analysis ... now do Diboson Analysis" << std::endl;  
-  
   
   // -------------------------------------- //
   // diboson analysis
@@ -201,7 +200,7 @@ int main(){
   std::cout << "Done with QCD Hadd ... now do Gamma Analysis" << std::endl;  
 
   // -------------------------------------- //
-  /*
+
   // Photon backgrounds
   SamplePairVec GammaSamples;
   GammaSamples.push_back(SamplePair("gamma100to200",true)); 
@@ -219,7 +218,7 @@ int main(){
   Hadd(QCDSamples,outdir,selection,njetsselection,"gamma");
   Samples.push_back(SamplePair("gamma",true)); // add hadded file to total samples for stacking 
   std::cout << "Done with Gamma Hadd ... now make all stack plots" << std::endl;  
-  */
+
   yields << "--------------------------------------------" << std::endl << std::endl;
 
   //========================================// 
@@ -232,6 +231,6 @@ int main(){
   StackPlots * stacker = new StackPlots(Samples,selection,njetsselection,lumi,colorMap,outdir,outtype);
   stacker->DoStacks(yields);
   delete stacker;
-
+  
   yields.close(); // close yields txt
 }

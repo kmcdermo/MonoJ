@@ -17,8 +17,8 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const I
   }
 
   //Get File
-  //  TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
-  TString fileName = "";
+  TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
+  //TString fileName = ""; // do this for local macbook copy
   if (fIsMC){ // MC
     if (fSample.Contains("gamma",TString::kExact) ){ // use phys14 for photons
       fileName.Append("PHYS14MC/");
@@ -79,6 +79,28 @@ void Analysis::DoAnalysis(std::ofstream & yields){
   // set up output plots to be produced
   Analysis::SetUpPlots();
 
+  // use these bools to save time inside entry loop
+  Bool_t zmumuselection      = false;
+  Bool_t zelelselection      = false;
+  Bool_t singlemuselection    = false;
+  Bool_t singlephotonselection = false;
+  if (fSelection.Contains("zmumu",TString::kExact)) {
+    zmumuselection = true;
+  }
+  else if (fSelection.Contains("zelel",TString::kExact)) {
+    zelelselection = true;
+  }
+  else if (fSelection.Contains("singlemu",TString::kExact)){
+    singlemuselection = true;
+  }  
+  else if (fSelection.Contains("singlephoton",TString::kExact)){
+    singlephotonselection = true;
+  }
+  else {
+    std::cout << "Not a valid selection: " << fSelection.Data() << " exiting... " << std::endl;
+    exit(1);
+  }
+
   // Loop over entries in input tree
   for (UInt_t entry = 0; entry < fInTree->GetEntries(); entry++) {
     fInTree->GetEntry(entry);
@@ -91,32 +113,29 @@ void Analysis::DoAnalysis(std::ofstream & yields){
       weight = 1.0; // data is currently to 1.0
     }
     
-    // selection for z peak with di muons
+    // set selection here ... apply met_filters to all selections except singlephoton
     Bool_t selection = false;
-    if (fSelection.Contains("zmumu",TString::kExact)) {
+    Bool_t met_filters = false;
+    if (zmumuselection) {
       selection = ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid));
+      met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
     }
-    else if (fSelection.Contains("zelel",TString::kExact)) {
+    else if (zelelselection) {
       selection = ((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid));
+      met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
     }
-    else if (fSelection.Contains("singlemu",TString::kExact)){
+    else if (singlemuselection) {
       selection = ((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1));
+      met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
     }
-    else if (fSelection.Contains("singlephoton",TString::kExact)){
+    else if (singlephotonselection) {
       if (fIsMC) { // triggers bugged in phys14
 	selection = ((nphotons == 1));
       }
       else { // only apply triggers in data
 	selection = (((hltphoton165 == 1) || (hltphoton175 == 1)) && (nphotons == 1));
       }
-    }
-
-    Bool_t met_filters = false;
-    if (fSelection.Contains("singlephoton",TString::kExact)) {
       met_filters = true; // bugged met filters in PHYS14 MC single photons (50% efficient), so do not apply, just set to true
-    }
-    else { // all other selections should have met_filters
-      met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
     }
 
     Bool_t jet_selection = false;
@@ -271,12 +290,12 @@ void Analysis::SetUpPlots() {
   fTH1DMap["zeta"]    = Analysis::MakeTH1DPlot("zeta","",30,-3.,3.,"Dimuon #eta","Events"); 
   fTH1DMap["zmass"]   = Analysis::MakeTH1DPlot("zmass","",60,60.,120.,"Dimuon Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zphi"]    = Analysis::MakeTH1DPlot("zphi","",32,-3.2,3.2,"Dimuon #phi","Events"); 
-  fTH1DMap["zpt"]     = Analysis::MakeTH1DPlot("zpt","",40,0.,1000.,"Dimuon p_{T} [GeV/c]","Events / 25 GeV/c"); 
+  fTH1DMap["zpt"]     = Analysis::MakeTH1DPlot("zpt","",24,0.,600.,"Dimuon p_{T} [GeV/c]","Events / 25 GeV/c"); 
 
   fTH1DMap["zeeeta"]  = Analysis::MakeTH1DPlot("zeeeta","",30,-3.,3.,"Dielectron #eta","Events"); 
   fTH1DMap["zeemass"] = Analysis::MakeTH1DPlot("zeemass","",60,60.,120.,"Dielectron Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zeephi"]  = Analysis::MakeTH1DPlot("zeephi","",32,-3.2,3.2,"Dielectron #phi","Events"); 
-  fTH1DMap["zeept"]   = Analysis::MakeTH1DPlot("zeept","",40,0.,1000.,"Dielectron p_{T} [GeV/c]","Events / 25 GeV/c"); 
+  fTH1DMap["zeept"]   = Analysis::MakeTH1DPlot("zeept","",24,0.,600.,"Dielectron p_{T} [GeV/c]","Events / 25 GeV/c"); 
 
   fTH1DMap["emueta"]  = Analysis::MakeTH1DPlot("emueta","",30,-3.,3.,"Electron-Muon #eta","Events"); 
   fTH1DMap["emumass"] = Analysis::MakeTH1DPlot("emumass","",60,60.,120.,"Electron-Muon Mass [GeV/c^{2}]","Events / GeV/c^{2}");
@@ -310,16 +329,16 @@ void Analysis::SetUpPlots() {
   fTH1DMap["thirdjetEMfrac"]   = Analysis::MakeTH1DPlot("thirdjetEMfrac","",50,0.,1.,"Subsubleading Jet Neutral EM Fraction","Events"); 
   fTH1DMap["thirdjetCEMfrac"]  = Analysis::MakeTH1DPlot("thirdjetCEMfrac","",50,0.,1.,"Subsubleading Jet Charged EM Fraction","Events"); 
 
-  fTH1DMap["ht"]  = Analysis::MakeTH1DPlot("ht","",80,0.,800.,"H_{T} [GeV/c]","Events / 10 GeV/c"); 
-  fTH1DMap["mht"] = Analysis::MakeTH1DPlot("mht","",80,0.,400.,"E_{T}^{Miss} from H_{T} [GeV/c]","Events / 5 GeV/c"); 
+  fTH1DMap["ht"]  = Analysis::MakeTH1DPlot("ht","",100,0.,1000.,"H_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["mht"] = Analysis::MakeTH1DPlot("mht","",60,0.,600.,"E_{T}^{Miss} from H_{T} [GeV/c]","Events / 10 GeV/c"); 
 
-  fTH1DMap["pfmet"]      = Analysis::MakeTH1DPlot("pfmet","",80,0.,400.,"PF E_{T}^{Miss} [GeV]","Events / 5 GeV"); 
+  fTH1DMap["pfmet"]      = Analysis::MakeTH1DPlot("pfmet","",60,0.,600.,"PF E_{T}^{Miss} [GeV]","Events / 10 GeV"); 
   fTH1DMap["pfmetphi"]   = Analysis::MakeTH1DPlot("pfmetphi","",32,-3.2,3.2,"PF E_{T}^{Miss} #phi","Events"); 
-  fTH1DMap["t1pfmet"]    = Analysis::MakeTH1DPlot("t1pfmet","",80,0.,400.,"Type-1 PF E_{T}^{Miss} [GeV]","Events / 5 GeV"); 
+  fTH1DMap["t1pfmet"]    = Analysis::MakeTH1DPlot("t1pfmet","",60,0.,600.,"Type-1 PF E_{T}^{Miss} [GeV]","Events / 10 GeV"); 
   fTH1DMap["t1pfmetphi"] = Analysis::MakeTH1DPlot("t1pfmetphi","",32,-3.2,3.2,"Type-1 PF E_{T}^{Miss} #phi","Events"); 
-  fTH1DMap["mumet"]      = Analysis::MakeTH1DPlot("mumet","",80,0.,400.,"PF E_{T}^{Miss} without Muons [GeV]","Events / 5 GeV");
+  fTH1DMap["mumet"]      = Analysis::MakeTH1DPlot("mumet","",60,0.,600.,"PF E_{T}^{Miss} without Muons [GeV]","Events / 10 GeV");
   fTH1DMap["mumetphi"]   = Analysis::MakeTH1DPlot("mumetphi","",32,-3.2,3.2,"PF E_{T}^{Miss} without Muons #phi","Events");  
-  fTH1DMap["t1mumet"]    = Analysis::MakeTH1DPlot("t1mumet","",80,0.,400.,"Type-1 PF E_{T}^{Miss} without Muons [GeV]","Events / 5 GeV"); 
+  fTH1DMap["t1mumet"]    = Analysis::MakeTH1DPlot("t1mumet","",60,0.,600.,"Type-1 PF E_{T}^{Miss} without Muons [GeV]","Events / 10 GeV"); 
   fTH1DMap["t1mumetphi"] = Analysis::MakeTH1DPlot("t1mumetphi","",32,-3.2,3.2,"Type-1 PF E_{T}^{Miss} without Muons #phi","Events");  
 
   fTH1DMap["nvtx"]  = Analysis::MakeTH1DPlot("nvtx","",fNBins_vtx,0,fNBins_vtx,"Number of Primary Vertices","Events");
