@@ -433,7 +433,7 @@ void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from 
   TString extraText      = "Preliminary";
   Double_t extraTextFont = 52;  // default is helvetica-italics
 
-  TString lumiText = Form("#sqrt{s} = 13 TeV, L = %2.2f pb^{-1}", fLumi); // must change this spec once we are in fb range!
+  TString lumiText = Form("#sqrt{s} = 13 TeV, L = %2.2f pb^{-1}", fLumi*1000); // must change this spec once we are in fb range!
   
   // text sizes and text offsets with respect to the top frame
   // in unit of the top margin size
