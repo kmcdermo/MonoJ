@@ -107,7 +107,7 @@ int main(){
   yields << "-------------------" << std::endl << std::endl;
 
   std::cout << "Finished PU reweighting, now begin Analysis" << std::endl;
-  std::cout << Form("Analysis %s selection, njets selection: %d!, with luminosity: %2.2f pb^-1",selection.Data(),njetsselection,lumi*1000) << std::endl;
+  
   //========================================// 
   //      Produce Plots Per Sample          //
   //========================================// 
@@ -116,9 +116,13 @@ int main(){
   yields << "--------------------------------------------" << std::endl << std::endl;
   
   // run over data + MC samples (dibosons and the like) first, then Top samples, then QCD
+  std::cout << Form("Analysis %s selection, njets selection: %d!, with luminosity: %2.2f pb^-1",selection.Data(),njetsselection,lumi*1000) << std::endl;
+  
   // -------------------------------------- //
-  // Largest samples to process 
-  SamplePairVec Samples;
+  // Z/W peak analysis
+  std::cout << "Starting data, Zll, Wln Analysis" << std::endl;
+
+  SamplePairVec Samples; // this vector is one that will also be used for stack plots
   Samples.push_back(SamplePair("doublemu",false));
   Samples.push_back(SamplePair("zll",true));
   //  Samples.push_back(SamplePair("wln",true));
@@ -128,11 +132,12 @@ int main(){
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis(yields);
   }
-
-  std::cout << "Done with Data, Zll,Wln Analysis ... now do Diboson Analysis" << std::endl;  
+  std::cout << "Done with Data, Zll, Wln Analysis" << std::endl;  
   
   // -------------------------------------- //
   // diboson analysis
+  std::cout << "Starting diboson Analysis" << std::endl;
+
   SamplePairVec DBSamples;
   DBSamples.push_back(SamplePair("ww",true));
   DBSamples.push_back(SamplePair("zz",true));
@@ -143,14 +148,16 @@ int main(){
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis(yields);
   }
- 
   std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
+
   Hadd(DBSamples,outdir,selection,njetsselection,"diboson");
   Samples.push_back(SamplePair("diboson",true)); // add hadded file to total samples for stacking
-  std::cout << "Done with Diboson Hadd ... now do Top Analysis" << std::endl;  
+  std::cout << "Done with Diboson Hadd" << std::endl;  
   
   // -------------------------------------- //
   // top backgrounds
+  std::cout << "Starting top Analysis" << std::endl;
+
   SamplePairVec TopSamples;
   TopSamples.push_back(SamplePair("ttbar",true)); 
   TopSamples.push_back(SamplePair("singlett",true)); 
@@ -163,14 +170,16 @@ int main(){
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis(yields);
   }
-
   std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
+
   Hadd(TopSamples,outdir,selection,njetsselection,"top");
   Samples.push_back(SamplePair("top",true)); // add hadded file to total samples for stacking
-  std::cout << "Done with Top Hadd ... now do QCD Analysis" << std::endl;  
+  std::cout << "Done with Top Hadd" << std::endl;  
 
   // -------------------------------------- //
   // QCD backgrounds
+  std::cout << "Starting QCD Analysis" << std::endl;
+
   SamplePairVec QCDSamples;
   QCDSamples.push_back(SamplePair("qcd15to30",true)); 
   QCDSamples.push_back(SamplePair("qcd30to50",true)); 
@@ -193,44 +202,63 @@ int main(){
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis(yields);
   }
-
   std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  
+
   Hadd(QCDSamples,outdir,selection,njetsselection,"qcd");
   Samples.push_back(SamplePair("qcd",true)); // add hadded file to total samples for stacking 
-  std::cout << "Done with QCD Hadd ... now do Gamma Analysis" << std::endl;  
+  std::cout << "Done with QCD Hadd" << std::endl;
 
-  // -------------------------------------- //
+  //
+  // // -------------------------------------- //
+  // // Photon backgrounds
+  // std::cout << "Starting photon Analysis" << std::endl;
+  // SamplePairVec GammaSamples;
+  // GammaSamples.push_back(SamplePair("gamma100to200",true)); 
+  // GammaSamples.push_back(SamplePair("gamma200to400",true)); 
+  // GammaSamples.push_back(SamplePair("gamma400to600",true)); 
+  // GammaSamples.push_back(SamplePair("gamma600toinf",true)); 
 
-  // Photon backgrounds
-  SamplePairVec GammaSamples;
-  GammaSamples.push_back(SamplePair("gamma100to200",true)); 
-  GammaSamples.push_back(SamplePair("gamma200to400",true)); 
-  GammaSamples.push_back(SamplePair("gamma400to600",true)); 
-  GammaSamples.push_back(SamplePair("gamma600toinf",true)); 
+  // for (SamplePairVecIter iter = GammaSamples.begin(); iter != GammaSamples.end(); ++iter) {
+  //   std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+  //   Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
+  //   sample.DoAnalysis(yields);
+  // }
+  // std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
 
-  for (SamplePairVecIter iter = GammaSamples.begin(); iter != GammaSamples.end(); ++iter) {
-    std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
-    sample.DoAnalysis(yields);
-  }
-
-  std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
-  Hadd(QCDSamples,outdir,selection,njetsselection,"gamma");
-  Samples.push_back(SamplePair("gamma",true)); // add hadded file to total samples for stacking 
-  std::cout << "Done with Gamma Hadd ... now make all stack plots" << std::endl;  
-
+  // Hadd(QCDSamples,outdir,selection,njetsselection,"gamma");
+  // Samples.push_back(SamplePair("gamma",true)); // add hadded file to total samples for stacking 
+  // std::cout << "Done with Gamma Hadd" << std::endl;  
+  //
+  
   yields << "--------------------------------------------" << std::endl << std::endl;
 
   //========================================// 
   //        Stack Plots Production          //
   //========================================// 
+  
+  UInt_t nmc   = 0;  
+  UInt_t ndata = 0;  
+    
+  for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
+    if ((*iter).second) {
+      nmc++;
+    }
+    else {
+      ndata++;
+    }
+  }
 
-  yields << "Total Yields taken from nvtx in StackPlots" << std::endl;
-  yields << "------------------------------------------" << std::endl << std::endl;
+  if ((ndata != 0) && (nmc != 0)) { // check to make sure enough samples can make stacks
 
-  StackPlots * stacker = new StackPlots(Samples,selection,njetsselection,lumi,colorMap,outdir,outtype);
-  stacker->DoStacks(yields);
-  delete stacker;
+    yields << "Total Yields taken from nvtx in StackPlots" << std::endl;
+    yields << "------------------------------------------" << std::endl << std::endl;
+
+    std::cout << "Make the stacks!" << std::endl;
+
+    StackPlots * stacker = new StackPlots(Samples,selection,njetsselection,lumi,colorMap,outdir,outtype);
+    stacker->DoStacks(yields);
+    delete stacker;
+  }
   
   yields.close(); // close yields txt
 }
