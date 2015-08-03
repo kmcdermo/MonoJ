@@ -64,6 +64,7 @@ private:
   Double_t fNSelected;
 
   TH1DMap fTH1DMap;
+  TStrMap fTH1DSubDMap;
 
   ColorMap fColorMap;
 

@@ -1,3 +1,4 @@
+
 #include "../interface/StackPlots.hh"
 
 StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
@@ -27,83 +28,9 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int
   // save lumi
   fLumi = lumi;
 
-  // use the plots already stored in Analysis.cpp ... use selection to decide what to loop over --> doubles
-  fTH1DNames.push_back("phpt");
-  fTH1DNames.push_back("phpt_nj_lte2");
-
-  fTH1DNames.push_back("mu1eta");
-  fTH1DNames.push_back("mu1phi");
-  fTH1DNames.push_back("mu1pt");
-  fTH1DNames.push_back("mu2eta");
-  fTH1DNames.push_back("mu2phi");
-  fTH1DNames.push_back("mu2pt");
-
-  fTH1DNames.push_back("el1eta");
-  fTH1DNames.push_back("el1phi");
-  fTH1DNames.push_back("el1pt");
-  fTH1DNames.push_back("el2eta");
-  fTH1DNames.push_back("el2phi");
-  fTH1DNames.push_back("el2pt");
+  // use the plots already stored in Analysis.cpp ... use selection to decide what to loop over --> doubles + set th1d subdir names
+  StackPlots::InitTH1DNames();
   
-  fTH1DNames.push_back("zeta");
-  fTH1DNames.push_back("zmass");
-  fTH1DNames.push_back("zphi");
-  fTH1DNames.push_back("zpt");
-
-  fTH1DNames.push_back("zeeeta");
-  fTH1DNames.push_back("zeemass");
-  fTH1DNames.push_back("zeephi");
-  fTH1DNames.push_back("zeept");
-
-  fTH1DNames.push_back("emueta");
-  fTH1DNames.push_back("emumass");
-  fTH1DNames.push_back("emuphi");
-  fTH1DNames.push_back("emupt");
-
-  fTH1DNames.push_back("wmt");
-  fTH1DNames.push_back("wemt");
-
-  fTH1DNames.push_back("signaljeteta");
-  fTH1DNames.push_back("signaljetphi");
-  fTH1DNames.push_back("signaljetpt");
-  fTH1DNames.push_back("signaljetCHfrac");
-  fTH1DNames.push_back("signaljetNHfrac");
-  fTH1DNames.push_back("signaljetEMfrac");
-  fTH1DNames.push_back("signaljetCEMfrac");
-
-  fTH1DNames.push_back("secondjeteta");
-  fTH1DNames.push_back("secondjetphi");
-  fTH1DNames.push_back("secondjetpt");
-  fTH1DNames.push_back("secondjetCHfrac");
-  fTH1DNames.push_back("secondjetNHfrac");
-  fTH1DNames.push_back("secondjetEMfrac");
-  fTH1DNames.push_back("secondjetCEMfrac");
-
-  fTH1DNames.push_back("thirdjeteta");
-  fTH1DNames.push_back("thirdjetphi");
-  fTH1DNames.push_back("thirdjetpt");
-  fTH1DNames.push_back("thirdjetCHfrac");
-  fTH1DNames.push_back("thirdjetNHfrac");
-  fTH1DNames.push_back("thirdjetEMfrac");
-  fTH1DNames.push_back("thirdjetCEMfrac");
-
-  fTH1DNames.push_back("ht");
-  fTH1DNames.push_back("mht");
-
-  fTH1DNames.push_back("pfmet");
-  fTH1DNames.push_back("pfmetphi");
-  fTH1DNames.push_back("t1pfmet");
-  fTH1DNames.push_back("t1pfmetphi");
-  fTH1DNames.push_back("mumet");
-  fTH1DNames.push_back("mumetphi");
-  fTH1DNames.push_back("t1mumet");
-  fTH1DNames.push_back("t1mumetphi");
-
-  // will use the integrals of these plots to derive total yields as no additional cuts are placed on these plots ... always keep at back of vector... kind of hacky! 
-  // could do fancy string matching looping over 
-  fTH1DNames.push_back("njets");
-  fTH1DNames.push_back("nvtx");
-
   // store this too
   fNTH1D = fTH1DNames.size();
 
@@ -111,6 +38,17 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int
   fOutDir  = outdir;
   fOutName = "stackedplots"; // where to put output stack plots 
   MakeOutDirectory(Form("%s/%s%s/%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data())); // make output directory 
+  MakeOutDirectory(Form("%s/%s%s/%s/Photons",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Leptons",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Leptons/Muons",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Leptons/Electrons",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Leptons/Dileptons",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Jets",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Jets/Leading",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Jets/Subleading",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Jets/Subsubleading",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/MET",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+
   fOutFile = new TFile(Form("%s/%s%s/%s/stackplots_canvases.root",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
   fOutType = outtype; // allow user to pick png, pdf, gif, etc for stacked plots
 
@@ -420,7 +358,7 @@ void StackPlots::SaveCanvas(const UInt_t th1d, const Bool_t isLogY){
   fOutTH1DStackPads[th1d]->SetLogy(isLogY); //  set no logy on this pad
   fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
   StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
-  fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s%s/%s/%s_%s.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data(),fTH1DNames[th1d].Data(),suffix.Data(),fOutType.Data()));
+  fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s%s/%s/%s%s_%s.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data(),fTH1DSubDMap[fTH1DNames[th1d]].Data(),fTH1DNames[th1d].Data(),suffix.Data(),fOutType.Data()));
   fOutFile->cd();
   fOutTH1DCanvases[th1d]->Write(Form("%s_%s",fTH1DNames[th1d].Data(),suffix.Data()));
 }
@@ -529,6 +467,156 @@ void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from 
   }
 }
 
+void StackPlots::InitTH1DNames(){
+  // photon plots
+  fTH1DNames.push_back("phpt");
+  fTH1DNames.push_back("phpt_nj_lte2");
+  fTH1DSubDMap["phpt"]         = "Photons/";
+  fTH1DSubDMap["phpt_nj_lte2"] = "Photons/";
+
+  // lepton plots
+  // muons plots
+  fTH1DNames.push_back("mu1eta");
+  fTH1DNames.push_back("mu1phi");
+  fTH1DNames.push_back("mu1pt");
+  fTH1DNames.push_back("mu2eta");
+  fTH1DNames.push_back("mu2phi");
+  fTH1DNames.push_back("mu2pt");
+  fTH1DSubDMap["mu1eta"] = "Leptons/Muons/";
+  fTH1DSubDMap["mu1phi"] = "Leptons/Muons/";
+  fTH1DSubDMap["mu1pt"]  = "Leptons/Muons/";
+  fTH1DSubDMap["mu2eta"] = "Leptons/Muons/";
+  fTH1DSubDMap["mu2phi"] = "Leptons/Muons/";
+  fTH1DSubDMap["mu2pt"]  = "Leptons/Muons/";
+
+  fTH1DNames.push_back("wmt");
+  fTH1DSubDMap["wmt"] = "Leptons/Muons/";
+
+  // electron plots
+  fTH1DNames.push_back("el1eta");
+  fTH1DNames.push_back("el1phi");
+  fTH1DNames.push_back("el1pt");
+  fTH1DNames.push_back("el2eta");
+  fTH1DNames.push_back("el2phi");
+  fTH1DNames.push_back("el2pt");
+  fTH1DSubDMap["el1eta"] = "Leptons/Electrons/";
+  fTH1DSubDMap["el1phi"] = "Leptons/Electrons/";
+  fTH1DSubDMap["el1pt"]  = "Leptons/Electrons/";
+  fTH1DSubDMap["el2eta"] = "Leptons/Electrons/";
+  fTH1DSubDMap["el2phi"] = "Leptons/Electrons/";
+  fTH1DSubDMap["el2pt"]  = "Leptons/Electrons/";
+
+  fTH1DNames.push_back("wemt");
+  fTH1DSubDMap["wemt"]  = "Leptons/Electrons/";
+
+  // dilepton plots
+  fTH1DNames.push_back("zeta");
+  fTH1DNames.push_back("zmass");
+  fTH1DNames.push_back("zphi");
+  fTH1DNames.push_back("zpt");
+  fTH1DSubDMap["zeta"]  = "Leptons/Dileptons/";
+  fTH1DSubDMap["zmass"] = "Leptons/Dileptons/";
+  fTH1DSubDMap["zphi"]  = "Leptons/Dileptons/";
+  fTH1DSubDMap["zpt"]   = "Leptons/Dileptons/";
+
+  fTH1DNames.push_back("zeeeta");
+  fTH1DNames.push_back("zeemass");
+  fTH1DNames.push_back("zeephi");
+  fTH1DNames.push_back("zeept");
+  fTH1DSubDMap["zeeeta"]  = "Leptons/Dileptons/";
+  fTH1DSubDMap["zeemass"] = "Leptons/Dileptons/";
+  fTH1DSubDMap["zeephi"]  = "Leptons/Dileptons/";
+  fTH1DSubDMap["zeept"]   = "Leptons/Dileptons/";
+
+  fTH1DNames.push_back("emueta");
+  fTH1DNames.push_back("emumass");
+  fTH1DNames.push_back("emuphi");
+  fTH1DNames.push_back("emupt");
+  fTH1DSubDMap["emueta"]  = "Leptons/Dileptons/";
+  fTH1DSubDMap["emumass"] = "Leptons/Dileptons/";
+  fTH1DSubDMap["emuphi"]  = "Leptons/Dileptons/";
+  fTH1DSubDMap["emupt"]   = "Leptons/Dileptons/";
+
+  // Jet plots
+  fTH1DNames.push_back("njets");
+  fTH1DNames.push_back("ht");
+  fTH1DSubDMap["njets"] = "Jets/";
+  fTH1DSubDMap["ht"]    = "Jets/";
+
+  // Leading jet plots
+  fTH1DNames.push_back("signaljeteta");
+  fTH1DNames.push_back("signaljetphi");
+  fTH1DNames.push_back("signaljetpt");
+  fTH1DNames.push_back("signaljetCHfrac");
+  fTH1DNames.push_back("signaljetNHfrac");
+  fTH1DNames.push_back("signaljetEMfrac");
+  fTH1DNames.push_back("signaljetCEMfrac");
+  fTH1DSubDMap["signaljeteta"]     = "Jets/Leading/";
+  fTH1DSubDMap["signaljetphi"]     = "Jets/Leading/";
+  fTH1DSubDMap["signaljetpt"]      = "Jets/Leading/";
+  fTH1DSubDMap["signaljetCHfrac"]  = "Jets/Leading/";
+  fTH1DSubDMap["signaljetNHfrac"]  = "Jets/Leading/";
+  fTH1DSubDMap["signaljetEMfrac"]  = "Jets/Leading/";
+  fTH1DSubDMap["signaljetCEMfrac"] = "Jets/Leading/";
+
+  // subleading jet plots
+  fTH1DNames.push_back("secondjeteta");
+  fTH1DNames.push_back("secondjetphi");
+  fTH1DNames.push_back("secondjetpt");
+  fTH1DNames.push_back("secondjetCHfrac");
+  fTH1DNames.push_back("secondjetNHfrac");
+  fTH1DNames.push_back("secondjetEMfrac");
+  fTH1DNames.push_back("secondjetCEMfrac");
+  fTH1DSubDMap["secondjeteta"]     = "Jets/Subleading/";
+  fTH1DSubDMap["secondjetphi"]     = "Jets/Subleading/";
+  fTH1DSubDMap["secondjetpt"]      = "Jets/Subleading/";
+  fTH1DSubDMap["secondjetCHfrac"]  = "Jets/Subleading/";
+  fTH1DSubDMap["secondjetNHfrac"]  = "Jets/Subleading/";
+  fTH1DSubDMap["secondjetEMfrac"]  = "Jets/Subleading/";
+  fTH1DSubDMap["secondjetCEMfrac"] = "Jets/Subleading/";
+
+  // subsubleading jet plots
+  fTH1DNames.push_back("thirdjeteta");
+  fTH1DNames.push_back("thirdjetphi");
+  fTH1DNames.push_back("thirdjetpt");
+  fTH1DNames.push_back("thirdjetCHfrac");
+  fTH1DNames.push_back("thirdjetNHfrac");
+  fTH1DNames.push_back("thirdjetEMfrac");
+  fTH1DNames.push_back("thirdjetCEMfrac");
+  fTH1DSubDMap["thirdjeteta"]     = "Jets/Subsubleading/";
+  fTH1DSubDMap["thirdjetphi"]     = "Jets/Subsubleading/";
+  fTH1DSubDMap["thirdjetpt"]      = "Jets/Subsubleading/";
+  fTH1DSubDMap["thirdjetCHfrac"]  = "Jets/Subsubleading/";
+  fTH1DSubDMap["thirdjetNHfrac"]  = "Jets/Subsubleading/";
+  fTH1DSubDMap["thirdjetEMfrac"]  = "Jets/Subsubleading/";
+  fTH1DSubDMap["thirdjetCEMfrac"] = "Jets/Subsubleading/";
+
+  // MET plots
+  fTH1DNames.push_back("pfmet");
+  fTH1DNames.push_back("t1pfmet");
+  fTH1DNames.push_back("mumet");
+  fTH1DNames.push_back("t1mumet");
+  fTH1DNames.push_back("mht");
+  fTH1DSubDMap["pfmet"]   = "MET/";
+  fTH1DSubDMap["t1pfmet"] = "MET/";
+  fTH1DSubDMap["mumet"]   = "MET/";
+  fTH1DSubDMap["t1mumet"] = "MET/";
+  fTH1DSubDMap["mht"]     = "MET/";
+
+  fTH1DNames.push_back("pfmetphi");
+  fTH1DNames.push_back("t1pfmetphi");
+  fTH1DNames.push_back("mumetphi");
+  fTH1DNames.push_back("t1mumetphi");
+  fTH1DSubDMap["pfmetphi"]   = "MET/";
+  fTH1DSubDMap["t1pfmetphi"] = "MET/";
+  fTH1DSubDMap["mumetphi"]   = "MET/";
+  fTH1DSubDMap["t1mumetphi"] = "MET/";
+
+  // will use the integral of nvtx to derive total yields as no additional cuts are placed on ntvx ... always keep at back of vector... kind of hacky! 
+  // could do fancy string matching looping over 
+  fTH1DNames.push_back("nvtx");
+}
+
 void StackPlots::OpenInputFiles() {
   // open input files into TFileVec --> data 
   fDataFiles.resize(fNData);
@@ -565,7 +653,7 @@ void StackPlots::InitInputPlots() {
       fInMCTH1DHists[th1d][mc] = (TH1D*)fMCFiles[mc]->Get(Form("%s",fTH1DNames[th1d].Data()));
       CheckValidTH1D(fInMCTH1DHists[th1d][mc],fTH1DNames[th1d],fMCFiles[mc]->GetName());
       fInMCTH1DHists[th1d][mc]->SetFillColor(fColorMap[fMCNames[mc]]);
-      fInMCTH1DHists[th1d][mc]->SetLineColor(fColorMap[fMCNames[mc]]);
+      fInMCTH1DHists[th1d][mc]->SetLineColor(kBlack);
     }
   }
 }
@@ -588,7 +676,9 @@ void StackPlots::InitOutputLegends() {
   // th1D hists
   fTH1DLegends.resize(fNTH1D);
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
-    fTH1DLegends[th1d] = new TLegend(0.75,0.8,0.85,0.93);
+    fTH1DLegends[th1d] = new TLegend(0.65,0.7,0.8,0.9);
+    fTH1DLegends[th1d]->SetBorderSize(4);
+    fTH1DLegends[th1d]->SetLineColor(kBlack);
   }
 }
 

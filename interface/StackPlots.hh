@@ -35,13 +35,12 @@ typedef std::vector<TCanvas*> TCanvVec;
 typedef std::vector<TPad*>    TPadVec;
 typedef std::vector<TGaxis*>  TGaxisVec;
 
-typedef std::map<TString,TString> TStrMap;
-
 class StackPlots
 {
 public:
   StackPlots(const SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype);
-  
+
+  void InitTH1DNames();
   void OpenInputFiles();
   void InitInputPlots();
   void InitOutputPlots();
@@ -72,6 +71,7 @@ private:
   TStrVec fDataNames;
   TStrVec fMCNames;
   TStrVec fTH1DNames;
+  TStrMap fTH1DSubDMap;
   TString fSelection;
   Int_t   fNJetsSeln;
 

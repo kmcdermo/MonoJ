@@ -22,6 +22,8 @@ typedef std::pair<TString,Bool_t> SamplePair;
 typedef std::vector<SamplePair>   SamplePairVec;
 typedef SamplePairVec::iterator   SamplePairVecIter;
 
+typedef std::map<TString,TString> TStrMap;
+
 // global functions
 
 void MakeOutDirectory(TString outdir);
