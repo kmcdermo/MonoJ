@@ -38,7 +38,7 @@ int main(){
   const Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  const TString outdir = "fullbatch_new_doublemu";
+  const TString outdir = "fullbatch_doublemu";
 
   // Allow user to set outtype for plots
   const TString outtype = "png";
@@ -83,7 +83,7 @@ int main(){
   yields << "PU Reweighting Info" << std::endl;
   yields << "-------------------" << std::endl << std::endl;
 
-  const Bool_t doReWeight = true; // false if no actual reweighting to be performed
+  const Bool_t doReWeight = false; // false if no actual reweighting to be performed
   DblVec puweights;
   if (doReWeight) {
     const TString PURWselection = "zmumu";
@@ -192,8 +192,9 @@ int main(){
 
   // -------------------------------------- //
   // Photon backgrounds
-  std::cout << "Starting photon Analysis" << std::endl;
   /*
+  std::cout << "Starting photon Analysis" << std::endl;
+
   SamplePairVec GammaSamples;
   GammaSamples.push_back(SamplePair("gamma100to200",true)); 
   GammaSamples.push_back(SamplePair("gamma200to400",true)); 
@@ -209,10 +210,10 @@ int main(){
   std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
 
   Hadd(GammaSamples,outdir,selection,njetsselection,"gamma");
-  */
+  
   Samples.push_back(SamplePair("gamma",true));  //add hadded file to total samples for stacking   
   std::cout << "Done with Gamma Hadd" << std::endl;  
-  
+  */
   // -------------------------------------- //
   // QCD backgrounds
 
@@ -254,18 +255,18 @@ int main(){
   //        Stack Plots Production          //
   //========================================// 
   
-  UInt_t nmc   = 0;  
-  UInt_t ndata = 0;  
+  UInt_t tmp_nmc   = 0;  
+  UInt_t tmp_ndata = 0;  
 
   std::cout << "Performing checks on mc and data samples" << std::endl;
 
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
-    if ((*iter).second) {nmc++;}
-    else {ndata++;}
+    if ((*iter).second) {tmp_nmc++;}
+    else {tmp_ndata++;}
   }
 
-  if ((ndata != 0) && (nmc != 0)) { // check to make sure enough samples can make stacks
-    const UInt_t nsamples = nmc+ndata;
+  if ((tmp_ndata != 0) && (tmp_nmc != 0)) { // check to make sure enough samples can make stacks
+    const UInt_t tmp_nsamples = tmp_nmc+tmp_ndata;
 
     std::cout << "Sorting MC Samples by yields" << std::endl;
 
@@ -276,7 +277,7 @@ int main(){
 
     SamplePairVec MCSamples;
     SamplePairVec DataSamples;
-    for (UInt_t isample = 0; isample < nsamples; isample++) {
+    for (UInt_t isample = 0; isample < tmp_nsamples; isample++) {
       if (Samples[isample].second) {
 	MCSamples.push_back(Samples[isample]);
       }
@@ -287,7 +288,7 @@ int main(){
 
     // push back mc yields in tmp vector
     SampleYieldPairVec tmp_mcyields;
-    for (UInt_t mc = 0; mc < nmc; mc++) {
+    for (UInt_t mc = 0; mc < tmp_nmc; mc++) {
 
       // open mc file first
       const TString tmp_mcfilename = Form("%s/%s%s/%s_MC/plots.root",outdir.Data(),selection.Data(),nJetsStr.Data(),MCSamples[mc].first.Data());
@@ -299,10 +300,8 @@ int main(){
       CheckValidTH1D(tmp_nvtx,"nvtx",tmp_mcfilename);
     
       // get yield and push back with corresponding sample name
-      const Double_t tmp_integral = tmp_nvtx->Integral();
-      if (tmp_integral > 0.05) {
-	tmp_mcyields.push_back(SampleYieldPair(MCSamples[mc].first,tmp_integral));
-      }
+      tmp_mcyields.push_back(SampleYieldPair(MCSamples[mc].first,tmp_nvtx->Integral()));
+      
       delete tmp_nvtx;
       delete tmp_mcfile;
     }
@@ -313,16 +312,18 @@ int main(){
 
     // clear MCSamples, and push back in order of tmp_yields now sorted
     MCSamples.clear();
-    for (UInt_t mc = 0; mc < nmc; mc++) { // init mc double hists
-      MCSamples.push_back(SamplePair(tmp_mcyields[mc].first,"true"));
+    for (UInt_t mc = 0; mc < tmp_nmc; mc++) { // init mc double hists
+      if (tmp_mcyields[mc].second > 0.05) { // skip backgrounds that contribute less than a 20th of an event
+	MCSamples.push_back(SamplePair(tmp_mcyields[mc].first,"true"));
+      }
     }
   
     // clear original samples vector and push back data and mc samples
     Samples.clear();
-    for (UInt_t data = 0; data < ndata; data++ ) {
+    for (UInt_t data = 0; data < tmp_ndata; data++ ) {
       Samples.push_back(DataSamples[data]);
     }
-    for (UInt_t mc = 0; mc < nmc; mc++ ) {
+    for (UInt_t mc = 0; mc < MCSamples.size(); mc++ ) {
       Samples.push_back(MCSamples[mc]);
     }
 

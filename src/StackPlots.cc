@@ -1,4 +1,3 @@
-
 #include "../interface/StackPlots.hh"
 
 StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
@@ -209,20 +208,30 @@ void StackPlots::DrawUpperPad(const UInt_t th1d, const Bool_t isLogY) {
   fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
   
   // set maximum by comparing added mc vs added data
+  Double_t min = StackPlots::GetMinimum(th1d);
   Double_t max = StackPlots::GetMaximum(th1d);
 
-  if (isLogY) {
-    fOutDataTH1DHists[th1d]->SetMaximum(max*2.0);
+  if (isLogY) { // set min for log only... maybe consider min for linear eventually
+    // only go to 20th of event to absolute min
+    if (min < 0.05) {
+      fOutDataTH1DHists[th1d]->SetMinimum(0.05);
+    }
+    else {
+      fOutDataTH1DHists[th1d]->SetMinimum(min*0.6);
+    }
+
+    // set max with 2.0 scale to give enough space 
+    fOutDataTH1DHists[th1d]->SetMaximum(max*1.5);
   }
   else {
-    fOutDataTH1DHists[th1d]->SetMaximum(max*1.05);
+    if (max > 0){
+      fOutDataTH1DHists[th1d]->SetMaximum(max*1.05);      
+    }
+    else {
+      fOutDataTH1DHists[th1d]->SetMaximum(1.0);      
+    }
   }
   
-  // set minimum only for logy
-  if (isLogY) {
-    fOutDataTH1DHists[th1d]->SetMinimum(StackPlots::GetMinimum(th1d) * 0.5);
-  }
-
   // now draw the plots for upper pad in absurd order because ROOT is dumb
   fOutDataTH1DHists[th1d]->Draw("PE"); // draw first so labels appear
   fOutMCTH1DStacks[th1d]->Draw("HIST SAME"); 
@@ -282,11 +291,13 @@ Double_t StackPlots::GetMinimum(const UInt_t th1d) {
 
   Double_t mcmin  = 1e9;
   Bool_t newmcmin = false;
-  for (Int_t bin = 1; bin <= fOutMCTH1DHists[th1d]->GetNbinsX(); bin++){
-    Float_t tmpmin = fOutMCTH1DHists[th1d]->GetBinContent(bin);
-    if ((tmpmin < mcmin) && (tmpmin > 0)) {
-      mcmin    = tmpmin;
-      newmcmin = true;
+  for (UInt_t mc = 0; mc < fNMC; mc++) {
+    for (Int_t bin = 1; bin <= fInMCTH1DHists[th1d][mc]->GetNbinsX(); bin++){
+      Float_t tmpmin = fInMCTH1DHists[th1d][mc]->GetBinContent(bin);
+      if ((tmpmin < mcmin) && (tmpmin > 0)) {
+	mcmin    = tmpmin;
+	newmcmin = true;
+      }
     }
   }
   
@@ -297,12 +308,7 @@ Double_t StackPlots::GetMinimum(const UInt_t th1d) {
       min = datamin;
     }
     else {
-      if (mcmin > .05){
-	min = mcmin;
-      }
-      else {
-	min = 0.05;
-      }
+      min = mcmin;
     }
   }
   return min;

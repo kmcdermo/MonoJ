@@ -125,7 +125,7 @@ DblVec PUReweight::GetPUWeights(){
       cut.Append(Form(" && ((flagcsctight == 1) && (flaghbhenoise == 1)) )"));
     }
       
-    cut.Append(Form("* (xsec * %f * wgt / wgtsum)",fLumi)); // make sure to add weights for all mc!
+    cut.Append(Form(" * (xsec * %f * wgt / wgtsum)",fLumi)); // make sure to add weights for all mc!
       
     // files + trees for mc + tmp hists
     TString filename;
