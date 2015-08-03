@@ -127,7 +127,7 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
 	fOutDataTH1DHists[th1d]->Add(fInDataTH1DHists[th1d][data]);
       }
 
-      if (th1d == (fNTH1D - 1)) { // add individual entry for data if nvtx plot in yields
+      if (th1d == 0) { // add individual entry for data if nvtx plot in yields
 	yields << fDataNames[data].Data() << ": " << fInDataTH1DHists[th1d][data]->Integral() << std::endl;
       }
 
@@ -137,7 +137,7 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
     fTH1DLegends[th1d]->AddEntry(fOutDataTH1DHists[th1d],"Data","pl"); // add data entry to legend
 
     // add total yield for data here if nvtx plot
-    if (th1d == (fNTH1D - 1)) { // add individual entry for data if nvtx plot in yields
+    if (th1d == 0) { // add individual entry for data if nvtx plot in yields
       yields << "--------------------" << std::endl;
       yields << "Data Total: " << fOutDataTH1DHists[th1d]->Integral() << std::endl << std::endl;
     }
@@ -152,15 +152,15 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
       }
       //  just add input to stacks
       fOutMCTH1DStacks[th1d]->Add(fInMCTH1DHists[th1d][mc]);
-      fTH1DLegends[th1d]->AddEntry(fInMCTH1DHists[th1d][mc],fSampleTitleMap[fMCNames[mc]],"lf");
+      fTH1DLegends[th1d]->AddEntry(fInMCTH1DHists[th1d][mc],fSampleTitleMap[fMCNames[mc]],"f");
 
-      if (th1d == (fNTH1D - 1)) { // add individual entry for MC if nvtx plot in yields
+      if (th1d == 0) { // add individual entry for MC if nvtx plot in yields
 	yields << fMCNames[mc].Data() << ": " << fInMCTH1DHists[th1d][mc]->Integral() << std::endl;
       }
     } // end loop over mc samples
 
     // add total yield for MC here if nvtx plot
-    if (th1d == (fNTH1D - 1)) { // add individual entry for data if nvtx plot in yields
+    if (th1d == 0) { // add individual entry for data if nvtx plot in yields
       yields << "--------------------" << std::endl;
       yields << "MC Total: " << fOutMCTH1DHists[th1d]->Integral() << std::endl;
     }
@@ -297,7 +297,12 @@ Double_t StackPlots::GetMinimum(const UInt_t th1d) {
       min = datamin;
     }
     else {
-      min = mcmin;
+      if (mcmin > .05){
+	min = mcmin;
+      }
+      else {
+	min = 0.05;
+      }
     }
   }
   return min;
@@ -468,6 +473,10 @@ void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from 
 }
 
 void StackPlots::InitTH1DNames(){
+  // will use the integral of nvtx to derive total yields as no additional cuts are placed on ntvx ... always keep at back of vector... kind of hacky! 
+  // could do fancy string matching looping over 
+  fTH1DNames.push_back("nvtx");
+
   // photon plots
   fTH1DNames.push_back("phpt");
   fTH1DNames.push_back("phpt_nj_lte2");
@@ -611,10 +620,6 @@ void StackPlots::InitTH1DNames(){
   fTH1DSubDMap["t1pfmetphi"] = "MET/";
   fTH1DSubDMap["mumetphi"]   = "MET/";
   fTH1DSubDMap["t1mumetphi"] = "MET/";
-
-  // will use the integral of nvtx to derive total yields as no additional cuts are placed on ntvx ... always keep at back of vector... kind of hacky! 
-  // could do fancy string matching looping over 
-  fTH1DNames.push_back("nvtx");
 }
 
 void StackPlots::OpenInputFiles() {

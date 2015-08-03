@@ -69,7 +69,7 @@ DblVec PUReweight::GetPUWeights(){
     basecut = "((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1))"; 
   }      
   else if (fSelection.Contains("singlephoton",TString::kExact)) {    
-    basecut = "((nphotons == 1))";
+    basecut = "((nphotons == 1) && (phpt > 200.))";
   }
 
   // add selection for njets
@@ -100,8 +100,9 @@ DblVec PUReweight::GetPUWeights(){
     tmpnvtx->Sumw2();
 
     // fill each input data nvtx
+    std::cout << "Reading data nvtx: " << filename.Data() << " with cut: " << cut.Data() << std::endl;
     tree->Draw("nvtx>>tmpnvtx",Form("%s",cut.Data()),"goff");
-
+    
     // add input data hist to total data hist
     fOutDataNvtx->Add(tmpnvtx);
 
@@ -143,6 +144,7 @@ DblVec PUReweight::GetPUWeights(){
     tmpnvtx->Sumw2();
 
     // fill each input mc nvtx
+    std::cout << "Reading MC nvtx: " << filename.Data() << " with cut: " << cut.Data() << std::endl;
     tree->Draw("nvtx>>tmpnvtx",Form("%s",cut.Data()),"goff");
 
     // add input mc hist to total mc hist

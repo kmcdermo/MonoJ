@@ -35,13 +35,13 @@ int main(){
   colorMap["gamma"]   = kGreen;
   
   // nPV needs nBins set for PU reweights and actual plots
-  Int_t nBins_vtx = 50;
+  const Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "fullbatch_new_doublemu";
+  const TString outdir = "fullbatch_new_doublemu";
 
   // Allow user to set outtype for plots
-  TString outtype = "png";
+  const TString outtype = "png";
 
   // First make total output directory ... sub directories made inside objects
   MakeOutDirectory(outdir);
@@ -55,13 +55,13 @@ int main(){
   // Important variables to set for analysis
 
   // Total Integrated Luminosity
-  Double_t lumi = 0.04003; // int lumi in fb^-1
+  const Double_t lumi = 0.04003; // int lumi in fb^-1
 
   // Selection we want (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
-  TString selection = "zmumu";
+  const TString selection = "zmumu";
 
   // Njets selection (==1, ==2) ... -1 = no selection
-  Int_t njetsselection = -1;
+  const Int_t njetsselection = -1;
 
   // Second make selection inside total directory
   TString njetsstr = "";
@@ -83,11 +83,11 @@ int main(){
   yields << "PU Reweighting Info" << std::endl;
   yields << "-------------------" << std::endl << std::endl;
 
-  Bool_t doReWeight = true; // false if no actual reweighting to be performed
+  const Bool_t doReWeight = true; // false if no actual reweighting to be performed
   DblVec puweights;
   if (doReWeight) {
-    TString PURWselection = "zmumu";
-    Int_t   PURWnjetsselection = -1;
+    const TString PURWselection = "zmumu";
+    const Int_t   PURWnjetsselection = -1;
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
     
     SamplePairVec PURWSamples;
@@ -138,23 +138,23 @@ int main(){
   //  Samples.push_back(SamplePair("singlephoton",false));
   Samples.push_back(SamplePair("zll",true));
   Samples.push_back(SamplePair("wln",true));
-  
+  /*
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis(yields);
   } 
   std::cout << "Done with Data, Zll, Wln Analysis" << std::endl;  
-
+  */
   // -------------------------------------- //
   // diboson analysis
   std::cout << "Starting diboson Analysis" << std::endl;
-  
+  /*  
   SamplePairVec DBSamples;
   DBSamples.push_back(SamplePair("ww",true));
   DBSamples.push_back(SamplePair("zz",true));
   DBSamples.push_back(SamplePair("wz",true));
-  
+
   for (SamplePairVecIter iter = DBSamples.begin(); iter != DBSamples.end(); ++iter) {
   std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
   Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
@@ -163,14 +163,14 @@ int main(){
   std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
   
   Hadd(DBSamples,outdir,selection,njetsselection,"diboson");
-  
+  */  
   Samples.push_back(SamplePair("diboson",true)); // add hadded file to total samples for stacking
   std::cout << "Done with Diboson Hadd" << std::endl;  
-  
+
   // -------------------------------------- //
   // top backgrounds
   std::cout << "Starting top Analysis" << std::endl;
-
+  /*
   SamplePairVec TopSamples;
   TopSamples.push_back(SamplePair("ttbar",true)); 
   TopSamples.push_back(SamplePair("singlett",true)); 
@@ -186,16 +186,15 @@ int main(){
   std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
 
   Hadd(TopSamples,outdir,selection,njetsselection,"top");
-  
+  */
   Samples.push_back(SamplePair("top",true)); // add hadded file to total samples for stacking
   std::cout << "Done with Top Hadd" << std::endl;  
 
-  /*
   // -------------------------------------- //
   // Photon backgrounds
   std::cout << "Starting photon Analysis" << std::endl;
+  /*
   SamplePairVec GammaSamples;
-
   GammaSamples.push_back(SamplePair("gamma100to200",true)); 
   GammaSamples.push_back(SamplePair("gamma200to400",true)); 
   GammaSamples.push_back(SamplePair("gamma400to600",true)); 
@@ -210,15 +209,15 @@ int main(){
   std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
 
   Hadd(GammaSamples,outdir,selection,njetsselection,"gamma");
-  Samples.push_back(SamplePair("gamma",true));  //add hadded file to total samples for stacking 
-  
-  std::cout << "Done with Gamma Hadd" << std::endl;  
   */
+  Samples.push_back(SamplePair("gamma",true));  //add hadded file to total samples for stacking   
+  std::cout << "Done with Gamma Hadd" << std::endl;  
+  
   // -------------------------------------- //
   // QCD backgrounds
 
   std::cout << "Starting QCD Analysis" << std::endl;
-
+  /*
   SamplePairVec QCDSamples;
   QCDSamples.push_back(SamplePair("qcd15to30",true)); 
   QCDSamples.push_back(SamplePair("qcd30to50",true)); 
@@ -245,7 +244,7 @@ int main(){
   std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  
 
   Hadd(QCDSamples,outdir,selection,njetsselection,"qcd");
-  
+  */
   Samples.push_back(SamplePair("qcd",true)); // add hadded file to total samples for stacking 
   std::cout << "Done with QCD Hadd" << std::endl;
 
@@ -291,18 +290,20 @@ int main(){
     for (UInt_t mc = 0; mc < nmc; mc++) {
 
       // open mc file first
-      TString mcfilename = Form("%s/%s%s/%s_MC/plots.root",outdir.Data(),selection.Data(),nJetsStr.Data(),MCSamples[mc].first.Data());
-      TFile * tmp_mcfile = TFile::Open(mcfilename.Data());
-      CheckValidFile(tmp_mcfile,mcfilename);
+      const TString tmp_mcfilename = Form("%s/%s%s/%s_MC/plots.root",outdir.Data(),selection.Data(),nJetsStr.Data(),MCSamples[mc].first.Data());
+      TFile * tmp_mcfile = TFile::Open(tmp_mcfilename.Data());
+      CheckValidFile(tmp_mcfile,tmp_mcfilename);
 
       // open nvtx plot
-      TH1D * tmpnvtx = (TH1D*)tmp_mcfile->Get("nvtx");
-      CheckValidTH1D(tmpnvtx,"nvtx",mcfilename);
+      TH1D * tmp_nvtx = (TH1D*)tmp_mcfile->Get("nvtx");
+      CheckValidTH1D(tmp_nvtx,"nvtx",tmp_mcfilename);
     
       // get yield and push back with corresponding sample name
-      tmp_mcyields.push_back(SampleYieldPair(MCSamples[mc].first,tmpnvtx->Integral()));
-
-      delete tmpnvtx;
+      const Double_t tmp_integral = tmp_nvtx->Integral();
+      if (tmp_integral > 0.05) {
+	tmp_mcyields.push_back(SampleYieldPair(MCSamples[mc].first,tmp_integral));
+      }
+      delete tmp_nvtx;
       delete tmp_mcfile;
     }
 
