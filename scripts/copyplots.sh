@@ -4,13 +4,12 @@ dir=$1
 move=$2
 
 # delete old directory if it exists
-
-cd ~/www/
-if [ -d ${dir} ] ; then
-    echo "Deleting old directory: ${dir}" 
-    rm -rf ${dir}
-fi
-cd -
+#cd ~/www/
+#if [ -d ${dir} ] ; then
+#    echo "Deleting old directory: ${dir}" 
+#    rm -rf ${dir}
+#fi
+#cd -
 
 if [ "${move}" == true ] ; then
     echo "Moving directory: ${dir} to ~/www/" 
