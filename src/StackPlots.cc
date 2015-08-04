@@ -1,6 +1,6 @@
 #include "../interface/StackPlots.hh"
 
-StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const ColorMap colorMap, const TString outdir, const TString outtype){
+StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const TString outdir, const ColorMap & colorMap, const TString outtype){
   // input data members
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     if ((*iter).second) { // isMC == true
@@ -28,7 +28,7 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int
   fLumi = lumi;
 
   // use the plots already stored in Analysis.cpp ... use selection to decide what to loop over --> doubles + set th1d subdir names
-  StackPlots::InitTH1DNames();
+  StackPlots::InitTH1DNamesAndSubDNames();
   
   // store this too
   fNTH1D = fTH1DNames.size();
@@ -126,17 +126,16 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
 	fOutDataTH1DHists[th1d]->Add(fInDataTH1DHists[th1d][data]);
       }
 
-      if (th1d == 0) { // add individual entry for data if nvtx plot in yields
+      if (fTH1DNames[th1d].Contains("nvtx",TString::kExact)) { // save individual yields for data using nvtx, as only the selection on this plot is event selection
 	yields << fDataNames[data].Data() << ": " << fInDataTH1DHists[th1d][data]->Integral() << std::endl;
       }
-
     } // end loop over data samples
 
     // add legend entry for total data
     fTH1DLegends[th1d]->AddEntry(fOutDataTH1DHists[th1d],"Data","pl"); // add data entry to legend
 
     // add total yield for data here if nvtx plot
-    if (th1d == 0) { // add individual entry for data if nvtx plot in yields
+    if (fTH1DNames[th1d].Contains("nvtx",TString::kExact)) { // save total yields for data
       yields << "--------------------" << std::endl;
       yields << "Data Total: " << fOutDataTH1DHists[th1d]->Integral() << std::endl << std::endl;
     }
@@ -153,13 +152,13 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
       fOutMCTH1DStacks[th1d]->Add(fInMCTH1DHists[th1d][mc]);
       fTH1DLegends[th1d]->AddEntry(fInMCTH1DHists[th1d][mc],fSampleTitleMap[fMCNames[mc]],"f");
 
-      if (th1d == 0) { // add individual entry for MC if nvtx plot in yields
+      if (fTH1DNames[th1d].Contains("nvtx",TString::kExact)) { // save individual contributions for yields for MC
 	yields << fMCNames[mc].Data() << ": " << fInMCTH1DHists[th1d][mc]->Integral() << std::endl;
       }
     } // end loop over mc samples
 
     // add total yield for MC here if nvtx plot
-    if (th1d == 0) { // add individual entry for data if nvtx plot in yields
+    if (fTH1DNames[th1d].Contains("nvtx",TString::kExact)) { // save total yields for MC
       yields << "--------------------" << std::endl;
       yields << "MC Total: " << fOutMCTH1DHists[th1d]->Integral() << std::endl;
     }
@@ -478,10 +477,10 @@ void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from 
   }
 }
 
-void StackPlots::InitTH1DNames(){
-  // will use the integral of nvtx to derive total yields as no additional cuts are placed on ntvx ... always keep at back of vector... kind of hacky! 
-  // could do fancy string matching looping over 
+void StackPlots::InitTH1DNamesAndSubDNames(){
+  // will use the integral of nvtx to derive total yields as no additional cuts are placed on ntvx --> key on name for yields
   fTH1DNames.push_back("nvtx");
+  fTH1DSubDMap["nvtx"] = "";
 
   // photon plots
   fTH1DNames.push_back("phpt");

@@ -16,6 +16,7 @@
 typedef std::vector<Double_t> DblVec;
 
 typedef std::map<TString,Color_t> ColorMap;
+
 typedef std::vector<TString>      TStrVec;
 
 typedef std::pair<TString,Bool_t> SamplePair;

@@ -38,9 +38,9 @@ typedef std::vector<TGaxis*>  TGaxisVec;
 class StackPlots
 {
 public:
-  StackPlots(const SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const ColorMap colorMap, const TString outname, const TString outtype);
+  StackPlots(const SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const TString outname, const ColorMap & colorMap, const TString outtype);
 
-  void InitTH1DNames();
+  void InitTH1DNamesAndSubDNames();
   void OpenInputFiles();
   void InitInputPlots();
   void InitOutputPlots();
