@@ -58,10 +58,10 @@ int main(){
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
   // Selection we want (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
-  const TString selection = "zmumu";
+  const TString selection = "singlemu";
 
   // Njets selection (==1, ==2) ... -1 = no selection
-  const Int_t njetsselection = 2;
+  const Int_t njetsselection = -1;
 
   // Second make selection inside total directory
   TString njetsstr = "";
@@ -86,14 +86,35 @@ int main(){
   const Bool_t doReWeight = true; // false if no actual reweighting to be performed
   DblVec puweights;
   if (doReWeight) {
-    const TString PURWselection = "zmumu";
+    const TString PURWselection = "singlemu";
     const Int_t   PURWnjetsselection = -1;
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
     
     SamplePairVec PURWSamples;
-    PURWSamples.push_back(SamplePair("doublemu",false));
-    PURWSamples.push_back(SamplePair("zll",true));
-    
+    if (PURWselection.contains("doublemu",TString::kExact)) {
+      PURWSamples.push_back(SamplePair("doublemu",false));
+      PURWSamples.push_back(SamplePair("zll",true));
+    }
+    else if (PURWselection.contains("doubleel",TString::kExact)) {
+      PURWSamples.push_back(SamplePair("doubleel",false));
+      PURWSamples.push_back(SamplePair("zll",true));
+    }    
+    else if (PURWselection.contains("singlemu",TString::kExact)) {
+      PURWSamples.push_back(SamplePair("singlemu",false));
+      PURWSamples.push_back(SamplePair("wln",true));
+    }    
+    else if (PURWselection.contains("singlephoton",TString::kExact)) {
+      PURWSamples.push_back(SamplePair("singlephoton",false));
+      PURWSamples.push_back(SamplePair("gamma100to200",true)); 
+      PURWSamples.push_back(SamplePair("gamma200to400",true)); 
+      PURWSamples.push_back(SamplePair("gamma400to600",true)); 
+      PURWSamples.push_back(SamplePair("gamma600toinf",true)); 
+    }    
+    else {
+      std::cout << "Not a known selection: " << PURWselection.Data() <<  " ...exiting..." << std::endl;
+      exit(1);
+    }
+
     PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype);
     puweights = reweight->GetPUWeights(); 
   
@@ -132,9 +153,9 @@ int main(){
   std::cout << "Starting data, Zll, Wln Analysis" << std::endl;
 
   SamplePairVec Samples; // this vector is one that will also be used for stack plots
-  Samples.push_back(SamplePair("doublemu",false));
+  //  Samples.push_back(SamplePair("doublemu",false));
   //  Samples.push_back(SamplePair("doubleel",false));
-  //  Samples.push_back(SamplePair("singlemu",false));
+  Samples.push_back(SamplePair("singlemu",false));
   //  Samples.push_back(SamplePair("singlephoton",false));
   Samples.push_back(SamplePair("zll",true));
   Samples.push_back(SamplePair("wln",true));

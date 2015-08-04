@@ -342,7 +342,7 @@ void Analysis::SetUpPlots() {
   fTH1DMap["zeta"]  = Analysis::MakeTH1DPlot("zeta","",30,-3.,3.,"Dimuon #eta","Events"); 
   fTH1DMap["zmass"] = Analysis::MakeTH1DPlot("zmass","",60,60.,120.,"Dimuon Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zphi"]  = Analysis::MakeTH1DPlot("zphi","",32,-3.2,3.2,"Dimuon #phi","Events"); 
-  fTH1DMap["zpt"]   = Analysis::MakeTH1DPlot("zpt","",50,0.,1000.,"Dimuon p_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["zpt"]   = Analysis::MakeTH1DPlot("zpt","",35,0.,700.,"Dimuon p_{T} [GeV/c]","Events / 20 GeV/c"); 
   fTH1DSubDMap["zeta"]  = "Leptons/Dileptons/";
   fTH1DSubDMap["zmass"] = "Leptons/Dileptons/";
   fTH1DSubDMap["zphi"]  = "Leptons/Dileptons/";
@@ -351,7 +351,7 @@ void Analysis::SetUpPlots() {
   fTH1DMap["zeeeta"]  = Analysis::MakeTH1DPlot("zeeeta","",30,-3.,3.,"Dielectron #eta","Events"); 
   fTH1DMap["zeemass"] = Analysis::MakeTH1DPlot("zeemass","",60,60.,120.,"Dielectron Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zeephi"]  = Analysis::MakeTH1DPlot("zeephi","",32,-3.2,3.2,"Dielectron #phi","Events"); 
-  fTH1DMap["zeept"]   = Analysis::MakeTH1DPlot("zeept","",50,0.,1000.,"Dielectron p_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["zeept"]   = Analysis::MakeTH1DPlot("zeept","",35,0.,700.,"Dielectron p_{T} [GeV/c]","Events / 20 GeV/c"); 
   fTH1DSubDMap["zeeeta"]  = "Leptons/Dileptons/";
   fTH1DSubDMap["zeemass"] = "Leptons/Dileptons/";
   fTH1DSubDMap["zeephi"]  = "Leptons/Dileptons/";
@@ -360,7 +360,7 @@ void Analysis::SetUpPlots() {
   fTH1DMap["emueta"]  = Analysis::MakeTH1DPlot("emueta","",30,-3.,3.,"Electron-Muon #eta","Events"); 
   fTH1DMap["emumass"] = Analysis::MakeTH1DPlot("emumass","",60,60.,120.,"Electron-Muon Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["emuphi"]  = Analysis::MakeTH1DPlot("emuphi","",32,-3.2,3.2,"Electron-Muon #phi","Events"); 
-  fTH1DMap["emupt"]   = Analysis::MakeTH1DPlot("emupt","",50,0.,1000.,"Electron-Muon p_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["emupt"]   = Analysis::MakeTH1DPlot("emupt","",35,0.,700.,"Electron-Muon p_{T} [GeV/c]","Events / 20 GeV/c"); 
   fTH1DSubDMap["emueta"]  = "Leptons/Dileptons/";
   fTH1DSubDMap["emumass"] = "Leptons/Dileptons/";
   fTH1DSubDMap["emuphi"]  = "Leptons/Dileptons/";
