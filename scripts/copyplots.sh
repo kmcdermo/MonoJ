@@ -1,7 +1,8 @@
 #! /bin/sh
 
 dir=$1
-move=$2
+subdir=$2
+move=$3
 
 # delete old directory if it exists
 #cd ~/www/
@@ -11,12 +12,17 @@ move=$2
 #fi
 #cd -
 
+if [ ! -d ~/www/${dir} ] ; then
+    mkdir -p ~/www${dir}
+fi
+
+
 if [ "${move}" == true ] ; then
-    echo "Moving directory: ${dir} to ~/www/" 
+    echo "Moving directory: ${subdir} to ~/www/{dir}" 
     mv ${dir} ~/www/
 else
-    echo "Copying in new directory: ${dir} to ~/www/" 
-    cp -r ${dir} ~/www/
+    echo "Copying in new directory: ${subdir} to ~/www/${dir}" 
+    cp -r ${subdir} ~/www/${dir}
 fi
 
 cd ~/www/
