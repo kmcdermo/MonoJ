@@ -58,7 +58,7 @@ int main(){
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
   // Selection we want (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
-  const TString selection = "singlemu";
+  const TString selection = "doublemu";
 
   // Njets selection (==1, ==2) ... -1 = no selection
   const Int_t njetsselection = -1;
@@ -86,7 +86,7 @@ int main(){
   const Bool_t doReWeight = true; // false if no actual reweighting to be performed
   DblVec puweights;
   if (doReWeight) {
-    const TString PURWselection = "singlemu";
+    const TString PURWselection = "doublemu";
     const Int_t   PURWnjetsselection = -1;
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
     
@@ -153,9 +153,9 @@ int main(){
   std::cout << "Starting data, Zll, Wln Analysis" << std::endl;
 
   SamplePairVec Samples; // this vector is one that will also be used for stack plots
-  //  Samples.push_back(SamplePair("doublemu",false));
+  Samples.push_back(SamplePair("doublemu",false));
   //  Samples.push_back(SamplePair("doubleel",false));
-  Samples.push_back(SamplePair("singlemu",false));
+  //  Samples.push_back(SamplePair("singlemu",false));
   //  Samples.push_back(SamplePair("singlephoton",false));
   Samples.push_back(SamplePair("zll",true));
   Samples.push_back(SamplePair("wln",true));

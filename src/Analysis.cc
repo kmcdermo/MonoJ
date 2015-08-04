@@ -307,10 +307,18 @@ void Analysis::SetUpPlots() {
   // muon plots
   fTH1DMap["mu1eta"] = Analysis::MakeTH1DPlot("mu1eta","",30,-3.,3.,"Leading Muon #eta","Events"); 
   fTH1DMap["mu1phi"] = Analysis::MakeTH1DPlot("mu1phi","",32,-3.2,3.2,"Leading Muon #phi","Events"); 
-  fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",50,0.,500.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  if (fSelection.Contains("doublemu",TString::kExact)) {
+    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",42,0.,420.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  }
+  else if (fSelection.Contains("singlemu",TString::kExact)) {
+    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",60,0.,600.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  }
+  else {
+    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",30,0.,300.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  }
   fTH1DMap["mu2eta"] = Analysis::MakeTH1DPlot("mu2eta","",30,-3.,3.,"Subleading Muon #eta","Events"); 
   fTH1DMap["mu2phi"] = Analysis::MakeTH1DPlot("mu2phi","",32,-3.2,3.2,"Subleading Muon #phi","Events"); 
-  fTH1DMap["mu2pt"]  = Analysis::MakeTH1DPlot("mu2pt","",50,0.,500.,"Subleading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["mu2pt"]  = Analysis::MakeTH1DPlot("mu2pt","",30,0.,300.,"Subleading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DSubDMap["mu1eta"] = "Leptons/Muons/";
   fTH1DSubDMap["mu1phi"] = "Leptons/Muons/";
   fTH1DSubDMap["mu1pt"]  = "Leptons/Muons/";
