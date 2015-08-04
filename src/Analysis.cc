@@ -1,6 +1,6 @@
 #include "../interface/Analysis.hh"
 
-Analysis::Analysis(const SamplePair samplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const ColorMap colorMap, const TString outdir, const TString outType){
+Analysis::Analysis(const SamplePair samplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType){
   // store in data members
   fSample    = samplePair.first;
   fIsMC      = samplePair.second;
@@ -455,36 +455,42 @@ void Analysis::SaveHists() {
 
   TCanvas * canv = new TCanvas();
   for (TH1DMapIter mapiter = fTH1DMap.begin(); mapiter != fTH1DMap.end(); mapiter++) { // first do double hists ... could template this...
-    for (Int_t ibin = 1; ibin <= (*mapiter).second->GetNbinsX(); ibin++){
-      if ((*mapiter).second->GetBinContent(ibin) < 0) { // check to make sure negative weights are not messing things up
-	(*mapiter).second->SetBinContent(ibin,0);
-      }
-    }
-    (*mapiter).second->Write(); // map is map["hist name",TH1D*]
-
-    canv->cd();
+    // set MC colors
     if (fIsMC){
       if ( (fSample.Contains("ww",TString::kExact)) || (fSample.Contains("wz",TString::kExact)) || (fSample.Contains("zz",TString::kExact)) ){
 	(*mapiter).second->SetLineColor(fColorMap["diboson"]);
-	(*mapiter).second->SetFillColor(fColorMap["diboson"]);
+	(*mapiter).second->SetFillColor(kBlack);
       }
       else if ( (fSample.Contains("ttbar",TString::kExact)) || (fSample.Contains("singlett",TString::kExact)) || (fSample.Contains("singletbart",TString::kExact)) || (fSample.Contains("singletw",TString::kExact)) || (fSample.Contains("singletbarw",TString::kExact)) ) {
 	(*mapiter).second->SetLineColor(fColorMap["top"]);
-	(*mapiter).second->SetFillColor(fColorMap["top"]);
+	(*mapiter).second->SetFillColor(kBlack);
       }
       else if (fSample.Contains("qcd",TString::kExact)) {
 	(*mapiter).second->SetLineColor(fColorMap["qcd"]);
-	(*mapiter).second->SetFillColor(fColorMap["qcd"]);
+	(*mapiter).second->SetFillColor(kBlack);
       }
       else if (fSample.Contains("gamma",TString::kExact)) {
 	(*mapiter).second->SetLineColor(fColorMap["gamma"]);
-	(*mapiter).second->SetFillColor(fColorMap["gamma"]);
+	(*mapiter).second->SetFillColor(kBlack);
       }
       else {
 	(*mapiter).second->SetLineColor(fColorMap[fSample]);
-	(*mapiter).second->SetFillColor(fColorMap[fSample]);
+	(*mapiter).second->SetFillColor(kBlack);
       }
-      
+    }
+
+    // loop over bins and check to make sure negative weights are not messing things up
+    for (Int_t ibin = 1; ibin <= (*mapiter).second->GetNbinsX(); ibin++){
+      if ((*mapiter).second->GetBinContent(ibin) < 0) {
+	(*mapiter).second->SetBinContent(ibin,0);
+      }
+    }
+    // then finally write to root file
+    (*mapiter).second->Write(); // map is map["hist name",TH1D*]
+
+    // now draw onto canvas to save as png
+    canv->cd();
+    if (fIsMC){
       (*mapiter).second->Draw("HIST");
     }
     else {

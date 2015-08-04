@@ -16,6 +16,8 @@
 typedef std::pair<TString,Double_t>  SampleYieldPair;
 typedef std::vector<SampleYieldPair> SampleYieldPairVec;
 
+TStrMap SetTH1DSubDMap();
+
 static bool sortByYield(const SampleYieldPair& mcpair1, const SampleYieldPair& mcpair2) {
   return mcpair1.second<=mcpair2.second;
 }
@@ -33,7 +35,24 @@ int main(){
   colorMap["top"]     = kMagenta;
   colorMap["qcd"]     = kYellow;
   colorMap["gamma"]   = kGreen;
-  
+
+  // not ideal... set subdirectories map
+  TStrMap SubDMap;
+  SubDMap["overall"]   = "";
+  SubDMap["photons"]   = "Photons/";
+  SubDMap["leptons"]   = "Leptons/";
+  SubDMap["muons"]     = "Leptons/Muons/";
+  SubDMap["electrons"] = "Leptons/Electrons/";
+  SubDMap["jets"]      = "Jets/";
+  SubDMap["jet1"]      = "Jets/Leading/";
+  SubDMap["jet2"]      = "Jets/Subleading/";
+  SubDMap["jet3"]      = "Jets/Subsubleading/";
+  SubDMap["met"]       = "MET/";
+
+  // set th1d subdir map
+  TStrMap TH1DSubDMap;
+  SetTH1DSubDMap();
+    
   // nPV needs nBins set for PU reweights and actual plots
   const Int_t nBins_vtx = 50;
 
@@ -138,14 +157,14 @@ int main(){
   //  Samples.push_back(SamplePair("singlephoton",false));
   Samples.push_back(SamplePair("zll",true));
   Samples.push_back(SamplePair("wln",true));
-  /*
+  
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,colorMap,outdir,outtype);
     sample.DoAnalysis(yields);
   } 
   std::cout << "Done with Data, Zll, Wln Analysis" << std::endl;  
-  */
+  
   // -------------------------------------- //
   // diboson analysis
   std::cout << "Starting diboson Analysis" << std::endl;
@@ -340,3 +359,91 @@ int main(){
   yields.close(); // close yields txt
 }
 
+void SetTH1DSubDMap(TStrMap & TH1DSubDMap, const TStrMap & SubDMap) { // a bit hacky... would like to move this an object
+  // store this in top output directory
+  TH1DSubDMap["nvtx"] = SubDMap["overall"];
+
+  // photon plots
+  TH1DSubDMap["phpt"]         = SubDMap["photon"];
+  TH1DSubDMap["phpt_nj_lte2"] = SubDMap["photon"];
+
+  // lepton plots
+  // muons plots
+  TH1DSubDMap["mu1eta"] = SubDMap["muons"];
+  TH1DSubDMap["mu1phi"] = SubDMap["muons"];
+  TH1DSubDMap["mu1pt"]  = SubDMap["muons"];
+  TH1DSubDMap["mu2eta"] = SubDMap["muons"];
+  TH1DSubDMap["mu2phi"] = SubDMap["muons"];
+  TH1DSubDMap["mu2pt"]  = SubDMap["muons"];
+
+  TH1DSubDMap["wmt"]    = SubDMap["muons"];
+
+  // electron plots
+  TH1DSubDMap["el1eta"] = SubDMap["electrons"];
+  TH1DSubDMap["el1phi"] = SubDMap["electrons"];
+  TH1DSubDMap["el1pt"]  = SubDMap["electrons"];
+  TH1DSubDMap["el2eta"] = SubDMap["electrons"];
+  TH1DSubDMap["el2phi"] = SubDMap["electrons"];
+  TH1DSubDMap["el2pt"]  = SubDMap["electrons"];
+
+  TH1DSubDMap["wemt"]   = SubDMap["electrons"];
+
+  // dilepton plots
+  TH1DSubDMap["zeta"]  = "Leptons/Dileptons/";
+  TH1DSubDMap["zmass"] = "Leptons/Dileptons/";
+  TH1DSubDMap["zphi"]  = "Leptons/Dileptons/";
+  TH1DSubDMap["zpt"]   = "Leptons/Dileptons/";
+
+  TH1DSubDMap["zeeeta"]  = "Leptons/Dileptons/";
+  TH1DSubDMap["zeemass"] = "Leptons/Dileptons/";
+  TH1DSubDMap["zeephi"]  = "Leptons/Dileptons/";
+  TH1DSubDMap["zeept"]   = "Leptons/Dileptons/";
+
+  TH1DSubDMap["emueta"]  = "Leptons/Dileptons/";
+  TH1DSubDMap["emumass"] = "Leptons/Dileptons/";
+  TH1DSubDMap["emuphi"]  = "Leptons/Dileptons/";
+  TH1DSubDMap["emupt"]   = "Leptons/Dileptons/";
+
+  // Jet plots
+  TH1DSubDMap["njets"] = SubDMap["jets"];
+  TH1DSubDMap["ht"]    = SubDMap["jets"];
+
+  // Leading jet plots
+  TH1DSubDMap["signaljeteta"]     = SubDMap["jet1"];
+  TH1DSubDMap["signaljetphi"]     = SubDMap["jet1"];
+  TH1DSubDMap["signaljetpt"]      = SubDMap["jet1"];
+  TH1DSubDMap["signaljetCHfrac"]  = SubDMap["jet1"];
+  TH1DSubDMap["signaljetNHfrac"]  = SubDMap["jet1"];
+  TH1DSubDMap["signaljetEMfrac"]  = SubDMap["jet1"];
+  TH1DSubDMap["signaljetCEMfrac"] = SubDMap["jet1"];
+
+  // subleading jet plots
+  TH1DSubDMap["secondjeteta"]     = SubDMap["jet2"];
+  TH1DSubDMap["secondjetphi"]     = SubDMap["jet2"];
+  TH1DSubDMap["secondjetpt"]      = SubDMap["jet2"];
+  TH1DSubDMap["secondjetCHfrac"]  = SubDMap["jet2"];
+  TH1DSubDMap["secondjetNHfrac"]  = SubDMap["jet2"];
+  TH1DSubDMap["secondjetEMfrac"]  = SubDMap["jet2"];
+  TH1DSubDMap["secondjetCEMfrac"] = SubDMap["jet2"];
+
+  // subsubleading jet plots
+  TH1DSubDMap["thirdjeteta"]      = SubDMap["jet3"];
+  TH1DSubDMap["thirdjetphi"]      = SubDMap["jet3"];
+  TH1DSubDMap["thirdjetpt"]       = SubDMap["jet3"];
+  TH1DSubDMap["thirdjetCHfrac"]   = SubDMap["jet3"];
+  TH1DSubDMap["thirdjetNHfrac"]   = SubDMap["jet3"];
+  TH1DSubDMap["thirdjetEMfrac"]   = SubDMap["jet3"];
+  TH1DSubDMap["thirdjetCEMfrac"]  = SubDMap["jet3"];
+
+  // MET plots
+  TH1DSubDMap["pfmet"]   = SubDMap["met"];
+  TH1DSubDMap["t1pfmet"] = SubDMap["met"];
+  TH1DSubDMap["mumet"]   = SubDMap["met"];
+  TH1DSubDMap["t1mumet"] = SubDMap["met"];
+  TH1DSubDMap["mht"]     = SubDMap["met"];
+
+  TH1DSubDMap["pfmetphi"]   = SubDMap["met"];
+  TH1DSubDMap["t1pfmetphi"] = SubDMap["met"];
+  TH1DSubDMap["mumetphi"]   = SubDMap["met"];
+  TH1DSubDMap["t1mumetphi"] = SubDMap["met"];
+}
