@@ -61,7 +61,7 @@ int main(){
   const TString selection = "zmumu";
 
   // Njets selection (==1, ==2) ... -1 = no selection
-  const Int_t njetsselection = -1;
+  const Int_t njetsselection = 2;
 
   // Second make selection inside total directory
   TString njetsstr = "";
@@ -83,7 +83,7 @@ int main(){
   yields << "PU Reweighting Info" << std::endl;
   yields << "-------------------" << std::endl << std::endl;
 
-  const Bool_t doReWeight = false; // false if no actual reweighting to be performed
+  const Bool_t doReWeight = true; // false if no actual reweighting to be performed
   DblVec puweights;
   if (doReWeight) {
     const TString PURWselection = "zmumu";
@@ -149,7 +149,7 @@ int main(){
   // -------------------------------------- //
   // diboson analysis
   std::cout << "Starting diboson Analysis" << std::endl;
-  /*  
+
   SamplePairVec DBSamples;
   DBSamples.push_back(SamplePair("ww",true));
   DBSamples.push_back(SamplePair("zz",true));
@@ -163,14 +163,14 @@ int main(){
   std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
   
   Hadd(DBSamples,outdir,selection,njetsselection,"diboson");
-  */  
+
   Samples.push_back(SamplePair("diboson",true)); // add hadded file to total samples for stacking
   std::cout << "Done with Diboson Hadd" << std::endl;  
 
   // -------------------------------------- //
   // top backgrounds
   std::cout << "Starting top Analysis" << std::endl;
-  /*
+
   SamplePairVec TopSamples;
   TopSamples.push_back(SamplePair("ttbar",true)); 
   TopSamples.push_back(SamplePair("singlett",true)); 
@@ -186,7 +186,7 @@ int main(){
   std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
 
   Hadd(TopSamples,outdir,selection,njetsselection,"top");
-  */
+
   Samples.push_back(SamplePair("top",true)); // add hadded file to total samples for stacking
   std::cout << "Done with Top Hadd" << std::endl;  
 
@@ -218,7 +218,7 @@ int main(){
   // QCD backgrounds
 
   std::cout << "Starting QCD Analysis" << std::endl;
-  /*
+  
   SamplePairVec QCDSamples;
   QCDSamples.push_back(SamplePair("qcd15to30",true)); 
   QCDSamples.push_back(SamplePair("qcd30to50",true)); 
@@ -245,7 +245,7 @@ int main(){
   std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  
 
   Hadd(QCDSamples,outdir,selection,njetsselection,"qcd");
-  */
+  
   Samples.push_back(SamplePair("qcd",true)); // add hadded file to total samples for stacking 
   std::cout << "Done with QCD Hadd" << std::endl;
 
