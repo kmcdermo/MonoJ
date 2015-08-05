@@ -38,7 +38,7 @@ int main(){
   const Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  const TString outdir = "testplots_doublemu";
+  const TString outdir = "fullbatch_zmumu";
 
   // Allow user to set outtype for plots
   const TString outtype = "png";
@@ -52,12 +52,18 @@ int main(){
   //                                        //
   //++++++++++++++++++++++++++++++++++++++++// 
 
-  // do PURW?
-  const Bool_t doReWeight = true; // false if no actual reweighting to be performed
-
   // produce plots per sample?
-  const Bool_t doAnalysis = true;
+  const Bool_t doAnalysis = false;
 
+  // do PURW?
+  Bool_t doReWeight = true; // false if no actual reweighting to be performed
+  if (!doAnalysis) {
+    doReWeight = false;
+  }
+
+  // do stacking?
+  const Bool_t doStacks = true;
+  
   // Total Integrated Luminosity
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
@@ -67,10 +73,10 @@ int main(){
   // what samples to use?
   const Bool_t useData         = true;
   const Bool_t useSingleBoson  = true;
-  const Bool_t useDoubleBosons = false;
-  const Bool_t useTop          = false;
+  const Bool_t useDoubleBosons = true;
+  const Bool_t useTop          = true;
   const Bool_t useGamma        = false;
-  const Bool_t useQCD          = false;
+  const Bool_t useQCD          = true;
 
   // Njets selection (==1, ==2) ... -1 = no selection
   const Int_t njetsselection = -1;
@@ -138,7 +144,6 @@ int main(){
       yields << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
     }
   } // end if for doReWeight
-
   else { // no reweight!  so just push back puweights  = 1.0 for all nvtx bins
     for (Int_t i = 1; i <= nBins_vtx; i++ ){ // could do i = 0; i < nBins_vtx ... just do this to match bin indexing in ROOT and look like function inside PUReweight.cc
       puweights.push_back(1.0);
@@ -206,8 +211,8 @@ int main(){
   if (useSingleBoson) {
     
     SamplePairVec SBLSamples; 
-    SBLSamples.push_back(SamplePair("zll",true));
-    SBLSamples.push_back(SamplePair("wln",false));
+    SBLSamples.push_back(SamplePair("wln",true));
+    SBLSamples.push_back(SamplePair("zll",true));    
     
     if (doAnalysis) {
       std::cout << "Starting single boson to leptons MC Analysis" << std::endl;
@@ -354,89 +359,109 @@ int main(){
   //========================================// 
   //        Stack Plots Production          //
   //========================================// 
-  
-  UInt_t tmp_nmc   = 0;  
-  UInt_t tmp_ndata = 0;  
 
-  std::cout << "Performing checks on mc and data samples" << std::endl;
+  if (doStacks) {  
+    UInt_t tmp_nmc   = 0;  
+    UInt_t tmp_ndata = 0;  
 
-  for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
-    if ((*iter).second) {tmp_nmc++;}
-    else {tmp_ndata++;}
-  }
+    std::cout << "Performing checks on mc and data samples" << std::endl;
 
-  if ((tmp_ndata != 0) && (tmp_nmc != 0)) { // check to make sure enough samples can make stacks
-    const UInt_t tmp_nsamples = tmp_nmc+tmp_ndata;
-
-    std::cout << "Sorting MC Samples by yields" << std::endl;
-
-    TString nJetsStr = "";
-    if (njetsselection != -1){
-      nJetsStr = Form("_nj%i",njetsselection);
+    for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
+      if ((*iter).second) {tmp_nmc++;}
+      else {tmp_ndata++;}
     }
 
-    SamplePairVec MCSamples;
-    SamplePairVec DataSamples;
-    for (UInt_t isample = 0; isample < tmp_nsamples; isample++) {
-      if (Samples[isample].second) {
-	MCSamples.push_back(Samples[isample]);
+    if ((tmp_ndata != 0) && (tmp_nmc != 0)) { // check to make sure enough samples can make stacks
+      const UInt_t tmp_nsamples = tmp_nmc+tmp_ndata;
+
+      std::cout << "Sorting MC Samples by yields" << std::endl;
+
+      TString nJetsStr = "";
+      if (njetsselection != -1){
+	nJetsStr = Form("_nj%i",njetsselection);
       }
-      else {
-	DataSamples.push_back(Samples[isample]);
+
+      SamplePairVec MCSamples;
+      SamplePairVec DataSamples;
+      for (UInt_t isample = 0; isample < tmp_nsamples; isample++) {
+	if (Samples[isample].second) {
+	  MCSamples.push_back(Samples[isample]);
+	}
+	else {
+	  DataSamples.push_back(Samples[isample]);
+	}
       }
-    }
 
-    // push back mc yields in tmp vector
-    SampleYieldPairVec tmp_mcyields;
-    for (UInt_t mc = 0; mc < tmp_nmc; mc++) {
+      // push back mc yields in tmp vector
+      SampleYieldPairVec tmp_mcyields;
+      for (UInt_t mc = 0; mc < tmp_nmc; mc++) {
 
-      // open mc file first
-      const TString tmp_mcfilename = Form("%s/%s%s/%s_MC/plots.root",outdir.Data(),selection.Data(),nJetsStr.Data(),MCSamples[mc].first.Data());
-      TFile * tmp_mcfile = TFile::Open(tmp_mcfilename.Data());
-      CheckValidFile(tmp_mcfile,tmp_mcfilename);
+	// open mc file first
+	const TString tmp_mcfilename = Form("%s/%s%s/%s_MC/plots.root",outdir.Data(),selection.Data(),nJetsStr.Data(),MCSamples[mc].first.Data());
+	TFile * tmp_mcfile = TFile::Open(tmp_mcfilename.Data());
+	CheckValidFile(tmp_mcfile,tmp_mcfilename);
 
-      // open nvtx plot
-      TH1D * tmp_nvtx = (TH1D*)tmp_mcfile->Get("nvtx");
-      CheckValidTH1D(tmp_nvtx,"nvtx",tmp_mcfilename);
+	// open nvtx plot
+	TH1D * tmp_nvtx = (TH1D*)tmp_mcfile->Get("nvtx");
+	CheckValidTH1D(tmp_nvtx,"nvtx",tmp_mcfilename);
     
-      // get yield and push back with corresponding sample name
-      tmp_mcyields.push_back(SampleYieldPair(MCSamples[mc].first,tmp_nvtx->Integral()));
+	// get yield and push back with corresponding sample name
+	tmp_mcyields.push_back(SampleYieldPair(MCSamples[mc].first,tmp_nvtx->Integral()));
       
-      delete tmp_nvtx;
-      delete tmp_mcfile;
-    }
+	delete tmp_nvtx;
+	delete tmp_mcfile;
+      }
 
-    // sort temp yields vector
-    std::sort(tmp_mcyields.begin(),tmp_mcyields.end(),sortByYield);
-    std::cout << "Finished sorting MC, now put samples in right order to be processed" << std::endl;
+      // sort temp yields vector
+      std::sort(tmp_mcyields.begin(),tmp_mcyields.end(),sortByYield);
+      std::cout << "Finished sorting MC, now put samples in right order to be processed" << std::endl;
 
-    // clear MCSamples, and push back in order of tmp_yields now sorted
-    MCSamples.clear();
-    for (UInt_t mc = 0; mc < tmp_nmc; mc++) { // init mc double hists
-      if (tmp_mcyields[mc].second > 0.05) { // skip backgrounds that contribute less than a 20th of an event
-	MCSamples.push_back(SamplePair(tmp_mcyields[mc].first,"true"));
+      // clear MCSamples, and push back in order of tmp_yields now sorted
+      MCSamples.clear();
+      for (UInt_t mc = 0; mc < tmp_nmc; mc++) { // init mc double hists
+	if (tmp_mcyields[mc].second > 0.05) { // skip backgrounds that contribute less than a 20th of an event
+	  MCSamples.push_back(SamplePair(tmp_mcyields[mc].first,"true"));
+	}
+      }
+  
+      // check to make sure we can proceed!  if we filtered out all mc, no stacks!
+      UInt_t tmp_nfilteredmc = MCSamples.size();
+      if (tmp_nfilteredmc != 0) {
+
+	// clear original samples vector and push back data and mc samples
+	Samples.clear();
+	for (UInt_t data = 0; data < tmp_ndata; data++ ) {
+	  Samples.push_back(DataSamples[data]);
+	}
+	
+	
+	// check first that we can still proceed!
+	for (UInt_t mc = 0; mc < tmp_nfilteredmc; mc++ ) {
+	  Samples.push_back(MCSamples[mc]);
+	}
+	
+	yields << "Total Yields taken from nvtx in StackPlots" << std::endl;
+	yields << "------------------------------------------" << std::endl << std::endl;
+	
+	std::cout << "Make the stacks!" << std::endl;
+	
+	StackPlots * stacker = new StackPlots(Samples,selection,njetsselection,lumi,outdir,colorMap,outtype);
+	stacker->DoStacks(yields);
+	delete stacker;
+      }
+      else { // filtered too many MC, exit!
+	std::cout << "No MC to use to make stacks after cutting out MC with yield less than 0.05 ...exiting..." << std::endl;
+	exit(1);
       }
     }
-  
-    // clear original samples vector and push back data and mc samples
-    Samples.clear();
-    for (UInt_t data = 0; data < tmp_ndata; data++ ) {
-      Samples.push_back(DataSamples[data]);
+    else { // didn't pass for first check for making stackings
+      std::cout << "Not enough samples to make stacks! Data count: " << tmp_ndata << " MC count: " << tmp_nmc << " ...exiting..." << std::endl;
+      exit(1);
     }
-    for (UInt_t mc = 0; mc < MCSamples.size(); mc++ ) {
-      Samples.push_back(MCSamples[mc]);
-    }
-
-    yields << "Total Yields taken from nvtx in StackPlots" << std::endl;
-    yields << "------------------------------------------" << std::endl << std::endl;
-
-    std::cout << "Make the stacks!" << std::endl;
-
-    StackPlots * stacker = new StackPlots(Samples,selection,njetsselection,lumi,outdir,colorMap,outtype);
-    stacker->DoStacks(yields);
-    delete stacker;
   }
-  
+  else {
+    std::cout << "Skip making the stacks and finish as doStacks: " << doStacks << std::endl;
+  }
   yields.close(); // close yields txt
 }
 
