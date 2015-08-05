@@ -38,7 +38,7 @@ int main(){
   const Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  const TString outdir = "fullbatch_doublemu";
+  const TString outdir = "testplots_doublemu";
 
   // Allow user to set outtype for plots
   const TString outtype = "png";
@@ -52,13 +52,25 @@ int main(){
   //                                        //
   //++++++++++++++++++++++++++++++++++++++++// 
 
-  // Important variables to set for analysis
+  // do PURW?
+  const Bool_t doReWeight = true; // false if no actual reweighting to be performed
+
+  // produce plots per sample?
+  const Bool_t doAnalysis = true;
 
   // Total Integrated Luminosity
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
-  // Selection we want (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
-  const TString selection = "doublemu";
+  // Selection we want for ANALYSIS (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
+  const TString selection = "zmumu";
+
+  // what samples to use?
+  const Bool_t useData         = true;
+  const Bool_t useSingleBoson  = true;
+  const Bool_t useDoubleBosons = false;
+  const Bool_t useTop          = false;
+  const Bool_t useGamma        = false;
+  const Bool_t useQCD          = false;
 
   // Njets selection (==1, ==2) ... -1 = no selection
   const Int_t njetsselection = -1;
@@ -83,19 +95,18 @@ int main(){
   yields << "PU Reweighting Info" << std::endl;
   yields << "-------------------" << std::endl << std::endl;
 
-  const Bool_t doReWeight = true; // false if no actual reweighting to be performed
-  DblVec puweights;
+  DblVec puweights; // overall vector to be used for reweighting everywhere
   if (doReWeight) {
-    const TString PURWselection = "doublemu";
+    const TString PURWselection = "zmumu";
     const Int_t   PURWnjetsselection = -1;
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
     
     SamplePairVec PURWSamples;
-    if (PURWselection.Contains("doublemu",TString::kExact)) {
+    if (PURWselection.Contains("zmumu",TString::kExact)) {
       PURWSamples.push_back(SamplePair("doublemu",false));
       PURWSamples.push_back(SamplePair("zll",true));
     }
-    else if (PURWselection.Contains("doubleel",TString::kExact)) {
+    else if (PURWselection.Contains("zelel",TString::kExact)) {
       PURWSamples.push_back(SamplePair("doubleel",false));
       PURWSamples.push_back(SamplePair("zll",true));
     }    
@@ -147,128 +158,196 @@ int main(){
   
   // run over data + MC samples (dibosons and the like) first, then Top samples, then QCD
   std::cout << Form("Analysis %s selection, njets selection: %d!, with luminosity: %2.2f pb^-1",selection.Data(),njetsselection,lumi*1000) << std::endl;
-  
-  // -------------------------------------- //
-  // Z/W peak analysis
-  std::cout << "Starting data, Zll, Wln Analysis" << std::endl;
 
   SamplePairVec Samples; // this vector is one that will also be used for stack plots
-  Samples.push_back(SamplePair("doublemu",false));
-  //  Samples.push_back(SamplePair("doubleel",false));
-  //  Samples.push_back(SamplePair("singlemu",false));
-  //  Samples.push_back(SamplePair("singlephoton",false));
-  Samples.push_back(SamplePair("zll",true));
-  Samples.push_back(SamplePair("wln",true));
-  
-  for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
-    std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
-    sample.DoAnalysis(yields);
-  } 
-  std::cout << "Done with Data, Zll, Wln Analysis" << std::endl;  
+
+  // -------------------------------------- //
+  // Data analysis
+  if (useData) {
+
+    // selection defines data!
+    SamplePairVec DataSamples;
+    if (selection.Contains("zmumu",TString::kExact)) { 
+      DataSamples.push_back(SamplePair("doublemu",false));
+    }
+    else if (selection.Contains("zelel",TString::kExact)) { 
+      DataSamples.push_back(SamplePair("doubleel",false));
+    }
+    else if (selection.Contains("singlemu",TString::kExact)) { 
+      DataSamples.push_back(SamplePair("singlemu",false));
+    }
+    else if (selection.Contains("singlephoton",TString::kExact)) { 
+      DataSamples.push_back(SamplePair("singlephoton",false));
+    }      
+    else {
+      std::cout << "Not a known selection for data: " << selection.Data() <<  " ...exiting..." << std::endl;
+      exit(1);
+    }
+
+    if (doAnalysis) { // this block here to prevent doing analysis twice when just need sample in stack plot vector
+      std::cout << "Starting data Analysis" << std::endl;
+      for (SamplePairVecIter iter = DataSamples.begin(); iter != DataSamples.end(); ++iter) {
+	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	sample.DoAnalysis(yields);
+      }
+      std::cout << "Done with data Analysis" << std::endl;  
+    }
+    
+    // now just add the sample name pair to overall vector // --> could just hadd here... maybe later
+    for (SamplePairVecIter iter = DataSamples.begin(); iter != DataSamples.end(); ++iter) {
+      std::cout << "Adding data sample to overall samples: " << (*iter).first.Data() << std::endl;
+      Samples.push_back(*iter);
+    }
+  }
   
   // -------------------------------------- //
-  // diboson analysis
-  std::cout << "Starting diboson Analysis" << std::endl;
+  // Single Boson analysis
+  if (useSingleBoson) {
+    
+    SamplePairVec SBLSamples; 
+    SBLSamples.push_back(SamplePair("zll",true));
+    SBLSamples.push_back(SamplePair("wln",false));
+    
+    if (doAnalysis) {
+      std::cout << "Starting single boson to leptons MC Analysis" << std::endl;
+      for (SamplePairVecIter iter = SBLSamples.begin(); iter != SBLSamples.end(); ++iter) {
+	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	sample.DoAnalysis(yields);
+      }
+      std::cout << "Done with Z -> ll, W -> lnu Analysis" << std::endl;  
+    }
 
-  SamplePairVec DBSamples;
-  DBSamples.push_back(SamplePair("ww",true));
-  DBSamples.push_back(SamplePair("zz",true));
-  DBSamples.push_back(SamplePair("wz",true));
-
-  for (SamplePairVecIter iter = DBSamples.begin(); iter != DBSamples.end(); ++iter) {
-  std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-  Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
-  sample.DoAnalysis(yields);
+    // Since no hadd, just add the same sample names to the overall sample vector
+    for (SamplePairVecIter iter = SBLSamples.begin(); iter != SBLSamples.end(); ++iter) {
+      std::cout << "Adding single boson to leptons sample to overall samples: " << (*iter).first.Data() << std::endl;
+      Samples.push_back(*iter);
+    }
   }
-  std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
-  
-  Hadd(DBSamples,outdir,selection,njetsselection,"diboson");
 
-  Samples.push_back(SamplePair("diboson",true)); // add hadded file to total samples for stacking
-  std::cout << "Done with Diboson Hadd" << std::endl;  
+  // -------------------------------------- //
+  // diboson analysis
+  if (useDoubleBosons) {
+
+    SamplePairVec DBSamples; // outside in the strange case you want to stack individually... and symmetry with above
+    DBSamples.push_back(SamplePair("ww",true));
+    DBSamples.push_back(SamplePair("zz",true));
+    DBSamples.push_back(SamplePair("wz",true));
+   
+    if (doAnalysis) {
+      std::cout << "Starting diboson Analysis" << std::endl;
+      for (SamplePairVecIter iter = DBSamples.begin(); iter != DBSamples.end(); ++iter) {
+	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	sample.DoAnalysis(yields);
+      }
+      std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
+  
+      Hadd(DBSamples,outdir,selection,njetsselection,"diboson");
+      std::cout << "Done with Diboson Hadd" << std::endl;  
+    }
+
+    // add only hadded file to total samples for stacking
+    std::cout << "Adding hadded diboson sample to overall samples" << std::endl;
+    Samples.push_back(SamplePair("diboson",true));
+  }
 
   // -------------------------------------- //
   // top backgrounds
-  std::cout << "Starting top Analysis" << std::endl;
-
-  SamplePairVec TopSamples;
-  TopSamples.push_back(SamplePair("ttbar",true)); 
-  TopSamples.push_back(SamplePair("singlett",true)); 
-  TopSamples.push_back(SamplePair("singletbart",true)); 
-  TopSamples.push_back(SamplePair("singletw",true)); 
-  TopSamples.push_back(SamplePair("singletbarw",true)); 
-  
-  for (SamplePairVecIter iter = TopSamples.begin(); iter != TopSamples.end(); ++iter) {
-  std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-  Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
-  sample.DoAnalysis(yields);
+  if (useTop) {
+        
+    SamplePairVec TopSamples; // outside in the strange case you want to stack individually... and symmetry with above
+    TopSamples.push_back(SamplePair("ttbar",true)); 
+    TopSamples.push_back(SamplePair("singlett",true)); 
+    TopSamples.push_back(SamplePair("singletbart",true)); 
+    TopSamples.push_back(SamplePair("singletw",true)); 
+    TopSamples.push_back(SamplePair("singletbarw",true)); 
+    
+    if (doAnalysis) {
+      std::cout << "Starting top Analysis" << std::endl;
+      for (SamplePairVecIter iter = TopSamples.begin(); iter != TopSamples.end(); ++iter) {
+	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	sample.DoAnalysis(yields);
+      }
+      std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
+      
+      Hadd(TopSamples,outdir,selection,njetsselection,"top");
+      std::cout << "Done with Top Hadd" << std::endl;  
+    }
+    
+    // add hadded file to total samples for stacking
+    std::cout << "Adding hadded top sample to overall samples" << std::endl;
+    Samples.push_back(SamplePair("top",true)); 
   }
-  std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
-
-  Hadd(TopSamples,outdir,selection,njetsselection,"top");
-
-  Samples.push_back(SamplePair("top",true)); // add hadded file to total samples for stacking
-  std::cout << "Done with Top Hadd" << std::endl;  
 
   // -------------------------------------- //
   // Photon backgrounds
-  /*
-  std::cout << "Starting photon Analysis" << std::endl;
+  if (useGamma) {
 
-  SamplePairVec GammaSamples;
-  GammaSamples.push_back(SamplePair("gamma100to200",true)); 
-  GammaSamples.push_back(SamplePair("gamma200to400",true)); 
-  GammaSamples.push_back(SamplePair("gamma400to600",true)); 
-  GammaSamples.push_back(SamplePair("gamma600toinf",true)); 
+    SamplePairVec GammaSamples;  // outside in the strange case you want to stack individually... and symmetry with above
+    GammaSamples.push_back(SamplePair("gamma100to200",true)); 
+    GammaSamples.push_back(SamplePair("gamma200to400",true)); 
+    GammaSamples.push_back(SamplePair("gamma400to600",true)); 
+    GammaSamples.push_back(SamplePair("gamma600toinf",true)); 
+  
+    if (doAnalysis) {
+      std::cout << "Starting photon Analysis" << std::endl;
+      for (SamplePairVecIter iter = GammaSamples.begin(); iter != GammaSamples.end(); ++iter) {
+	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	sample.DoAnalysis(yields);
+      }
+      std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
 
-  for (SamplePairVecIter iter = GammaSamples.begin(); iter != GammaSamples.end(); ++iter) {
-    std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
-    sample.DoAnalysis(yields);
+      Hadd(GammaSamples,outdir,selection,njetsselection,"gamma");
+      std::cout << "Done with Gamma Hadd" << std::endl;      
+    }
+
+    //add hadded file to total samples for stacking   
+    std::cout << "Adding hadded photon sample to overall samples" << std::endl;
+    Samples.push_back(SamplePair("gamma",true));
   }
 
-  std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
-
-  Hadd(GammaSamples,outdir,selection,njetsselection,"gamma");
-  
-  Samples.push_back(SamplePair("gamma",true));  //add hadded file to total samples for stacking   
-  std::cout << "Done with Gamma Hadd" << std::endl;  
-  */
   // -------------------------------------- //
   // QCD backgrounds
-
-  std::cout << "Starting QCD Analysis" << std::endl;
+  if (useQCD) {
   
-  SamplePairVec QCDSamples;
-  QCDSamples.push_back(SamplePair("qcd15to30",true)); 
-  QCDSamples.push_back(SamplePair("qcd30to50",true)); 
-  QCDSamples.push_back(SamplePair("qcd50to80",true)); 
-  QCDSamples.push_back(SamplePair("qcd80to120",true)); 
-  QCDSamples.push_back(SamplePair("qcd120to170",true)); 
-  QCDSamples.push_back(SamplePair("qcd170to300",true)); 
-  QCDSamples.push_back(SamplePair("qcd300to470",true)); 
-  QCDSamples.push_back(SamplePair("qcd470to600",true)); 
-  QCDSamples.push_back(SamplePair("qcd600to800",true));
-  QCDSamples.push_back(SamplePair("qcd800to1000",true));
-  QCDSamples.push_back(SamplePair("qcd1000to1400",true)); 
-  QCDSamples.push_back(SamplePair("qcd1400to1800",true));
-  QCDSamples.push_back(SamplePair("qcd1800to2400",true));
-  QCDSamples.push_back(SamplePair("qcd2400to3200",true));
-  QCDSamples.push_back(SamplePair("qcd3200toinf",true)); 
-
-  for (SamplePairVecIter iter = QCDSamples.begin(); iter != QCDSamples.end(); ++iter) {
-    std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-    Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
-    sample.DoAnalysis(yields);
+    SamplePairVec QCDSamples;  // outside in the strange case you want to stack individually... and symmetry with above
+    QCDSamples.push_back(SamplePair("qcd15to30",true)); 
+    QCDSamples.push_back(SamplePair("qcd30to50",true)); 
+    QCDSamples.push_back(SamplePair("qcd50to80",true)); 
+    QCDSamples.push_back(SamplePair("qcd80to120",true)); 
+    QCDSamples.push_back(SamplePair("qcd120to170",true)); 
+    QCDSamples.push_back(SamplePair("qcd170to300",true)); 
+    QCDSamples.push_back(SamplePair("qcd300to470",true)); 
+    QCDSamples.push_back(SamplePair("qcd470to600",true)); 
+    QCDSamples.push_back(SamplePair("qcd600to800",true));
+    QCDSamples.push_back(SamplePair("qcd800to1000",true));
+    QCDSamples.push_back(SamplePair("qcd1000to1400",true)); 
+    QCDSamples.push_back(SamplePair("qcd1400to1800",true));
+    QCDSamples.push_back(SamplePair("qcd1800to2400",true));
+    QCDSamples.push_back(SamplePair("qcd2400to3200",true));
+    QCDSamples.push_back(SamplePair("qcd3200toinf",true)); 
+    
+    if (doAnalysis) {
+      std::cout << "Starting QCD Analysis" << std::endl;
+      for (SamplePairVecIter iter = QCDSamples.begin(); iter != QCDSamples.end(); ++iter) {
+	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	sample.DoAnalysis(yields);
+      }
+      std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  
+      
+      Hadd(QCDSamples,outdir,selection,njetsselection,"qcd");
+      std::cout << "Done with QCD Hadd" << std::endl;  
+    }
+    
+    // add hadded file to total samples for stacking 
+    std::cout << "Adding hadded QCD sample to overall samples" << std::endl;
+    Samples.push_back(SamplePair("qcd",true)); 
   }
-
-  std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  
-
-  Hadd(QCDSamples,outdir,selection,njetsselection,"qcd");
-  
-  Samples.push_back(SamplePair("qcd",true)); // add hadded file to total samples for stacking 
-  std::cout << "Done with QCD Hadd" << std::endl;
 
   yields << "--------------------------------------------" << std::endl << std::endl;
 
