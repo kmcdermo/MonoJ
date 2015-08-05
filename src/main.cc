@@ -91,19 +91,19 @@ int main(){
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
     
     SamplePairVec PURWSamples;
-    if (PURWselection.contains("doublemu",TString::kExact)) {
+    if (PURWselection.Contains("doublemu",TString::kExact)) {
       PURWSamples.push_back(SamplePair("doublemu",false));
       PURWSamples.push_back(SamplePair("zll",true));
     }
-    else if (PURWselection.contains("doubleel",TString::kExact)) {
+    else if (PURWselection.Contains("doubleel",TString::kExact)) {
       PURWSamples.push_back(SamplePair("doubleel",false));
       PURWSamples.push_back(SamplePair("zll",true));
     }    
-    else if (PURWselection.contains("singlemu",TString::kExact)) {
+    else if (PURWselection.Contains("singlemu",TString::kExact)) {
       PURWSamples.push_back(SamplePair("singlemu",false));
       PURWSamples.push_back(SamplePair("wln",true));
     }    
-    else if (PURWselection.contains("singlephoton",TString::kExact)) {
+    else if (PURWselection.Contains("singlephoton",TString::kExact)) {
       PURWSamples.push_back(SamplePair("singlephoton",false));
       PURWSamples.push_back(SamplePair("gamma100to200",true)); 
       PURWSamples.push_back(SamplePair("gamma200to400",true)); 

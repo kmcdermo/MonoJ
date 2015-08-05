@@ -308,10 +308,14 @@ void Analysis::SetUpPlots() {
   fTH1DMap["mu1eta"] = Analysis::MakeTH1DPlot("mu1eta","",30,-3.,3.,"Leading Muon #eta","Events"); 
   fTH1DMap["mu1phi"] = Analysis::MakeTH1DPlot("mu1phi","",32,-3.2,3.2,"Leading Muon #phi","Events"); 
   if (fSelection.Contains("doublemu",TString::kExact)) {
-    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",42,0.,420.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+    const Int_t    nBins = 42;
+    const Double_t xmin  = 0.;
+    const Double_t xmax  = 420.;
+    const Double_t binw  = (xmax-xmin)/nBins;
+    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",nBins,xmin,xmax,"Leading Muon p_{T} [GeV/c]",((binw != 1) ? Form("Events / %g GeV/c",binw) : "Events / GeV/c") ); 
   }
   else if (fSelection.Contains("singlemu",TString::kExact)) {
-    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",60,0.,600.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
+    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",40,0.,600.,"Leading Muon p_{T} [GeV/c]","Events / 15 GeV/c"); 
   }
   else {
     fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",30,0.,300.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
@@ -332,7 +336,17 @@ void Analysis::SetUpPlots() {
   // electron plots
   fTH1DMap["el1eta"] = Analysis::MakeTH1DPlot("el1eta","",30,-3.,3.,"Leading Electron #eta","Events"); 
   fTH1DMap["el1phi"] = Analysis::MakeTH1DPlot("el1phi","",32,-3.2,3.2,"Leading Electron #phi","Events"); 
-  fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",50,0.,500.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  if (fSelection.Contains("doubleel",TString::kExact)) {
+    fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",50,0.,500.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  }
+  else if (fSelection.Contains("singleel",TString::kExact)) {
+    fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",50,0.,500.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  }
+  else {
+    fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",50,0.,500.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  }
+
+
   fTH1DMap["el2eta"] = Analysis::MakeTH1DPlot("el2eta","",30,-3.,3.,"Subleading Electron #eta","Events"); 
   fTH1DMap["el2phi"] = Analysis::MakeTH1DPlot("el2phi","",32,-3.2,3.2,"Subleading Electron #phi","Events"); 
   fTH1DMap["el2pt"]  = Analysis::MakeTH1DPlot("el2pt","",50,0.,500.,"Subleading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
