@@ -87,6 +87,7 @@ Analysis::~Analysis(){
 
 void Analysis::DoAnalysis(std::ofstream & yields){
   // set up output plots to be produced
+  Analysis::SetUpPlotOptions();
   Analysis::SetUpPlots();
 
   // use these bools to save time inside entry loop
@@ -292,14 +293,318 @@ void Analysis::DoAnalysis(std::ofstream & yields){
   Analysis::SaveHists();
 }
 
+void Analysis::SetUpPlotOptions() {
+  // As data divies up into selections have to do it per selection ... once run over all data, no need for this object
+
+  if (fSelection.Contains("zmumu",TString::kExact)) { // zmumu
+    TString plot      = "";
+
+    // mu1pt
+    plot = "mu1pt";
+    fPlotOptMap[plot].nbins = 40;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 400.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // el1pt
+    plot = "el1pt";
+    fPlotOptMap[plot].nbins = 50;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 250.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // signaljetpt
+    plot = "signaljetpt";
+    fPlotOptMap[plot].nbins = 50;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 500.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // second jet
+    plot = "secondjetpt";
+    fPlotOptMap[plot].nbins = 38;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 380.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // ht
+    plot = "ht";
+    fPlotOptMap[plot].nbins = 40;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 800.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // pfmet
+    plot = "pfmet";
+    fPlotOptMap[plot].nbins = 31;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 310.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1pfmet
+    plot = "t1pfmet";
+    fPlotOptMap[plot].nbins = 33;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 330.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // mumet
+    plot = "mumet";
+    fPlotOptMap[plot].nbins = 43;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 430.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1mumet
+    plot = "t1mumet";
+    fPlotOptMap[plot].nbins = 45;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 450.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+
+    // mht
+    plot = "mht";
+    fPlotOptMap[plot].nbins = 47;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 470.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+  }
+
+  else if (fSelection.Contains("zelel",TString::kExact)) {  // Zelel selection options
+    TString plot      = "";
+
+    // mu1pt
+    plot = "mu1pt";
+    fPlotOptMap[plot].nbins = 20;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 100.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // el1pt
+    plot = "el1pt";
+    fPlotOptMap[plot].nbins = 46;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 460.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // signaljetpt
+    plot = "signaljetpt";
+    fPlotOptMap[plot].nbins = 41;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 615.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // second jet
+    plot = "secondjetpt";
+    fPlotOptMap[plot].nbins = 38;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 570.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // ht
+    plot = "ht";
+    fPlotOptMap[plot].nbins = 47;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 1175.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // pfmet
+    plot = "pfmet";
+    fPlotOptMap[plot].nbins = 50;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 250.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1pfmet
+    plot = "t1pfmet";
+    fPlotOptMap[plot].nbins = 50;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 250.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // mumet
+    plot = "mumet";
+    fPlotOptMap[plot].nbins = 50;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 250.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1mumet
+    plot = "t1mumet";
+    fPlotOptMap[plot].nbins = 50;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 250.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+
+    // mht
+    plot = "mht";
+    fPlotOptMap[plot].nbins = 52;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 520.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+  }
+  
+  // Singlemu selection options
+  else if (fSelection.Contains("singlemu",TString::kExact)) {  // Zelel selection options
+    TString plot      = "";
+
+    // mu1pt
+    plot = "mu1pt";
+    fPlotOptMap[plot].nbins = 39;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 585.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // el1pt
+    plot = "el1pt";
+    fPlotOptMap[plot].nbins = 50;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 750.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // signaljetpt
+    plot = "signaljetpt";
+    fPlotOptMap[plot].nbins = 43;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 860.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // second jet
+    plot = "secondjetpt";
+    fPlotOptMap[plot].nbins = 44;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 660.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // ht
+    plot = "ht";
+    fPlotOptMap[plot].nbins = 47;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 1880.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // pfmet
+    plot = "pfmet";
+    fPlotOptMap[plot].nbins = 42;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 630.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1pfmet
+    plot = "t1pfmet";
+    fPlotOptMap[plot].nbins = 43;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 645.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // mumet
+    plot = "mumet";
+    fPlotOptMap[plot].nbins = 44;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 880.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1mumet
+    plot = "t1mumet";
+    fPlotOptMap[plot].nbins = 47;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 940.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+
+    // mht
+    plot = "mht";
+    fPlotOptMap[plot].nbins = 47;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 940.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+  }
+
+  // Singlephoton selection options
+  else if (fSelection.Contains("singlephoton",TString::kExact)) {  // Zelel selection options
+    TString plot      = "";
+
+    // mu1pt
+    plot = "mu1pt";
+    fPlotOptMap[plot].nbins = 27;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 270.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // el1pt
+    plot = "el1pt";
+    fPlotOptMap[plot].nbins = 40;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 800.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // signaljetpt
+    plot = "signaljetpt";
+    fPlotOptMap[plot].nbins = 46;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 1150.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // second jet
+    plot = "secondjetpt";
+    fPlotOptMap[plot].nbins = 46;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 920.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // ht
+    plot = "ht";
+    fPlotOptMap[plot].nbins = 52;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 2080.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // pfmet
+    plot = "pfmet";
+    fPlotOptMap[plot].nbins = 36;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 540.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1pfmet
+    plot = "t1pfmet";
+    fPlotOptMap[plot].nbins = 36;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 540.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // mumet
+    plot = "mumet";
+    fPlotOptMap[plot].nbins = 36;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 540.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1mumet
+    plot = "t1mumet";
+    fPlotOptMap[plot].nbins = 36;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 540.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+
+    // mht
+    plot = "mht";
+    fPlotOptMap[plot].nbins = 48;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 1440;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+  }
+   
+}
+
 void Analysis::SetUpPlots() {
+  
   // overall plots, no subdir
   fTH1DMap["nvtx"]  = Analysis::MakeTH1DPlot("nvtx","",fNBins_vtx,0,fNBins_vtx,"Number of Primary Vertices","Events");
   fTH1DSubDMap["nvtx"] = "";
 
   // photon plots
-  fTH1DMap["phpt"]         = Analysis::MakeTH1DPlot("phpt","",40,200.,1000.,"Phton p_{T} [GeV/c]","Events / 20 GeV/c"); 
-  fTH1DMap["phpt_nj_lte2"] = Analysis::MakeTH1DPlot("phpt_nj_lte2","",40,200.,1000.,"Phton p_{T} (n_{jets} #leq 2) [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["phpt"]         = Analysis::MakeTH1DPlot("phpt","",35,200.,900.,"Phton p_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["phpt_nj_lte2"] = Analysis::MakeTH1DPlot("phpt_nj_lte2","",35,200.,900.,"Phton p_{T} (n_{jets} #leq 2) [GeV/c]","Events / 20 GeV/c"); 
   fTH1DSubDMap["phpt"]         = "Photons/";
   fTH1DSubDMap["phpt_nj_lte2"] = "Photons/";
 
@@ -307,19 +612,7 @@ void Analysis::SetUpPlots() {
   // muon plots
   fTH1DMap["mu1eta"] = Analysis::MakeTH1DPlot("mu1eta","",30,-3.,3.,"Leading Muon #eta","Events"); 
   fTH1DMap["mu1phi"] = Analysis::MakeTH1DPlot("mu1phi","",32,-3.2,3.2,"Leading Muon #phi","Events"); 
-  if (fSelection.Contains("doublemu",TString::kExact)) {
-    const Int_t    nBins = 42;
-    const Double_t xmin  = 0.;
-    const Double_t xmax  = 420.;
-    const Double_t binw  = (xmax-xmin)/nBins;
-    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",nBins,xmin,xmax,"Leading Muon p_{T} [GeV/c]",((binw != 1) ? Form("Events / %g GeV/c",binw) : "Events / GeV/c") ); 
-  }
-  else if (fSelection.Contains("singlemu",TString::kExact)) {
-    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",40,0.,600.,"Leading Muon p_{T} [GeV/c]","Events / 15 GeV/c"); 
-  }
-  else {
-    fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",30,0.,300.,"Leading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
-  }
+  fTH1DMap["mu1pt"]  = Analysis::MakeTH1DPlot("mu1pt","",fPlotOptMap["mu1pt"].nbins,fPlotOptMap["mu1pt"].xmin,fPlotOptMap["mu1pt"].xmax,"Leading Muon p_{T} [GeV/c]",Form("Events / %g GeV/c",fPlotOptMap["mu1pt"].binw)); 
   fTH1DMap["mu2eta"] = Analysis::MakeTH1DPlot("mu2eta","",30,-3.,3.,"Subleading Muon #eta","Events"); 
   fTH1DMap["mu2phi"] = Analysis::MakeTH1DPlot("mu2phi","",32,-3.2,3.2,"Subleading Muon #phi","Events"); 
   fTH1DMap["mu2pt"]  = Analysis::MakeTH1DPlot("mu2pt","",30,0.,300.,"Subleading Muon p_{T} [GeV/c]","Events / 10 GeV/c"); 
@@ -336,20 +629,10 @@ void Analysis::SetUpPlots() {
   // electron plots
   fTH1DMap["el1eta"] = Analysis::MakeTH1DPlot("el1eta","",30,-3.,3.,"Leading Electron #eta","Events"); 
   fTH1DMap["el1phi"] = Analysis::MakeTH1DPlot("el1phi","",32,-3.2,3.2,"Leading Electron #phi","Events"); 
-  if (fSelection.Contains("doubleel",TString::kExact)) {
-    fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",50,0.,500.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
-  }
-  else if (fSelection.Contains("singleel",TString::kExact)) {
-    fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",50,0.,500.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
-  }
-  else {
-    fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",50,0.,500.,"Leading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
-  }
-
-
+  fTH1DMap["el1pt"]  = Analysis::MakeTH1DPlot("el1pt","",fPlotOptMap["el1pt"].nbins,fPlotOptMap["el1pt"].xmin,fPlotOptMap["el1pt"].xmax,"Leading Electron p_{T} [GeV/c]",Form("Events / %g GeV/c",fPlotOptMap["el1pt"].binw)); 
   fTH1DMap["el2eta"] = Analysis::MakeTH1DPlot("el2eta","",30,-3.,3.,"Subleading Electron #eta","Events"); 
   fTH1DMap["el2phi"] = Analysis::MakeTH1DPlot("el2phi","",32,-3.2,3.2,"Subleading Electron #phi","Events"); 
-  fTH1DMap["el2pt"]  = Analysis::MakeTH1DPlot("el2pt","",50,0.,500.,"Subleading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
+  fTH1DMap["el2pt"]  = Analysis::MakeTH1DPlot("el2pt","",30,0.,300.,"Subleading Electron p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DSubDMap["el1eta"] = "Leptons/Electrons/";
   fTH1DSubDMap["el1phi"] = "Leptons/Electrons/";
   fTH1DSubDMap["el1pt"]  = "Leptons/Electrons/";
@@ -364,7 +647,7 @@ void Analysis::SetUpPlots() {
   fTH1DMap["zeta"]  = Analysis::MakeTH1DPlot("zeta","",30,-3.,3.,"Dimuon #eta","Events"); 
   fTH1DMap["zmass"] = Analysis::MakeTH1DPlot("zmass","",60,60.,120.,"Dimuon Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zphi"]  = Analysis::MakeTH1DPlot("zphi","",32,-3.2,3.2,"Dimuon #phi","Events"); 
-  fTH1DMap["zpt"]   = Analysis::MakeTH1DPlot("zpt","",35,0.,700.,"Dimuon p_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["zpt"]   = Analysis::MakeTH1DPlot("zpt","",50,0.,500.,"Dimuon p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DSubDMap["zeta"]  = "Leptons/Dileptons/";
   fTH1DSubDMap["zmass"] = "Leptons/Dileptons/";
   fTH1DSubDMap["zphi"]  = "Leptons/Dileptons/";
@@ -373,7 +656,7 @@ void Analysis::SetUpPlots() {
   fTH1DMap["zeeeta"]  = Analysis::MakeTH1DPlot("zeeeta","",30,-3.,3.,"Dielectron #eta","Events"); 
   fTH1DMap["zeemass"] = Analysis::MakeTH1DPlot("zeemass","",60,60.,120.,"Dielectron Mass [GeV/c^{2}]","Events / GeV/c^{2}");
   fTH1DMap["zeephi"]  = Analysis::MakeTH1DPlot("zeephi","",32,-3.2,3.2,"Dielectron #phi","Events"); 
-  fTH1DMap["zeept"]   = Analysis::MakeTH1DPlot("zeept","",35,0.,700.,"Dielectron p_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["zeept"]   = Analysis::MakeTH1DPlot("zeept","",55,0.,550.,"Dielectron p_{T} [GeV/c]","Events / 10 GeV/c"); 
   fTH1DSubDMap["zeeeta"]  = "Leptons/Dileptons/";
   fTH1DSubDMap["zeemass"] = "Leptons/Dileptons/";
   fTH1DSubDMap["zeephi"]  = "Leptons/Dileptons/";
@@ -390,14 +673,14 @@ void Analysis::SetUpPlots() {
 
   // Jet plots
   fTH1DMap["njets"] = Analysis::MakeTH1DPlot("njets","",10,0,10,"Jet Multiplicity","Events");
-  fTH1DMap["ht"]    = Analysis::MakeTH1DPlot("ht","",50,0.,1000.,"H_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["ht"]    = Analysis::MakeTH1DPlot("ht","",fPlotOptMap["ht"].nbins,fPlotOptMap["ht"].xmin,fPlotOptMap["ht"].xmax,"H_{T} [GeV/c]",Form("Events / %g GeV/c",fPlotOptMap["ht"].binw)); 
   fTH1DSubDMap["njets"] = "Jets/";
   fTH1DSubDMap["ht"]    = "Jets/";
 
   // leading jet plots
   fTH1DMap["signaljeteta"]     = Analysis::MakeTH1DPlot("signaljeteta","",30,-3.,3.,"Leading Jet #eta","Events"); 
   fTH1DMap["signaljetphi"]     = Analysis::MakeTH1DPlot("signaljetphi","",32,-3.2,3.2,"Leading Jet #phi","Events"); 
-  fTH1DMap["signaljetpt"]      = Analysis::MakeTH1DPlot("signaljetpt","",50,0.,1000.,"Leading Jet p_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["signaljetpt"]      = Analysis::MakeTH1DPlot("signaljetpt","",fPlotOptMap["signaljetpt"].nbins,fPlotOptMap["signaljetpt"].xmin,fPlotOptMap["signaljetpt"].xmax,"Leading Jet p_{T} [GeV/c]",Form("Events / %g GeV/c",fPlotOptMap["signaljetpt"].binw));
   fTH1DMap["signaljetCHfrac"]  = Analysis::MakeTH1DPlot("signaljetCHfrac","",50,0.,1.,"Leading Jet CH Fraction","Events"); 
   fTH1DMap["signaljetNHfrac"]  = Analysis::MakeTH1DPlot("signaljetNHfrac","",50,0.,1.,"Leading Jet NH Fraction","Events"); 
   fTH1DMap["signaljetEMfrac"]  = Analysis::MakeTH1DPlot("signaljetEMfrac","",50,0.,1.,"Leading Jet Neutral EM Fraction","Events"); 
@@ -413,7 +696,7 @@ void Analysis::SetUpPlots() {
   // subleading jet plots
   fTH1DMap["secondjeteta"]     = Analysis::MakeTH1DPlot("secondjeteta","",30,-3.,3.,"Subleading Jet #eta","Events"); 
   fTH1DMap["secondjetphi"]     = Analysis::MakeTH1DPlot("secondjetphi","",32,-3.2,3.2,"Subleading Jet #phi","Events"); 
-  fTH1DMap["secondjetpt"]      = Analysis::MakeTH1DPlot("secondjetpt","",50,0.,1000.,"Subleading Jet p_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["secondjetpt"]      = Analysis::MakeTH1DPlot("secondjetpt","",fPlotOptMap["secondjetpt"].nbins,fPlotOptMap["secondjetpt"].xmin,fPlotOptMap["secondjetpt"].xmax,"Subleading Jet p_{T} [GeV/c]",Form("Events / %g GeV/c",fPlotOptMap["secondjetpt"].binw));
   fTH1DMap["secondjetCHfrac"]  = Analysis::MakeTH1DPlot("secondjetCHfrac","",50,0.,1.,"Subleading Jet CH Fraction","Events"); 
   fTH1DMap["secondjetNHfrac"]  = Analysis::MakeTH1DPlot("secondjetNHfrac","",50,0.,1.,"Subleading Jet NH Fraction","Events"); 
   fTH1DMap["secondjetEMfrac"]  = Analysis::MakeTH1DPlot("secondjetEMfrac","",50,0.,1.,"Subleading Jet Neutral EM Fraction","Events"); 
@@ -443,11 +726,11 @@ void Analysis::SetUpPlots() {
   fTH1DSubDMap["thirdjetCEMfrac"] = "Jets/Subsubleading/";
 
   // MET plots
-  fTH1DMap["pfmet"]   = Analysis::MakeTH1DPlot("pfmet","",50,0.,1000.,"PF E_{T}^{Miss} [GeV]","Events / 20 GeV"); 
-  fTH1DMap["t1pfmet"] = Analysis::MakeTH1DPlot("t1pfmet","",50,0.,1000.,"Type-1 PF E_{T}^{Miss} [GeV]","Events / 20 GeV"); 
-  fTH1DMap["mumet"]   = Analysis::MakeTH1DPlot("mumet","",50,0.,1000.,"PF E_{T}^{Miss} without Muons [GeV]","Events / 20 GeV");
-  fTH1DMap["t1mumet"] = Analysis::MakeTH1DPlot("t1mumet","",50,0.,1000.,"Type-1 PF E_{T}^{Miss} without Muons [GeV]","Events / 20 GeV"); 
-  fTH1DMap["mht"]     = Analysis::MakeTH1DPlot("mht","",50,0.,1000.,"E_{T}^{Miss} from H_{T} [GeV/c]","Events / 20 GeV/c"); 
+  fTH1DMap["pfmet"]   = Analysis::MakeTH1DPlot("pfmet","",fPlotOptMap["pfmet"].nbins,fPlotOptMap["pfmet"].xmin,fPlotOptMap["pfmet"].xmax,"PF E_{T}^{Miss} [GeV]",Form("Events / %g GeV",fPlotOptMap["pfmet"].binw)); 
+  fTH1DMap["t1pfmet"] = Analysis::MakeTH1DPlot("t1pfmet","",fPlotOptMap["t1pfmet"].nbins,fPlotOptMap["t1pfmet"].xmin,fPlotOptMap["t1pfmet"].xmax,"Type-1 PF E_{T}^{Miss} [GeV]",Form("Events / %g GeV",fPlotOptMap["t1pfmet"].binw)); 
+  fTH1DMap["mumet"]   = Analysis::MakeTH1DPlot("mumet","",fPlotOptMap["mumet"].nbins,fPlotOptMap["mumet"].xmin,fPlotOptMap["mumet"].xmax,"PF E_{T}^{Miss} without Muons [GeV]",Form("Events / %g GeV",fPlotOptMap["mumet"].binw));
+  fTH1DMap["t1mumet"] = Analysis::MakeTH1DPlot("t1mumet","",fPlotOptMap["t1mumet"].nbins,fPlotOptMap["t1mumet"].xmin,fPlotOptMap["t1mumet"].xmax,"Type-1 PF E_{T}^{Miss} without Muons [GeV]",Form("Events / %g GeV",fPlotOptMap["t1mumet"].binw)); 
+  fTH1DMap["mht"]     = Analysis::MakeTH1DPlot("mht","",fPlotOptMap["mht"].nbins,fPlotOptMap["mht"].xmin,fPlotOptMap["mht"].xmax,"E_{T}^{Miss} from H_{T} [GeV/c]",Form("Events / %g GeV",fPlotOptMap["mht"].binw)); 
   fTH1DSubDMap["pfmet"]   = "MET/";
   fTH1DSubDMap["t1pfmet"] = "MET/";
   fTH1DSubDMap["mumet"]   = "MET/";

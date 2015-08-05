@@ -19,6 +19,18 @@
 #include <iostream>
 #include <fstream>
 
+// use this for setting up plots
+struct PlotOptStruct 
+{
+public:
+  Int_t    nbins;
+  Double_t xmin;
+  Double_t xmax;
+  Double_t binw;
+};
+  
+typedef std::map<TString,PlotOptStruct> TStrPlotOptStructMap;
+  
 typedef std::vector<UInt_t> UIntVec;
 typedef std::vector<Int_t>  IntVec;
 
@@ -33,6 +45,7 @@ public:
   
   void SetBranchAddresses();
   void DoAnalysis(std::ofstream & yields);
+  void SetUpPlotOptions();
   void SetUpPlots();
   TH1D * MakeTH1DPlot(const TString hname, const TString htitle, const Int_t nbins, const Double_t xlow, const Double_t xhigh, const TString xtitle, const TString ytitle);
   void SaveHists();
@@ -63,6 +76,7 @@ private:
 
   Double_t fNSelected;
 
+  TStrPlotOptStructMap fPlotOptMap;
   TH1DMap fTH1DMap;
 
   ColorMap fColorMap;
