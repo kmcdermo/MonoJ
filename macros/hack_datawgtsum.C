@@ -1,5 +1,5 @@
 void hack_datawgtsum(TString dir) {
-  TFile* infile = new TFile(Form("Data/%s/tree.root",dir.Data()));
+  TFile* infile = new TFile(Form("Data/%s/tree.root",dir.Data()),"UPDATE");
   TTree* frtree = (TTree*)infile->Get("tree/tree");
   if (!frtree) return;
 
@@ -10,13 +10,14 @@ void hack_datawgtsum(TString dir) {
     bwgtsum->Fill();
   }
 
-  TFile* outfile = new TFile(Form("Data/%s/treewithwgt.root",dir.Data()),"RECREATE");
-  outfile->cd();
-  TDirectoryFile* treedir = new TDirectoryFile("tree", "tree");
-  treedir->cd();
-  TTree* outtree = frtree->CopyTree("");
-  outfile->Write();
-
+  infile->Write();
   infile->Close();
-  outfile->Close();
+
+  // moving name to with wgtsum
+  std::cout << "Moving file from tree.root to treewithwgt.root" << std::endl;
+
+  gSystem->Exec(Form("mv %s/tree.root %s/treewithwgt.root",dir.Data(),dir.Data()));
+
+  std::cout << "Finished macro" << std::endl;
+  
 }
