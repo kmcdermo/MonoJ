@@ -53,7 +53,7 @@ int main(){
   //++++++++++++++++++++++++++++++++++++++++// 
 
   // produce plots per sample?
-  const Bool_t doAnalysis = false;
+  const Bool_t doAnalysis = true;
 
   // do PURW?
   Bool_t doReWeight = true; // false if no actual reweighting to be performed
@@ -62,7 +62,7 @@ int main(){
   }
 
   // do stacking?
-  const Bool_t doStacks = true;
+  const Bool_t doStacks = false;
   
   // Total Integrated Luminosity
   const Double_t lumi = 0.04003; // int lumi in fb^-1
@@ -71,15 +71,15 @@ int main(){
   const TString selection = "zmumu";
 
   // what samples to use?
-  const Bool_t useData         = true;
-  const Bool_t useSingleBoson  = true;
-  const Bool_t useDoubleBosons = true;
+  const Bool_t useData         = false;
+  const Bool_t useSingleBoson  = false;
+  const Bool_t useDoubleBosons = false;
   const Bool_t useTop          = true;
   const Bool_t useGamma        = false;
   const Bool_t useQCD          = true;
 
   // Njets selection (==1, ==2) ... -1 = no selection
-  const Int_t njetsselection = -1;
+  const Int_t njetsselection = 1;
 
   // Second make selection inside total directory
   TString njetsstr = "";
@@ -105,12 +105,14 @@ int main(){
   if (doReWeight) {
     const TString PURWselection = "zmumu";
     const Int_t   PURWnjetsselection = -1;
+
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
-    
+
     SamplePairVec PURWSamples;
     if (PURWselection.Contains("zmumu",TString::kExact)) {
       PURWSamples.push_back(SamplePair("doublemu",false));
       PURWSamples.push_back(SamplePair("zll",true));
+
     }
     else if (PURWselection.Contains("zelel",TString::kExact)) {
       PURWSamples.push_back(SamplePair("doubleel",false));
@@ -132,11 +134,13 @@ int main(){
       exit(1);
     }
 
+    // do the reweighting here
     PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype);
     puweights = reweight->GetPUWeights(); 
   
     delete reweight;
 
+    // some printouts
     yields << "Used PU Reweighting with selection: " << PURWselection.Data() << " njets cut: " << ((PURWnjetsselection != -1) ? Form("%i",PURWnjetsselection) : "NONE") << std::endl;
     // include samples used for reweighting, to be safe
     yields << "Samples used in PURW:" << std::endl;
@@ -248,7 +252,7 @@ int main(){
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
-  
+
       Hadd(DBSamples,outdir,selection,njetsselection,"diboson");
       std::cout << "Done with Diboson Hadd" << std::endl;  
     }
