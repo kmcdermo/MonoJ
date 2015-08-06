@@ -1,7 +1,8 @@
 #include "../interface/Analysis.hh"
 
-Analysis::Analysis(const SamplePair samplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType){
+Analysis::Analysis(const SamplePair samplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType, const Bool_t runLocal){
   // store in data members
+  fRunLocal  = runLocal;
   fSample    = samplePair.first;
   fIsMC      = samplePair.second;
   fSelection = selection;
@@ -17,19 +18,30 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const I
   }
 
   //Get File
-  TString fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
-  //TString fileName = ""; // do this for local macbook copy
-  if (fIsMC){ // MC
-    if (fSample.Contains("gamma",TString::kExact) ){ // use phys14 for photons
-      fileName.Append("PHYS14MC/");
+  TString fileName = ""; 
+  if (fRunLocal) { // run local on Mac
+    if (fIsMC) { // MC on mac all in one directory
+      fileName = "MC/";
     }
-    else {
-      fileName.Append("Spring15MC_50ns/");
+    else { // Data on local
+      fileName = "Data/";
     }
   }
-  else{ // Data
-    fileName.Append("Data/");
+  else { // run on lxplus EOS
+    fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
+    if (fIsMC){ // MC on EOS in two places
+      if (fSample.Contains("gamma",TString::kExact) ){ // use phys14 for photons
+	fileName.Append("PHYS14MC/");
+      }
+      else { // all other MC samples on EOS separated into Spring15
+	fileName.Append("Spring15MC_50ns/");
+      }
+    }
+    else{ // Data on EOS
+      fileName.Append("Data/");
+    }
   }
+  // true for all local, eos ; data, mc ; phys14 , spring15
   fileName.Append(Form("%s/treewithwgt.root",fSample.Data()));
     
   // Open the file + tree

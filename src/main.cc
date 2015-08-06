@@ -52,6 +52,9 @@ int main(){
   //                                        //
   //++++++++++++++++++++++++++++++++++++++++// 
 
+  // where are we running? if local, set to true!  (sets where to get files)
+  const Bool_t runLocal = true;
+
   // produce plots per sample?
   const Bool_t doAnalysis = true;
 
@@ -135,7 +138,7 @@ int main(){
     }
 
     // do the reweighting here
-    PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype);
+    PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype,runLocal);
     puweights = reweight->GetPUWeights(); 
   
     delete reweight;
@@ -197,7 +200,7 @@ int main(){
       std::cout << "Starting data Analysis" << std::endl;
       for (SamplePairVecIter iter = DataSamples.begin(); iter != DataSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with data Analysis" << std::endl;  
@@ -222,7 +225,7 @@ int main(){
       std::cout << "Starting single boson to leptons MC Analysis" << std::endl;
       for (SamplePairVecIter iter = SBLSamples.begin(); iter != SBLSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Z -> ll, W -> lnu Analysis" << std::endl;  
@@ -248,7 +251,7 @@ int main(){
       std::cout << "Starting diboson Analysis" << std::endl;
       for (SamplePairVecIter iter = DBSamples.begin(); iter != DBSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
@@ -277,7 +280,7 @@ int main(){
       std::cout << "Starting top Analysis" << std::endl;
       for (SamplePairVecIter iter = TopSamples.begin(); iter != TopSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
@@ -305,7 +308,7 @@ int main(){
       std::cout << "Starting photon Analysis" << std::endl;
       for (SamplePairVecIter iter = GammaSamples.begin(); iter != GammaSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
@@ -344,7 +347,7 @@ int main(){
       std::cout << "Starting QCD Analysis" << std::endl;
       for (SamplePairVecIter iter = QCDSamples.begin(); iter != QCDSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  

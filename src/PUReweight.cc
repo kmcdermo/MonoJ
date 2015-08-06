@@ -1,6 +1,8 @@
 #include "../interface/PUReweight.hh"
 
-PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const Int_t nBins, const TString outdir, const TString outtype) {
+PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const Int_t nBins, const TString outdir, const TString outtype, const Bool_t runLocal) {
+  fRunLocal = runLocal;
+
   // save samples for PU weighting
   for (SamplePairVecIter iter = Samples.begin(); iter != Samples.end(); ++iter) {
     if ((*iter).second) { // isMC == true
@@ -91,7 +93,13 @@ DblVec PUReweight::GetPUWeights(){
     }      
 
     // files + trees + tmp hist for data
-    TString filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/%s/treewithwgt.root",fDataNames[data].Data());
+    TString filename = "";
+    if (fRunLocal) { // on Mac
+      filename = Form("Data/%s/treewithwgt.root",fDataNames[data].Data());
+    }
+    else{ // pull from eos
+     filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/%s/treewithwgt.root",fDataNames[data].Data());
+    }
     TFile * file = TFile::Open(filename.Data());
     CheckValidFile(file,filename);
     TTree * tree = (TTree*)file->Get("tree/tree");      
@@ -128,14 +136,18 @@ DblVec PUReweight::GetPUWeights(){
     cut.Append(Form(" * (xsec * %f * wgt / wgtsum)",fLumi)); // make sure to add weights for all mc!
       
     // files + trees for mc + tmp hists
-    TString filename;
-    if (fSelection.Contains("singlephoton",TString::kExact)) { // annoying since MC photon sits elsewhere
-      filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/PHYS14MC/%s/treewithwgt.root",fMCNames[mc].Data());
+    TString filename = "";
+    if (fRunLocal) { // run on Mac --> keep gamma and all others in "MC directory" for simplicity... may need to change
+      filename = Form("MC/%s/treewithwgt.root",fMCNames[mc].Data());
     }
-    else {
-      filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data());
+    else { // run on EOS
+      if (fSelection.Contains("singlephoton",TString::kExact)) { // annoying since MC photon sits elsewhere
+	filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/PHYS14MC/%s/treewithwgt.root",fMCNames[mc].Data());
+      }
+      else {
+	filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data());
+      }
     }
-
     TFile * file = TFile::Open(filename.Data());
     CheckValidFile(file,filename);
     TTree * tree = (TTree*)file->Get("tree/tree");      

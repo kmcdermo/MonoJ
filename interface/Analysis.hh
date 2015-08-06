@@ -41,7 +41,7 @@ class Analysis
 {
 public:
 
-  Analysis(const SamplePair SamplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType);
+  Analysis(const SamplePair SamplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType, const Bool_t runLocal);
   
   void SetBranchAddresses();
   void DoAnalysis(std::ofstream & yields);
@@ -81,6 +81,8 @@ private:
 
   ColorMap fColorMap;
   TStrMap  fTH1DSubDMap;
+
+  Bool_t fRunLocal;
 
   // branch stuff
   UInt_t          event;
