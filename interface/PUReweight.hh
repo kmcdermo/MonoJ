@@ -43,8 +43,8 @@ private:
   TString fOutType;
 
   TH1D * fOutDataNvtx;
-  TH1D * fOutDataNvtx_copy;
   TH1D * fOutMCNvtx;
+  TH1D * fOutDataOverMCNvtx;
 
   Bool_t fRunLocal;
 };

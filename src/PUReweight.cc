@@ -40,20 +40,21 @@ PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Int
   // Initialize output TH1D's for data
   fOutDataNvtx = new TH1D("nvtx_data","",fNBins,0.,Double_t(fNBins));
   fOutDataNvtx->Sumw2();
-  fOutDataNvtx_copy = new TH1D("nvtx_data_copy","",fNBins,0.,Double_t(fNBins));
-  fOutDataNvtx_copy->Sumw2();
 
   // Initialize outputs for MC
   fOutMCNvtx = new TH1D("nvtx_mc","",fNBins,0.,Double_t(fNBins));
   fOutMCNvtx->Sumw2();
+
+  // Intialize Ratio Hist
+  fOutDataOverMCNvtx = new TH1D("nvtx_dataOverMC","",fNBins,0.,Double_t(fNBins));
+  fOutDataOverMCNvtx->Sumw2();
 }
 
 PUReweight::~PUReweight(){
-  // delete data hists
+  //delete hists
   delete fOutDataNvtx;
-  delete fOutDataNvtx_copy;
-
   delete fOutMCNvtx;
+  delete fOutDataOverMCNvtx;
 }
 
 DblVec PUReweight::GetPUWeights(){
@@ -168,41 +169,73 @@ DblVec PUReweight::GetPUWeights(){
     delete file;
   }
 
-  // scale to unit area to not bias against data
-  fOutDataNvtx->Scale(1.0/fOutDataNvtx->Integral());  
-  fOutMCNvtx->Scale(1.0/fOutMCNvtx->Integral());
-
-  // Draw before reweighting
-  TCanvas * c1 = new TCanvas();
-  c1->cd();
-  c1->SetTitle("Before PU Reweighting");
-  c1->SetLogy(1);
-  
+  // Set line colors
   fOutDataNvtx->SetLineColor(kRed);
   fOutMCNvtx->SetLineColor(kBlue);
+  
+  // use these for scaling and rescaling
+  const Double_t int_DataNvtx = fOutDataNvtx->Integral();
+  const Double_t int_MCNvtx   = fOutMCNvtx->Integral();
+
+  TCanvas * c0 = new TCanvas(); // Draw before reweighting --> unscaled
+  c0->cd();
+  c0->SetTitle("Before PU Reweighting Unnormalized");
 
   // draw and save in output directory --> appended by what selection we used for this pu reweight
   fOutDataNvtx->Draw("PE");
   fOutMCNvtx->Draw("HIST SAME");
 
-  c1->SaveAs(Form("%s/nvtx_beforePURW_%s%s.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
+  c0->SetLogy(1); // save log
+  c0->SaveAs(Form("%s/nvtx_beforePURW_unnorm_%s%s_log.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
+
+  c0->SetLogy(0); // save lin
+  c0->SaveAs(Form("%s/nvtx_beforePURW_unnorm_%s%s_lin.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
+  
+  /////////////////////////////////////////////
+  //       SCALE HERE TO GET REWEIGHTING     //
+  /////////////////////////////////////////////
+  // scale to unit area to not bias against data
+  fOutDataNvtx->Scale(1.0/int_DataNvtx);  
+  fOutMCNvtx->Scale(1.0/int_MCNvtx);
+
+  // Draw before reweighting -- scaled
+  TCanvas * c1 = new TCanvas();
+  c1->cd();
+  c1->SetTitle("Before PU Reweighting Normalized");
+
+  // draw and save in output directory --> appended by what selection we used for this pu reweight
+  fOutDataNvtx->Draw("PE");
+  fOutMCNvtx->Draw("HIST SAME");
+
+  c1->SetLogy(1); // save log
+  c1->SaveAs(Form("%s/nvtx_beforePURW_norm_%s%s_log.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
+
+  c1->SetLogy(0); // save lin
+  c1->SaveAs(Form("%s/nvtx_beforePURW_norm_%s%s_lin.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
 
   // Draw after reweighting 
   TCanvas * c2 = new TCanvas();
   c2->cd();
-  c2->SetTitle("After PU Reweighting");
-  c2->SetLogy(1);
+  c2->SetTitle("After PU Reweighting Normalized");
 
   // copy fOutDataNvtx to save output of reweights properly
-  fOutDataNvtx_copy = (TH1D*)fOutDataNvtx->Clone();
+  fOutDataOverMCNvtx = (TH1D*)fOutDataNvtx->Clone();
+
+  /////////////////////////////////////////////
+  //      DIVIDE HERE TO GET REWEIGHTING     //
+  /////////////////////////////////////////////
   
-  // divide Data/MC after copy, now this hist will be used for reweighting 
-  fOutDataNvtx->Divide(fOutMCNvtx);
+  // divide Data/MC after copy, now this original hist will be used for reweighting 
+  fOutDataOverMCNvtx->Divide(fOutMCNvtx);
+
+  /////////////////////////////////////////////
+  //      STORE HERE TO USE REWEIGHTING      //
+  /////////////////////////////////////////////
 
   // push back reweights and then scale MC to demonstrate that it works
   for (Int_t ibin = 1; ibin <= fNBins; ibin++) {
     // push back reweights 
-    puweights.push_back(fOutDataNvtx->GetBinContent(ibin)); 
+    puweights.push_back(fOutDataOverMCNvtx->GetBinContent(ibin)); 
 
     // scale MC appropriately
     Double_t tmp = fOutMCNvtx->GetBinContent(ibin);
@@ -210,12 +243,36 @@ DblVec PUReweight::GetPUWeights(){
   }
 
   // draw output and save it, see comment above about selection
-  fOutDataNvtx_copy->Draw("PE");
+  fOutDataNvtx->Draw("PE");
   fOutMCNvtx->Draw("HIST SAME");
-  c2->SaveAs(Form("%s/nvtx_afterPURW_%s%s.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
 
+  c2->SetLogy(1); // save log
+  c2->SaveAs(Form("%s/nvtx_afterPURW_norm_%s%s_log.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
+
+  c2->SetLogy(0); // save lin
+  c2->SaveAs(Form("%s/nvtx_afterPURW_norm_%s%s_lin.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
+
+  TCanvas * c3 = new TCanvas(); // Draw before reweighting --> unscaled
+  c3->cd();
+  c3->SetTitle("After PU Reweighting Unnormalized"); 
+
+  // now that the reweighting is applied, see total events again
+  fOutDataNvtx->Scale(int_DataNvtx);
+  fOutMCNvtx->Scale(int_MCNvtx);
+  
+  fOutDataNvtx->Draw("PE");
+  fOutMCNvtx->Draw("HIST SAME");
+
+  c3->SetLogy(1); // save log
+  c3->SaveAs(Form("%s/nvtx_afterPURW_unnorm_%s%s_log.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
+
+  c3->SetLogy(0); // save lin
+  c3->SaveAs(Form("%s/nvtx_afterPURW_unnorm_%s%s_lin.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
+  
+  delete c0;
   delete c1;
   delete c2;
+  delete c3;
 
   return puweights;
 }
