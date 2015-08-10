@@ -212,12 +212,12 @@ void StackPlots::DrawUpperPad(const UInt_t th1d, const Bool_t isLogY) {
 
   if (isLogY) { // set min for log only... maybe consider min for linear eventually
     // only go to 20th of event to absolute min
-    if (min < 0.05) {
-      fOutDataTH1DHists[th1d]->SetMinimum(0.05);
-    }
-    else {
-      fOutDataTH1DHists[th1d]->SetMinimum(min*0.6);
-    }
+    //    if (min < 0.05) {
+    //      fOutDataTH1DHists[th1d]->SetMinimum(0.05);
+    //    }
+    //    else {
+    fOutDataTH1DHists[th1d]->SetMinimum(0.08);
+      //    }
 
     // set max with 2.0 scale to give enough space 
     fOutDataTH1DHists[th1d]->SetMaximum(max*1.5);
@@ -365,9 +365,18 @@ void StackPlots::SaveCanvas(const UInt_t th1d, const Bool_t isLogY){
 
   // cd to upper pad to make it log or not
   fOutTH1DStackPads[th1d]->cd(); // upper pad is current pad
-  fOutTH1DStackPads[th1d]->SetLogy(isLogY); //  set no logy on this pad
+  fOutTH1DStackPads[th1d]->SetLogy(isLogY); //  set logy on this pad
+  if (fTH1DNames[th1d].Contains("signaljetCHfrac")) {
+    if (isLogY) {
+      fTH1DLegends[th1d]->SetX1(0.182);
+      fTH1DLegends[th1d]->SetY1(0.725);
+      fTH1DLegends[th1d]->SetX2(0.32);
+      fTH1DLegends[th1d]->SetY2(0.947);
+    }
+  }
+
   fOutTH1DCanvases[th1d]->cd();          // Go back to the main canvas before saving
-  StackPlots::CMSLumi(fOutTH1DCanvases[th1d],10); // write out Lumi info
+  StackPlots::CMSLumi(fOutTH1DCanvases[th1d],0); // write out Lumi info
   fOutTH1DCanvases[th1d]->SaveAs(Form("%s/%s%s/%s/%s%s_%s.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data(),fTH1DSubDMap[fTH1DNames[th1d]].Data(),fTH1DNames[th1d].Data(),suffix.Data(),fOutType.Data()));
   fOutFile->cd();
   fOutTH1DCanvases[th1d]->Write(Form("%s_%s",fTH1DNames[th1d].Data(),suffix.Data()));
@@ -686,12 +695,11 @@ void StackPlots::InitOutputLegends() {
   // th1D hists
   fTH1DLegends.resize(fNTH1D);
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
-    fTH1DLegends[th1d] = new TLegend(0.65,0.7,0.8,0.9);
+    fTH1DLegends[th1d] = new TLegend(0.682,0.7,0.825,0.92);
     fTH1DLegends[th1d]->SetBorderSize(4);
     fTH1DLegends[th1d]->SetLineColor(kBlack);
   }
 }
-
 void StackPlots::InitRatioPlots() {
   // init ratios 
 
