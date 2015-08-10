@@ -38,7 +38,7 @@ int main(){
   const Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  const TString outdir = "fullbatch_zmumu";
+  TString outdir = "fullbatch"; // append with selection
 
   // Allow user to set outtype for plots
   const TString outtype = "png";
@@ -53,10 +53,10 @@ int main(){
   //++++++++++++++++++++++++++++++++++++++++// 
 
   // where are we running? if local, set to true!  (sets where to get files)
-  const Bool_t runLocal = true;
+  const Bool_t runLocal = false;
 
   // produce plots per sample?
-  const Bool_t doAnalysis = true;
+  const Bool_t doAnalysis = false;
 
   // do PURW?
   Bool_t doReWeight = true; // false if no actual reweighting to be performed
@@ -65,24 +65,25 @@ int main(){
   }
 
   // do stacking?
-  const Bool_t doStacks = false;
+  const Bool_t doStacks = true;
   
   // Total Integrated Luminosity
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
   // Selection we want for ANALYSIS (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
-  const TString selection = "zmumu";
+  const TString selection = "zelel";
+  outdir.Append(Form("_%s",selection.Data()));
 
   // what samples to use?
-  const Bool_t useData         = false;
-  const Bool_t useSingleBoson  = false;
-  const Bool_t useDoubleBosons = false;
+  const Bool_t useData         = true;
+  const Bool_t useSingleBoson  = true;
+  const Bool_t useDoubleBosons = true;
   const Bool_t useTop          = true;
   const Bool_t useGamma        = false;
   const Bool_t useQCD          = true;
 
   // Njets selection (==1, ==2) ... -1 = no selection
-  const Int_t njetsselection = 1;
+  const Int_t njetsselection = 2;
 
   // Second make selection inside total directory
   TString njetsstr = "";
@@ -220,7 +221,7 @@ int main(){
     SamplePairVec SBLSamples; 
     SBLSamples.push_back(SamplePair("wln",true));
     SBLSamples.push_back(SamplePair("zll",true));    
-    
+
     if (doAnalysis) {
       std::cout << "Starting single boson to leptons MC Analysis" << std::endl;
       for (SamplePairVecIter iter = SBLSamples.begin(); iter != SBLSamples.end(); ++iter) {
@@ -426,9 +427,9 @@ int main(){
       // clear MCSamples, and push back in order of tmp_yields now sorted
       MCSamples.clear();
       for (UInt_t mc = 0; mc < tmp_nmc; mc++) { // init mc double hists
-	if (tmp_mcyields[mc].second > 0.05) { // skip backgrounds that contribute less than a 20th of an event
-	  MCSamples.push_back(SamplePair(tmp_mcyields[mc].first,"true"));
-	}
+	//	if (tmp_mcyields[mc].second > 0.05) { // skip backgrounds that contribute less than a 20th of an event
+	MCSamples.push_back(SamplePair(tmp_mcyields[mc].first,"true"));
+	  //	}
       }
   
       // check to make sure we can proceed!  if we filtered out all mc, no stacks!
