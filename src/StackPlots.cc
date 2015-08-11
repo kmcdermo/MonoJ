@@ -46,6 +46,7 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int
   MakeOutDirectory(Form("%s/%s%s/%s/Jets/Leading",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
   MakeOutDirectory(Form("%s/%s%s/%s/Jets/Subleading",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
   MakeOutDirectory(Form("%s/%s%s/%s/Jets/Subsubleading",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
+  MakeOutDirectory(Form("%s/%s%s/%s/Jets/FatJets",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
   MakeOutDirectory(Form("%s/%s%s/%s/MET",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()));
 
   fOutFile = new TFile(Form("%s/%s%s/%s/stackplots_canvases.root",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutName.Data()),"RECREATE"); // make output tfile --> store canvas images here too, for quick editting
@@ -242,8 +243,16 @@ void StackPlots::DrawUpperPad(const UInt_t th1d, const Bool_t isLogY) {
   // fOutDataTH1DHists[th1d]->GetYaxis()->SetLabelSize(0.);
   // fOutTH1DTGaxes[th1d]->Draw("SAME");
 
-  fOutDataTH1DHists[th1d]->Draw("PE SAME"); // redraw data
-  fTH1DLegends[th1d]->Draw("SAME");
+  //Draw MC sum total error as well, add to legend!  
+  fOutMCTH1DHists[th1d]->SetMarkerSize(0);
+  fOutMCTH1DHists[th1d]->SetFillStyle(3254);
+  fOutMCTH1DHists[th1d]->SetFillColor(kGray+3);
+  fOutMCTH1DHists[th1d]->Draw("E2 SAME");
+  fTH1DLegends[th1d]->AddEntry(fOutMCTH1DHists[th1d],"MC Unc.","f");
+
+  // redraw data (ROOT IS SO DUMBBBBBB)
+  fOutDataTH1DHists[th1d]->Draw("PE SAME"); 
+  fTH1DLegends[th1d]->Draw("SAME"); // make sure to include the legend!
 }
 
 void StackPlots::SetUpperAxes(const UInt_t th1d) { // to maybe never be used... cannot seem to work.
@@ -492,12 +501,25 @@ void StackPlots::InitTH1DNamesAndSubDNames(){
   fTH1DSubDMap["nvtx"] = "";
 
   // photon plots
+  fTH1DNames.push_back("nphotons");
   fTH1DNames.push_back("phpt");
   fTH1DNames.push_back("phpt_nj_lte2");
+  fTH1DSubDMap["nphotons"]     = "Photons/";
   fTH1DSubDMap["phpt"]         = "Photons/";
   fTH1DSubDMap["phpt_nj_lte2"] = "Photons/";
 
   // lepton plots
+  fTH1DNames.push_back("nelectrons");
+  fTH1DNames.push_back("ntightelectrons");
+  fTH1DNames.push_back("nmuons");
+  fTH1DNames.push_back("ntightmuons");
+  fTH1DNames.push_back("ntaus");
+  fTH1DSubDMap["nelectrons"]      = "Leptons/";
+  fTH1DSubDMap["ntightelectrons"] = "Leptons/";
+  fTH1DSubDMap["nmuons"]          = "Leptons/";
+  fTH1DSubDMap["ntightmuons"]     = "Leptons/";
+  fTH1DSubDMap["ntaus"]           = "Leptons/";
+
   // muons plots
   fTH1DNames.push_back("mu1eta");
   fTH1DNames.push_back("mu1phi");
@@ -562,9 +584,20 @@ void StackPlots::InitTH1DNamesAndSubDNames(){
 
   // Jet plots
   fTH1DNames.push_back("njets");
+  fTH1DNames.push_back("nbjets");
+  fTH1DNames.push_back("nfatjets");
   fTH1DNames.push_back("ht");
-  fTH1DSubDMap["njets"] = "Jets/";
-  fTH1DSubDMap["ht"]    = "Jets/";
+  fTH1DSubDMap["njets"]    = "Jets/";
+  fTH1DSubDMap["nbjets"]   = "Jets/";
+  fTH1DSubDMap["nfatjets"] = "Jets/";
+  fTH1DSubDMap["ht"]       = "Jets/";
+
+  fTH1DNames.push_back("jetmetdphimin");
+  fTH1DNames.push_back("incjetmetdphimin");
+  fTH1DNames.push_back("jetjetdphi");
+  fTH1DSubDMap["jetmetdphimin"]    = "Jets/";
+  fTH1DSubDMap["incjetmetdphimin"] = "Jets/";
+  fTH1DSubDMap["jetjetdphi"]       = "Jets/";
 
   // Leading jet plots
   fTH1DNames.push_back("signaljeteta");
@@ -574,6 +607,7 @@ void StackPlots::InitTH1DNamesAndSubDNames(){
   fTH1DNames.push_back("signaljetNHfrac");
   fTH1DNames.push_back("signaljetEMfrac");
   fTH1DNames.push_back("signaljetCEMfrac");
+  fTH1DNames.push_back("signaljetmetdphi");
   fTH1DSubDMap["signaljeteta"]     = "Jets/Leading/";
   fTH1DSubDMap["signaljetphi"]     = "Jets/Leading/";
   fTH1DSubDMap["signaljetpt"]      = "Jets/Leading/";
@@ -581,6 +615,7 @@ void StackPlots::InitTH1DNamesAndSubDNames(){
   fTH1DSubDMap["signaljetNHfrac"]  = "Jets/Leading/";
   fTH1DSubDMap["signaljetEMfrac"]  = "Jets/Leading/";
   fTH1DSubDMap["signaljetCEMfrac"] = "Jets/Leading/";
+  fTH1DSubDMap["signaljetmetdphi"] = "Jets/Leading/";
 
   // subleading jet plots
   fTH1DNames.push_back("secondjeteta");
@@ -590,6 +625,7 @@ void StackPlots::InitTH1DNamesAndSubDNames(){
   fTH1DNames.push_back("secondjetNHfrac");
   fTH1DNames.push_back("secondjetEMfrac");
   fTH1DNames.push_back("secondjetCEMfrac");
+  fTH1DNames.push_back("secondjetmetdphi");
   fTH1DSubDMap["secondjeteta"]     = "Jets/Subleading/";
   fTH1DSubDMap["secondjetphi"]     = "Jets/Subleading/";
   fTH1DSubDMap["secondjetpt"]      = "Jets/Subleading/";
@@ -597,6 +633,7 @@ void StackPlots::InitTH1DNamesAndSubDNames(){
   fTH1DSubDMap["secondjetNHfrac"]  = "Jets/Subleading/";
   fTH1DSubDMap["secondjetEMfrac"]  = "Jets/Subleading/";
   fTH1DSubDMap["secondjetCEMfrac"] = "Jets/Subleading/";
+  fTH1DSubDMap["secondjetmetdphi"] = "Jets/Subleading/";
 
   // subsubleading jet plots
   fTH1DNames.push_back("thirdjeteta");
@@ -606,6 +643,7 @@ void StackPlots::InitTH1DNamesAndSubDNames(){
   fTH1DNames.push_back("thirdjetNHfrac");
   fTH1DNames.push_back("thirdjetEMfrac");
   fTH1DNames.push_back("thirdjetCEMfrac");
+  fTH1DNames.push_back("thirdjetmetdphi");
   fTH1DSubDMap["thirdjeteta"]     = "Jets/Subsubleading/";
   fTH1DSubDMap["thirdjetphi"]     = "Jets/Subsubleading/";
   fTH1DSubDMap["thirdjetpt"]      = "Jets/Subsubleading/";
@@ -613,6 +651,32 @@ void StackPlots::InitTH1DNamesAndSubDNames(){
   fTH1DSubDMap["thirdjetNHfrac"]  = "Jets/Subsubleading/";
   fTH1DSubDMap["thirdjetEMfrac"]  = "Jets/Subsubleading/";
   fTH1DSubDMap["thirdjetCEMfrac"] = "Jets/Subsubleading/";
+  fTH1DSubDMap["thirdjetmetdphi"] = "Jets/Subsubleading/";
+
+  fTH1DNames.push_back("fatjeteta");
+  fTH1DNames.push_back("fatjetphi");
+  fTH1DNames.push_back("fatjetpt"); 
+  fTH1DNames.push_back("fatjetCHfrac"); 
+  fTH1DNames.push_back("fatjetNHfrac"); 
+  fTH1DNames.push_back("fatjetEMfrac"); 
+  fTH1DNames.push_back("fatjetCEMfrac");
+  fTH1DNames.push_back("fatjetmetdphi");
+  fTH1DNames.push_back("fatjetprmass"); 
+  fTH1DNames.push_back("fatjetsdmass"); 
+  fTH1DNames.push_back("fatjettrmass"); 
+  fTH1DNames.push_back("fatjetftmass"); 
+  fTH1DSubDMap["fatjeteta"]     = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetphi"]     = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetpt"]      = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetCHfrac"]  = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetNHfrac"]  = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetEMfrac"]  = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetCEMfrac"] = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetmetdphi"] = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetprmass"]  = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetsdmass"]  = "Jets/FatJets/";
+  fTH1DSubDMap["fatjettrmass"]  = "Jets/FatJets/";
+  fTH1DSubDMap["fatjetftmass"]  = "Jets/FatJets/";
 
   // MET plots
   fTH1DNames.push_back("pfmet");
@@ -686,6 +750,9 @@ void StackPlots::InitOutputPlots() {
   fOutMCTH1DStacks.resize(fNTH1D); // same with stack 
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
     fOutMCTH1DStacks[th1d] = new THStack("","");
+
+    
+    //    fOutDataTH1DHists[th1d]->Sumw2();
   }
 }
 
