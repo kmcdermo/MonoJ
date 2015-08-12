@@ -158,6 +158,12 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
       }
     } // end loop over mc samples
 
+    // will use the output MC added Hists for plotting uncertainties and add it to legend once
+    fOutMCTH1DHists[th1d]->SetMarkerSize(0);
+    fOutMCTH1DHists[th1d]->SetFillStyle(3254);
+    fOutMCTH1DHists[th1d]->SetFillColor(kGray+3);
+    fTH1DLegends[th1d]->AddEntry(fOutMCTH1DHists[th1d],"MC Unc.","f");
+  
     // add total yield for MC here if nvtx plot
     if (fTH1DNames[th1d].Contains("nvtx",TString::kExact)) { // save total yields for MC
       yields << "--------------------" << std::endl;
@@ -243,12 +249,8 @@ void StackPlots::DrawUpperPad(const UInt_t th1d, const Bool_t isLogY) {
   // fOutDataTH1DHists[th1d]->GetYaxis()->SetLabelSize(0.);
   // fOutTH1DTGaxes[th1d]->Draw("SAME");
 
-  //Draw MC sum total error as well, add to legend!  
-  fOutMCTH1DHists[th1d]->SetMarkerSize(0);
-  fOutMCTH1DHists[th1d]->SetFillStyle(3254);
-  fOutMCTH1DHists[th1d]->SetFillColor(kGray+3);
+  //Draw MC sum total error as well on top of stack --> E2 makes error appear as rectangle
   fOutMCTH1DHists[th1d]->Draw("E2 SAME");
-  fTH1DLegends[th1d]->AddEntry(fOutMCTH1DHists[th1d],"MC Unc.","f");
 
   // redraw data (ROOT IS SO DUMBBBBBB)
   fOutDataTH1DHists[th1d]->Draw("PE SAME"); 
@@ -749,10 +751,7 @@ void StackPlots::InitOutputPlots() {
   fOutMCTH1DHists.resize(fNTH1D); // make enough space for MC double hists
   fOutMCTH1DStacks.resize(fNTH1D); // same with stack 
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
-    fOutMCTH1DStacks[th1d] = new THStack("","");
-
-    
-    //    fOutDataTH1DHists[th1d]->Sumw2();
+    fOutMCTH1DStacks[th1d] = new THStack(Form("%s_stack",fTH1DNames[th1d].Data()),"");
   }
 }
 
@@ -792,13 +791,13 @@ void StackPlots::InitOutputCanvPads() {
   fOutTH1DStackPads.resize(fNTH1D);
   fOutTH1DRatioPads.resize(fNTH1D);
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
-    fOutTH1DCanvases[th1d] = new TCanvas(fTH1DNames[th1d].Data(),"");
+    fOutTH1DCanvases[th1d] = new TCanvas(Form("%s_canv",fTH1DNames[th1d].Data()),"");
     fOutTH1DCanvases[th1d]->cd();
     
-    fOutTH1DStackPads[th1d] = new TPad("", "", 0, 0.3, 1.0, 0.99);
+    fOutTH1DStackPads[th1d] = new TPad(Form("%s_upad",fTH1DNames[th1d].Data()),"", 0, 0.3, 1.0, 0.99);
     fOutTH1DStackPads[th1d]->SetBottomMargin(0); // Upper and lower plot are joined
     
-    fOutTH1DRatioPads[th1d] = new TPad("", "", 0, 0.05, 1.0, 0.3);
+    fOutTH1DRatioPads[th1d] = new TPad(Form("%s_lpad",fTH1DNames[th1d].Data()), "", 0, 0.05, 1.0, 0.3);
     fOutTH1DRatioPads[th1d]->SetTopMargin(0);
     fOutTH1DRatioPads[th1d]->SetBottomMargin(0.2);
   }
