@@ -38,13 +38,10 @@ int main(){
   const Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "fullbatch"; // append with selection
+  TString outdir = "testbatch"; // append with selection
 
   // Allow user to set outtype for plots
   const TString outtype = "png";
-
-  // First make total output directory ... sub directories made inside objects
-  MakeOutDirectory(outdir);
 
   //++++++++++++++++++++++++++++++++++++++++// 
   //                                        //
@@ -53,7 +50,7 @@ int main(){
   //++++++++++++++++++++++++++++++++++++++++// 
 
   // where are we running? if local, set to true!  (sets where to get files)
-  const Bool_t runLocal = false;
+  const Bool_t runLocal = true;
 
   // produce plots per sample?
   const Bool_t doAnalysis = false;
@@ -71,19 +68,22 @@ int main(){
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
   // Selection we want for ANALYSIS (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
-  const TString selection = "zelel";
+  const TString selection = "zmumu";
   outdir.Append(Form("_%s",selection.Data()));
+
+  // First make total output directory ... sub directories made inside objects
+  MakeOutDirectory(outdir);
 
   // what samples to use?
   const Bool_t useData         = true;
   const Bool_t useSingleBoson  = true;
-  const Bool_t useDoubleBosons = true;
+  const Bool_t useDoubleBosons = false;
   const Bool_t useTop          = true;
   const Bool_t useGamma        = false;
-  const Bool_t useQCD          = true;
+  const Bool_t useQCD          = false;
 
   // Njets selection (==1, ==2) ... -1 = no selection
-  const Int_t njetsselection = 2;
+  const Int_t njetsselection = -1;
 
   // Second make selection inside total directory
   TString njetsstr = "";
@@ -275,7 +275,7 @@ int main(){
     TopSamples.push_back(SamplePair("singlett",true)); 
     TopSamples.push_back(SamplePair("singletbart",true)); 
     TopSamples.push_back(SamplePair("singletw",true)); 
-    TopSamples.push_back(SamplePair("singletbarw",true)); 
+    TopSamples.push_back(SamplePair("singletbarw",true));
     
     if (doAnalysis) {
       std::cout << "Starting top Analysis" << std::endl;
