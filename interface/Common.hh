@@ -7,6 +7,7 @@
 #include "TFile.h"
 #include "TH1D.h"
 #include "TTree.h"
+#include "TStyle.h"
 
 #include <iostream>
 #include <vector>
@@ -32,5 +33,6 @@ void CheckValidFile(TFile *& file, const TString fname);
 void CheckValidTree(TTree*& tree, const TString tname, const TString fname);
 void CheckValidTH1D(TH1D*& plot, const TString pname, const TString fname);
 void Hadd(SamplePairVec samples, const TString outdir, const TString selection, const Int_t njetsselection, const TString combinedName);
+void SetTDRStyle(TStyle *& tdrStyle);
 
 #endif

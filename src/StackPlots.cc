@@ -58,7 +58,7 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int
   fSampleTitleMap["diboson"] = "Dibosons";
   fSampleTitleMap["top"]     = "Top";
   fSampleTitleMap["qcd"]     = "QCD";
-  fSampleTitleMap["gamma"]   = "Photon+Jets";
+  fSampleTitleMap["gamma"]   = "#gamma + Jets";
 
   fColorMap = colorMap;
 
@@ -346,7 +346,7 @@ void StackPlots::DrawLowerPad(const UInt_t th1d) {
 
   fOutRatioTH1DHists[th1d]->GetYaxis()->SetLabelSize(0.11);
   fOutRatioTH1DHists[th1d]->GetYaxis()->SetTitleSize(0.15);
-  fOutRatioTH1DHists[th1d]->GetYaxis()->SetTitleOffset(0.5);
+  fOutRatioTH1DHists[th1d]->GetYaxis()->SetTitleOffset(0.4); 
 
   // redraw to go over line
   fOutRatioTH1DHists[th1d]->Draw("EP SAME"); 

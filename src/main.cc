@@ -21,8 +21,10 @@ static bool sortByYield(const SampleYieldPair& mcpair1, const SampleYieldPair& m
 }
 
 int main(){
-  // set TDR Style
-  gROOT->ProcessLine(".x ~/.rootlogon.C"); // hack way to set root logon macro ... could put this into Typedef.hh 
+  // set TDR Style (need to force it!)
+  TStyle * tdrStyle = new TStyle("tdrStyle","Style for P-TDR");
+  SetTDRStyle(tdrStyle);
+  gROOT->ForceStyle();
   
   // Variables needed in all functions for plotting and the like so it is universal
   // Color for MC Stacks
@@ -219,7 +221,7 @@ int main(){
   if (useSingleBoson) {
     
     SamplePairVec SBLSamples; 
-    SBLSamples.push_back(SamplePair("wln",true));
+    //    SBLSamples.push_back(SamplePair("wln",true));
     SBLSamples.push_back(SamplePair("zll",true));    
 
     if (doAnalysis) {
@@ -471,5 +473,7 @@ int main(){
     std::cout << "Skip making the stacks and finish as doStacks: " << doStacks << std::endl;
   }
   yields.close(); // close yields txt
+
+  delete tdrStyle;
 }
 
