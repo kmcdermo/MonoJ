@@ -46,6 +46,8 @@ private:
   TH1D * fOutMCNvtx;
   TH1D * fOutDataOverMCNvtx;
 
+  TFile * fOutFile;
+
   Bool_t fRunLocal;
 };
 

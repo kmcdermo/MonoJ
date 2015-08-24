@@ -54,17 +54,14 @@ int main(){
   // where are we running? if local, set to true!  (sets where to get files)
   const Bool_t runLocal = true;
 
+  // do PURW?
+  const Bool_t doReWeight = true; // false if no actual reweighting to be performed
+
   // produce plots per sample?
   const Bool_t doAnalysis = false;
 
-  // do PURW?
-  Bool_t doReWeight = true; // false if no actual reweighting to be performed
-  if (!doAnalysis) {
-    doReWeight = false;
-  }
-
   // do stacking?
-  const Bool_t doStacks = true;
+  const Bool_t doStacks = false;
   
   // Total Integrated Luminosity
   const Double_t lumi = 0.04003; // int lumi in fb^-1

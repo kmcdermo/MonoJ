@@ -48,16 +48,22 @@ PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Int
   // Intialize Ratio Hist
   fOutDataOverMCNvtx = new TH1D("nvtx_dataOverMC","",fNBins,0.,Double_t(fNBins));
   fOutDataOverMCNvtx->Sumw2();
+
+  // Initialize Output root file to be used by other macros ... eventually could integrate... no need now
+  fOutFile = new TFile(Form("%s/PURW_%s%s.root",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data()),"RECREATE");
 }
 
-PUReweight::~PUReweight(){
+PUReweight::~PUReweight() {
   //delete hists
   delete fOutDataNvtx;
   delete fOutMCNvtx;
   delete fOutDataOverMCNvtx;
+
+  //delete
+  delete fOutFile;
 }
 
-DblVec PUReweight::GetPUWeights(){
+DblVec PUReweight::GetPUWeights() {
 
   DblVec puweights; // return weights
 
@@ -218,13 +224,15 @@ DblVec PUReweight::GetPUWeights(){
   c2->cd();
   c2->SetTitle("After PU Reweighting Normalized");
 
-  // copy fOutDataNvtx to save output of reweights properly
-  fOutDataOverMCNvtx = (TH1D*)fOutDataNvtx->Clone();
-
   /////////////////////////////////////////////
   //      DIVIDE HERE TO GET REWEIGHTING     //
   /////////////////////////////////////////////
-  
+
+  // copy fOutDataNvtx to save output of reweights properly
+  for (Int_t ibin = 1; ibin <= fNBins; ibin++) {
+    fOutDataOverMCNvtx->SetBinContent(ibin,fOutDataNvtx->GetBinContent(ibin));
+  }
+
   // divide Data/MC after copy, now this original hist will be used for reweighting 
   fOutDataOverMCNvtx->Divide(fOutMCNvtx);
 
@@ -241,6 +249,9 @@ DblVec PUReweight::GetPUWeights(){
     Double_t tmp = fOutMCNvtx->GetBinContent(ibin);
     fOutMCNvtx->SetBinContent(ibin,puweights[ibin-1]*tmp); 
   }
+
+  fOutFile->cd();
+  fOutDataOverMCNvtx->Write();
 
   // draw output and save it, see comment above about selection
   fOutDataNvtx->Draw("PE");
