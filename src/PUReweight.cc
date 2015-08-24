@@ -77,6 +77,10 @@ DblVec PUReweight::GetPUWeights() {
   else if (fSelection.Contains("singlemu",TString::kExact)) {
     basecut = "((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1))"; 
   }      
+  else if (fSelection.Contains("singleel",TString::kExact)) {
+    //    basecut = "((hltsingleel == 1) && (nelectrons == 1) && (el1pt > 30) && (el1id == 1))"; 
+    basecut = "((nelectrons == 1) && (el1pt > 30) && (el1id == 1))"; 
+  }      
   else if (fSelection.Contains("singlephoton",TString::kExact)) {    
     basecut = "((nphotons == 1) && (phpt > 200.))";
   }

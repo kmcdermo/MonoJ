@@ -58,16 +58,16 @@ int main(){
   const Bool_t doReWeight = true; // false if no actual reweighting to be performed
 
   // produce plots per sample?
-  const Bool_t doAnalysis = false;
+  const Bool_t doAnalysis = true;
 
   // do stacking?
-  const Bool_t doStacks = false;
+  const Bool_t doStacks = true;
   
   // Total Integrated Luminosity
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
-  // Selection we want for ANALYSIS (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singlephoton)
-  const TString selection = "zmumu";
+  // Selection we want for ANALYSIS (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singleel, singlephoton)
+  const TString selection = "singleel";
   outdir.Append(Form("_%s",selection.Data()));
 
   // First make total output directory ... sub directories made inside objects
@@ -106,7 +106,7 @@ int main(){
 
   DblVec puweights; // overall vector to be used for reweighting everywhere
   if (doReWeight) {
-    const TString PURWselection = "zmumu";
+    const TString PURWselection = "singleel";
     const Int_t   PURWnjetsselection = -1;
 
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
@@ -115,7 +115,6 @@ int main(){
     if (PURWselection.Contains("zmumu",TString::kExact)) {
       PURWSamples.push_back(SamplePair("doublemu",false));
       PURWSamples.push_back(SamplePair("zll",true));
-
     }
     else if (PURWselection.Contains("zelel",TString::kExact)) {
       PURWSamples.push_back(SamplePair("doubleel",false));
@@ -123,6 +122,10 @@ int main(){
     }    
     else if (PURWselection.Contains("singlemu",TString::kExact)) {
       PURWSamples.push_back(SamplePair("singlemu",false));
+      PURWSamples.push_back(SamplePair("wln",true));
+    }    
+    else if (PURWselection.Contains("singleel",TString::kExact)) {
+      PURWSamples.push_back(SamplePair("singleel",false));
       PURWSamples.push_back(SamplePair("wln",true));
     }    
     else if (PURWselection.Contains("singlephoton",TString::kExact)) {
@@ -188,6 +191,9 @@ int main(){
     else if (selection.Contains("singlemu",TString::kExact)) { 
       DataSamples.push_back(SamplePair("singlemu",false));
     }
+    else if (selection.Contains("singleel",TString::kExact)) { 
+      DataSamples.push_back(SamplePair("singleel",false));
+    }
     else if (selection.Contains("singlephoton",TString::kExact)) { 
       DataSamples.push_back(SamplePair("singlephoton",false));
     }      
@@ -218,8 +224,8 @@ int main(){
   if (useSingleBoson) {
     
     SamplePairVec SBLSamples; 
-    //    SBLSamples.push_back(SamplePair("wln",true));
-    SBLSamples.push_back(SamplePair("zll",true));    
+    SBLSamples.push_back(SamplePair("wln",true));
+    //    SBLSamples.push_back(SamplePair("zll",true));    
 
     if (doAnalysis) {
       std::cout << "Starting single boson to leptons MC Analysis" << std::endl;

@@ -107,6 +107,7 @@ void Analysis::DoAnalysis(std::ofstream & yields){
   Bool_t zmumuselection        = false;
   Bool_t zelelselection        = false;
   Bool_t singlemuselection     = false;
+  Bool_t singleelselection     = false;
   Bool_t singlephotonselection = false;
   if (fSelection.Contains("zmumu",TString::kExact)) {
     zmumuselection = true;
@@ -116,6 +117,9 @@ void Analysis::DoAnalysis(std::ofstream & yields){
   }
   else if (fSelection.Contains("singlemu",TString::kExact)){
     singlemuselection = true;
+  }  
+  else if (fSelection.Contains("singleel",TString::kExact)){
+    singleelselection = true;
   }  
   else if (fSelection.Contains("singlephoton",TString::kExact)){
     singlephotonselection = true;
@@ -150,6 +154,11 @@ void Analysis::DoAnalysis(std::ofstream & yields){
     }
     else if (singlemuselection) {
       selection = ((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1));
+      met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
+    }
+    else if (singleelselection) {
+      //      selection = ((hltsingleel == 1) && (nelectrons == 1) && (el1pt > 30) && (el1id == 1));
+      selection = ((nelectrons == 1) && (el1pt > 30) && (el1id == 1));
       met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
     }
     else if (singlephotonselection) {
@@ -493,7 +502,82 @@ void Analysis::SetUpPlotOptions() {
   }
   
   // Singlemu selection options
-  else if (fSelection.Contains("singlemu",TString::kExact)) {  // Zelel selection options
+  else if (fSelection.Contains("singlemu",TString::kExact)) {  // single muon selection options
+    TString plot      = "";
+
+    // mu1pt
+    plot = "mu1pt";
+    fPlotOptMap[plot].nbins = 39;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 585.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // el1pt
+    plot = "el1pt";
+    fPlotOptMap[plot].nbins = 50;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 750.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // signaljetpt
+    plot = "signaljetpt";
+    fPlotOptMap[plot].nbins = 43;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 860.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // second jet
+    plot = "secondjetpt";
+    fPlotOptMap[plot].nbins = 44;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 660.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // ht
+    plot = "ht";
+    fPlotOptMap[plot].nbins = 47;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 1880.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // pfmet
+    plot = "pfmet";
+    fPlotOptMap[plot].nbins = 42;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 630.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1pfmet
+    plot = "t1pfmet";
+    fPlotOptMap[plot].nbins = 43;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 645.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // mumet
+    plot = "mumet";
+    fPlotOptMap[plot].nbins = 44;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 880.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+    
+    // t1mumet
+    plot = "t1mumet";
+    fPlotOptMap[plot].nbins = 47;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 940.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+
+    // mht
+    plot = "mht";
+    fPlotOptMap[plot].nbins = 47;
+    fPlotOptMap[plot].xmin  = 0.;
+    fPlotOptMap[plot].xmax  = 940.;
+    fPlotOptMap[plot].binw  = (fPlotOptMap[plot].xmax - fPlotOptMap[plot].xmin) / fPlotOptMap[plot].nbins;
+  }
+
+  // Singlemu selection options
+  else if (fSelection.Contains("singleel",TString::kExact)) {  // single electron selection options
     TString plot      = "";
 
     // mu1pt
@@ -568,7 +652,7 @@ void Analysis::SetUpPlotOptions() {
   }
 
   // Singlephoton selection options
-  else if (fSelection.Contains("singlephoton",TString::kExact)) {  // Zelel selection options
+  else if (fSelection.Contains("singlephoton",TString::kExact)) {  // single photon selection options
     TString plot      = "";
 
     // mu1pt
