@@ -77,6 +77,7 @@ StackPlots::StackPlots(SamplePairVec Samples, const TString selection, const Int
 StackPlots::~StackPlots(){
   // delete all pointers
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){
+    delete fOutRatioMCErrs[th1d];
     delete fOutRatioTH1DHists[th1d];
     delete fOutDataTH1DHists[th1d];
     delete fOutMCTH1DHists[th1d];
@@ -177,6 +178,8 @@ void StackPlots::MakeRatioPlots() {
   
   // th1d
   for (UInt_t th1d = 0; th1d < fNTH1D; th1d++){ // double hists
+    // ratio value plot
+    
     fOutRatioTH1DHists[th1d] = (TH1D*)fOutDataTH1DHists[th1d]->Clone();
     fOutRatioTH1DHists[th1d]->Divide(fOutMCTH1DHists[th1d]);  
     fOutRatioTH1DHists[th1d]->SetLineColor(kBlack);
@@ -184,6 +187,10 @@ void StackPlots::MakeRatioPlots() {
     fOutRatioTH1DHists[th1d]->SetMaximum(2.1); // .. range
     fOutRatioTH1DHists[th1d]->SetStats(0);      // No statistics on lower plot
     fOutRatioTH1DHists[th1d]->GetYaxis()->SetTitle("Data/MC");
+
+    // ratio MC error plot
+    fOutRatioMCErrs[th1d] = (TH1D*)fOutMCTH1DHists[th1d]->Clone();
+    fOutRatioMCErrs[th1d]->Divide(fOutMCTH1DHists[th1d]);
   }
 }
 
@@ -350,6 +357,9 @@ void StackPlots::DrawLowerPad(const UInt_t th1d) {
 
   // redraw to go over line
   fOutRatioTH1DHists[th1d]->Draw("EP SAME"); 
+  
+  // plots MC error copy
+  fOutRatioMCErrs[th1d]->Draw("E2 SAME");
 }
 
 void StackPlots::SetLines(const UInt_t th1d){
@@ -771,6 +781,9 @@ void StackPlots::InitRatioPlots() {
 
   // th1d hists
   fOutRatioTH1DHists.resize(fNTH1D);
+
+  // mc err hists 
+  fOutRatioMCErrs.resize(fNTH1D);
 }
 
 void StackPlots::InitRatioLines() {

@@ -93,6 +93,7 @@ private:
   TH1DVec    fOutMCTH1DHists;
   THStackVec fOutMCTH1DStacks;
   TH1DVec    fOutRatioTH1DHists;  
+  TH1DVec    fOutRatioMCErrs;  
   TLegVec    fTH1DLegends;
   TLineVec   fOutTH1DRatioLines;
 
