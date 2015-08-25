@@ -55,10 +55,10 @@ int main(){
   const Bool_t runLocal = true;
 
   // do PURW?
-  const Bool_t doReWeight = true; // false if no actual reweighting to be performed
+  const Bool_t doReWeight = false; 
 
   // produce plots per sample?
-  const Bool_t doAnalysis = true;
+  const Bool_t doAnalysis = false;
 
   // do stacking?
   const Bool_t doStacks = true;
@@ -67,7 +67,7 @@ int main(){
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
   // Selection we want for ANALYSIS (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singleel, singlephoton)
-  const TString selection = "singleel";
+  const TString selection = "zmumu";
   outdir.Append(Form("_%s",selection.Data()));
 
   // First make total output directory ... sub directories made inside objects
@@ -106,7 +106,7 @@ int main(){
 
   DblVec puweights; // overall vector to be used for reweighting everywhere
   if (doReWeight) {
-    const TString PURWselection = "singleel";
+    const TString PURWselection = "zmumu";
     const Int_t   PURWnjetsselection = -1;
 
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
@@ -224,8 +224,8 @@ int main(){
   if (useSingleBoson) {
     
     SamplePairVec SBLSamples; 
-    SBLSamples.push_back(SamplePair("wln",true));
-    //    SBLSamples.push_back(SamplePair("zll",true));    
+    //SBLSamples.push_back(SamplePair("wln",true));
+    SBLSamples.push_back(SamplePair("zll",true));    
 
     if (doAnalysis) {
       std::cout << "Starting single boson to leptons MC Analysis" << std::endl;
