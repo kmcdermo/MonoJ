@@ -55,19 +55,19 @@ int main(){
   const Bool_t runLocal = true;
 
   // do PURW?
-  const Bool_t doReWeight = false; 
+  const Bool_t doReWeight = true;
 
   // produce plots per sample?
   const Bool_t doAnalysis = false;
 
   // do stacking?
-  const Bool_t doStacks = true;
+  const Bool_t doStacks = false;
   
   // Total Integrated Luminosity
   const Double_t lumi = 0.04003; // int lumi in fb^-1
 
   // Selection we want for ANALYSIS (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singleel, singlephoton)
-  const TString selection = "zmumu";
+  const TString selection = "singlephoton";
   outdir.Append(Form("_%s",selection.Data()));
 
   // First make total output directory ... sub directories made inside objects
@@ -106,7 +106,7 @@ int main(){
 
   DblVec puweights; // overall vector to be used for reweighting everywhere
   if (doReWeight) {
-    const TString PURWselection = "zmumu";
+    const TString PURWselection = selection; // for now it is the sames
     const Int_t   PURWnjetsselection = -1;
 
     std::cout << Form("Do PU reweighting first with %s selection, njets selection: %d!",PURWselection.Data(),PURWnjetsselection) << std::endl;
