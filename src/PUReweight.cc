@@ -223,11 +223,6 @@ DblVec PUReweight::GetPUWeights() {
   c1->SetLogy(0); // save lin
   c1->SaveAs(Form("%s/nvtx_beforePURW_norm_%s%s_lin.%s",fOutDir.Data(),fSelection.Data(),fNJetsStr.Data(),fOutType.Data()));
 
-  // Draw after reweighting 
-  TCanvas * c2 = new TCanvas();
-  c2->cd();
-  c2->SetTitle("After PU Reweighting Normalized");
-
   /////////////////////////////////////////////
   //      DIVIDE HERE TO GET REWEIGHTING     //
   /////////////////////////////////////////////
@@ -256,6 +251,11 @@ DblVec PUReweight::GetPUWeights() {
 
   fOutFile->cd();
   fOutDataOverMCNvtx->Write();
+
+  // Draw after reweighting 
+  TCanvas * c2 = new TCanvas();
+  c2->cd();
+  c2->SetTitle("After PU Reweighting Normalized");
 
   // draw output and save it, see comment above about selection
   fOutDataNvtx->Draw("PE");
