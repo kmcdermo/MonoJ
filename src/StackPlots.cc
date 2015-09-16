@@ -134,7 +134,7 @@ void StackPlots::MakeStackPlots(std::ofstream & yields){
     } // end loop over data samples
 
     // add legend entry for total data
-    fTH1DLegends[th1d]->AddEntry(fOutDataTH1DHists[th1d],"Data","pl"); // add data entry to legend
+    fTH1DLegends[th1d]->AddEntry(fOutDataTH1DHists[th1d],"Data","epl"); // add data entry to legend
 
     // add total yield for data here if nvtx plot
     if (fTH1DNames[th1d].Contains("nvtx",TString::kExact)) { // save total yields for data
