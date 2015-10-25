@@ -1,8 +1,9 @@
 #include "../interface/Analysis.hh"
 
-Analysis::Analysis(const SamplePair samplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType, const Bool_t runLocal){
+Analysis::Analysis(const SamplePair samplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType, const Bool_t runLocal, const TString run){
   // store in data members
   fRunLocal  = runLocal;
+  fRun       = run;
   fSample    = samplePair.first;
   fIsMC      = samplePair.second;
   fSelection = selection;
@@ -20,25 +21,20 @@ Analysis::Analysis(const SamplePair samplePair, const TString selection, const I
   //Get File
   TString fileName = ""; 
   if (fRunLocal) { // run local on Mac
-    if (fIsMC) { // MC on mac all in one directory
-      fileName = "MC/";
+    if (fIsMC) { 
+      fileName = Form("MC/%s/",fRun.Data());
     }
-    else { // Data on local
-      fileName = "Data/";
+    else { 
+      fileName = Form("Data/%s/",fRun.Data());
     }
   }
   else { // run on lxplus EOS
     fileName = "root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/";
-    if (fIsMC){ // MC on EOS in two places
-      if (fSample.Contains("gamma",TString::kExact) ){ // use phys14 for photons
-	fileName.Append("PHYS14MC/");
-      }
-      else { // all other MC samples on EOS separated into Spring15
-	fileName.Append("Spring15MC_50ns/");
-      }
+    if (fIsMC) { 
+      fileName.Append(Form("MC/%s/",fRun.Data()));
     }
-    else{ // Data on EOS
-      fileName.Append("Data/");
+    else { 
+      fileName.Append(Form("Data/%s/",fRun.Data()));
     }
   }
   // true for all local, eos ; data, mc ; phys14 , spring15
@@ -145,12 +141,13 @@ void Analysis::DoAnalysis(std::ofstream & yields){
     Bool_t selection   = false;
     Bool_t met_filters = false;
     if (zmumuselection) {
-      selection = ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid));
-      met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
+      selection = ((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid) && ((run != 256729) && (run != 256734)) );
+      met_filters = ((flagcsctight == 1 && flaghbhenoise == 1) || (cflagcsctight == 1 && cflaghbhenoise == 1));
     }
     else if (zelelselection) {
-      selection = ((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid));
-      met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC && cflagcsctight == 1 && cflaghbhenoise == 1));
+      selection = ((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid) && (el2id == 1) && ((run != 256729) && (run != 256734)) );
+      met_filters = ((flagcsctight == 1 && flaghbhenoise == 1) || (cflagcsctight == 1 && cflaghbhenoise == 1));
+      //met_filters = ((fIsMC && flagcsctight == 1 && flaghbhenoise == 1) || (!fIsMC));
     }
     else if (singlemuselection) {
       selection = ((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1));

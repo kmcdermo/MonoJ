@@ -411,7 +411,7 @@ void StackPlots::CMSLumi(TCanvas *& canv, const Int_t iPosX) { // borrowed from 
   TString extraText      = "Preliminary";
   Double_t extraTextFont = 52;  // default is helvetica-italics
 
-  TString lumiText = Form("#sqrt{s} = 13 TeV, L = %2.2f pb^{-1}", fLumi*1000); // must change this spec once we are in fb range!
+  TString lumiText = Form("#sqrt{s} = 13 TeV, L = %3.2f pb^{-1}", fLumi*1000); // must change this spec once we are in fb range!
   
   // text sizes and text offsets with respect to the top frame
   // in unit of the top margin size
@@ -812,7 +812,7 @@ void StackPlots::InitOutputCanvPads() {
     
     fOutTH1DRatioPads[th1d] = new TPad(Form("%s_lpad",fTH1DNames[th1d].Data()), "", 0, 0.05, 1.0, 0.3);
     fOutTH1DRatioPads[th1d]->SetTopMargin(0);
-    fOutTH1DRatioPads[th1d]->SetBottomMargin(0.2);
+    fOutTH1DRatioPads[th1d]->SetBottomMargin(0.3);
   }
 }
 

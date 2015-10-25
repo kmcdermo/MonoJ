@@ -1,6 +1,6 @@
 #include "../interface/PUReweight.hh"
 
-PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const Int_t nBins, const TString outdir, const TString outtype, const Bool_t runLocal) {
+PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Int_t njetsselection, const Double_t lumi, const Int_t nBins, const TString outdir, const TString outtype, const Bool_t runLocal, const TString run) {
   fRunLocal = runLocal;
 
   // save samples for PU weighting
@@ -12,6 +12,9 @@ PUReweight::PUReweight(SamplePairVec Samples, const TString selection, const Int
       fDataNames.push_back((*iter).first);
     }
   }
+
+  // subdir for input
+  fRun = run;
 
   // store for later ... would rather have move semantics ... iterators too annoying
   fNData = fDataNames.size();
@@ -69,10 +72,10 @@ DblVec PUReweight::GetPUWeights() {
 
   TString basecut; // selection based cut
   if (fSelection.Contains("zmumu",TString::kExact)) {
-    basecut = "((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid))";
+    basecut = "((hltdoublemu > 0) && (mu1pt > 20) && (mu1id == 1) && (zmass < 120.) && (zmass > 60.) && (mu1pid == -mu2pid) && ((run != 256729) && (run != 256734)) )";
   }
   else if (fSelection.Contains("zelel",TString::kExact)) {
-    basecut = "((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid))";
+    basecut = "((hltdoubleel > 0) && (el1pt > 20) && (el1id == 1) && (zeemass < 120.) && (zeemass > 60.) && (el1pid == -el2pid) && (el2id == 1) && ((run != 256729) && (run != 256734)) )";
   }
   else if (fSelection.Contains("singlemu",TString::kExact)) {
     basecut = "((hltsinglemu == 1) && (nmuons == 1) && (mu1pt > 30) && (mu1id == 1))"; 
@@ -100,16 +103,18 @@ DblVec PUReweight::GetPUWeights() {
       cut.Append(" && ((hltphoton165 == 1) || (hltphoton175 == 1)) )");
     }
     else { // no photon triggers, and also no checks on these for photons as PHYS14MC sample is 50% efficient.
-      cut.Append(" && ((cflagcsctight == 1) && (cflaghbhenoise == 1)) )"); // met filters for data
+      //cut.Append(" )"); // met filters for data --> 25ns
+      cut.Append(" && ((flagcsctight == 1) && (flaghbhenoise == 1)) )"); // met filters for data --> 25ns
+      //cut.Append(" && ((cflagcsctight == 1) && (cflaghbhenoise == 1)) )"); // met filters for data --> 50 ns
     }      
 
     // files + trees + tmp hist for data
     TString filename = "";
     if (fRunLocal) { // on Mac
-      filename = Form("Data/%s/treewithwgt.root",fDataNames[data].Data());
+      filename = Form("Data/%s/%s/treewithwgt.root",fRun.Data(),fDataNames[data].Data());
     }
     else{ // pull from eos
-     filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/%s/treewithwgt.root",fDataNames[data].Data());
+      filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Data/%s/%s/treewithwgt.root",fRun.Data(),fDataNames[data].Data());
     }
     TFile * file = TFile::Open(filename.Data());
     CheckValidFile(file,filename);
@@ -149,15 +154,10 @@ DblVec PUReweight::GetPUWeights() {
     // files + trees for mc + tmp hists
     TString filename = "";
     if (fRunLocal) { // run on Mac --> keep gamma and all others in "MC directory" for simplicity... may need to change
-      filename = Form("MC/%s/treewithwgt.root",fMCNames[mc].Data());
+      filename = Form("MC/%s/%s/treewithwgt.root",fRun.Data(),fMCNames[mc].Data());
     }
     else { // run on EOS
-      if (fSelection.Contains("singlephoton",TString::kExact)) { // annoying since MC photon sits elsewhere
-	filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/PHYS14MC/%s/treewithwgt.root",fMCNames[mc].Data());
-      }
-      else {
-	filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/Spring15MC_50ns/%s/treewithwgt.root",fMCNames[mc].Data());
-      }
+      filename = Form("root://eoscms//eos/cms/store/user/kmcdermo/MonoJ/Trees/MC/%s/%s/treewithwgt.root",fRun.Data(),fMCNames[mc].Data());
     }
     TFile * file = TFile::Open(filename.Data());
     CheckValidFile(file,filename);

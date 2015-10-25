@@ -40,10 +40,10 @@ int main(){
   const Int_t nBins_vtx = 50;
 
   // Allow user to set output directory for whole project--> if running only stacking... will need to specify inputs in .cc file
-  TString outdir = "testbatch"; // append with selection
-
+  TString outdir = "fullresults"; // append with selection
+  
   // Allow user to set outtype for plots
-  const TString outtype = "png";
+  const TString outtype = "pdf";
 
   //++++++++++++++++++++++++++++++++++++++++// 
   //                                        //
@@ -55,19 +55,22 @@ int main(){
   const Bool_t runLocal = true;
 
   // do PURW?
-  const Bool_t doReWeight = true;
+  const Bool_t doReWeight = false;
 
   // produce plots per sample?
   const Bool_t doAnalysis = false;
 
   // do stacking?
-  const Bool_t doStacks = false;
+  const Bool_t doStacks = true;
+
+  // subdir input
+  const TString run = "2015D";
   
   // Total Integrated Luminosity
-  const Double_t lumi = 0.04003; // int lumi in fb^-1
+  const Double_t lumi = .55267; //.55024 -->BAD; // fb^-1 for 2015D cert // 0.04003 for 25ns // int lumi in fb^-1 
 
   // Selection we want for ANALYSIS (zmumu = zpeak with muons, zelel = zpeak with electrons, singlemu, singleel, singlephoton)
-  const TString selection = "singlephoton";
+  const TString selection = "zmumu";
   outdir.Append(Form("_%s",selection.Data()));
 
   // First make total output directory ... sub directories made inside objects
@@ -76,10 +79,10 @@ int main(){
   // what samples to use?
   const Bool_t useData         = true;
   const Bool_t useSingleBoson  = true;
-  const Bool_t useDoubleBosons = false;
-  const Bool_t useTop          = true;
+  const Bool_t useDoubleBosons = true;//true;
+  const Bool_t useTop          = true;//true;
   const Bool_t useGamma        = false;
-  const Bool_t useQCD          = false;
+  const Bool_t useQCD          = false;//true;
 
   // Njets selection (==1, ==2) ... -1 = no selection
   const Int_t njetsselection = -1;
@@ -141,7 +144,7 @@ int main(){
     }
 
     // do the reweighting here
-    PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype,runLocal);
+    PUReweight * reweight = new PUReweight(PURWSamples,PURWselection,PURWnjetsselection,lumi,nBins_vtx,outdir,outtype,runLocal,run);
     puweights = reweight->GetPUWeights(); 
   
     delete reweight;
@@ -206,7 +209,7 @@ int main(){
       std::cout << "Starting data Analysis" << std::endl;
       for (SamplePairVecIter iter = DataSamples.begin(); iter != DataSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal,run);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with data Analysis" << std::endl;  
@@ -224,14 +227,14 @@ int main(){
   if (useSingleBoson) {
     
     SamplePairVec SBLSamples; 
-    //SBLSamples.push_back(SamplePair("wln",true));
+    SBLSamples.push_back(SamplePair("wln",true));
     SBLSamples.push_back(SamplePair("zll",true));    
 
     if (doAnalysis) {
       std::cout << "Starting single boson to leptons MC Analysis" << std::endl;
       for (SamplePairVecIter iter = SBLSamples.begin(); iter != SBLSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal,run);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Z -> ll, W -> lnu Analysis" << std::endl;  
@@ -257,7 +260,7 @@ int main(){
       std::cout << "Starting diboson Analysis" << std::endl;
       for (SamplePairVecIter iter = DBSamples.begin(); iter != DBSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal,run);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Diboson Analysis ... now Hadd Diboson" << std::endl;  
@@ -286,7 +289,7 @@ int main(){
       std::cout << "Starting top Analysis" << std::endl;
       for (SamplePairVecIter iter = TopSamples.begin(); iter != TopSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal,run);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Top Analysis ... now Hadd Top" << std::endl;  
@@ -314,7 +317,7 @@ int main(){
       std::cout << "Starting photon Analysis" << std::endl;
       for (SamplePairVecIter iter = GammaSamples.begin(); iter != GammaSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal,run);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with Gamma Analysis ... now hadd Gamma" << std::endl;  
@@ -333,27 +336,19 @@ int main(){
   if (useQCD) {
   
     SamplePairVec QCDSamples;  // outside in the strange case you want to stack individually... and symmetry with above
-    QCDSamples.push_back(SamplePair("qcd15to30",true)); 
-    QCDSamples.push_back(SamplePair("qcd30to50",true)); 
-    QCDSamples.push_back(SamplePair("qcd50to80",true)); 
-    QCDSamples.push_back(SamplePair("qcd80to120",true)); 
-    QCDSamples.push_back(SamplePair("qcd120to170",true)); 
-    QCDSamples.push_back(SamplePair("qcd170to300",true)); 
-    QCDSamples.push_back(SamplePair("qcd300to470",true)); 
-    QCDSamples.push_back(SamplePair("qcd470to600",true)); 
-    QCDSamples.push_back(SamplePair("qcd600to800",true));
-    QCDSamples.push_back(SamplePair("qcd800to1000",true));
-    QCDSamples.push_back(SamplePair("qcd1000to1400",true)); 
-    QCDSamples.push_back(SamplePair("qcd1400to1800",true));
-    QCDSamples.push_back(SamplePair("qcd1800to2400",true));
-    QCDSamples.push_back(SamplePair("qcd2400to3200",true));
-    QCDSamples.push_back(SamplePair("qcd3200toinf",true)); 
-    
+    QCDSamples.push_back(SamplePair("qcd100to200",true)); 
+    QCDSamples.push_back(SamplePair("qcd200to300",true)); 
+    QCDSamples.push_back(SamplePair("qcd300to500",true)); 
+    QCDSamples.push_back(SamplePair("qcd500to700",true)); 
+    QCDSamples.push_back(SamplePair("qcd700to1000",true)); 
+    QCDSamples.push_back(SamplePair("qcd1000to1500",true)); 
+    QCDSamples.push_back(SamplePair("qcd1500to2000",true)); 
+    QCDSamples.push_back(SamplePair("qcd2000toinf",true)); 
     if (doAnalysis) {
       std::cout << "Starting QCD Analysis" << std::endl;
       for (SamplePairVecIter iter = QCDSamples.begin(); iter != QCDSamples.end(); ++iter) {
 	std::cout << "Analyzing Sample: " << (*iter).first.Data() << " isMC: " << (*iter).second << std::endl;
-	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal);
+	Analysis sample((*iter),selection,njetsselection,puweights,lumi,nBins_vtx,outdir,colorMap,outtype,runLocal,run);
 	sample.DoAnalysis(yields);
       }
       std::cout << "Done with QCD Analysis ... now hadd QCD" << std::endl;  

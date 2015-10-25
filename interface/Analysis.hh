@@ -41,7 +41,7 @@ class Analysis
 {
 public:
 
-  Analysis(const SamplePair SamplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType, const Bool_t runLocal);
+  Analysis(const SamplePair SamplePair, const TString selection, const Int_t njetsselection, const DblVec puweights, const Double_t lumi, const Int_t nBins_vtx, const TString outdir, const ColorMap & colorMap, const TString outType, const Bool_t runLocal, const TString run);
   
   void SetBranchAddresses();
   void DoAnalysis(std::ofstream & yields);
@@ -58,6 +58,7 @@ public:
 private:
   // initialized in constructor
   TString fSample;
+  TString fRun;
   Bool_t fIsMC;
   TString fSelection;
   Int_t   fNJetsSeln;
